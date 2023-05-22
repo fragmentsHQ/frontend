@@ -290,7 +290,7 @@ const Main = () => {
                       >
                         {fromToken?.name}
                       </Dropdown.Select>
-                      <Dropdown.Options className="bg-[#262229]">
+                      <Dropdown.Options className="z-10 bg-[#262229]">
                         {tokens.map((token, index) => (
                           <Dropdown.Option value={token} key={index}>
                             {({ selected, active }) => {
@@ -555,7 +555,7 @@ const Main = () => {
                       >
                         {fromToken?.name}
                       </Dropdown.Select>
-                      <Dropdown.Options className="bg-[#262229]">
+                      <Dropdown.Options className="z-10 bg-[#262229]">
                         {tokens.map((token, index) => (
                           <Dropdown.Option value={token} key={index}>
                             {({ selected, active }) => {
@@ -819,7 +819,7 @@ const Main = () => {
                       >
                         {fromToken?.name}
                       </Dropdown.Select>
-                      <Dropdown.Options className="bg-[#262229]">
+                      <Dropdown.Options className="z-10 bg-[#262229]">
                         {tokens.map((token, index) => (
                           <Dropdown.Option value={token} key={index}>
                             {({ selected, active }) => {
@@ -1084,7 +1084,7 @@ const Main = () => {
                       >
                         {fromToken?.name}
                       </Dropdown.Select>
-                      <Dropdown.Options className="bg-[#262229]">
+                      <Dropdown.Options className="z-10 bg-[#262229]">
                         {tokens.map((token, index) => (
                           <Dropdown.Option value={token} key={index}>
                             {({ selected, active }) => {
