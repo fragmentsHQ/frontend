@@ -1,13 +1,20 @@
-import { useAccount } from 'wagmi';
+import React from "react";
+import { useAccount } from "wagmi";
 
-import { Account, Connect, NetworkSwitcher } from './components';
+import { Account, Connect, NetworkSwitcher } from "./components";
+import Navbar from "./components/Navbar";
+import Main from "./components/Main";
+import BgImages from "./components/BgImages";
 
 export function App() {
   const { address } = useAccount();
 
   return (
     <>
-      <Connect />
+      <Navbar />
+      <Main />
+      <BgImages />
+      {/* <Connect />
       <p>HI Testing</p>
 
       {address && (
@@ -15,7 +22,7 @@ export function App() {
           <Account />
           <NetworkSwitcher />
         </>
-      )}
+      )} */}
     </>
   );
 }

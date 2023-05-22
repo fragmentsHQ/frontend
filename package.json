@@ -3,25 +3,32 @@
   "version": "0.1.5",
   "private": true,
   "dependencies": {
+    "@gnosis.pm/safe-apps-wagmi": "2.1.0",
+    "@headlessui/react": "^1.7.14",
+    "@heathmont/moon-core-tw": "^9.34.0",
+    "@heathmont/moon-icons-tw": "^9.28.3",
+    "@heroicons/react": "^2.0.18",
+    "@nextui-org/react": "^1.0.0-beta.12",
     "@safe-global/safe-apps-provider": "^0.17.0",
     "@safe-global/safe-apps-sdk": "^7.11.0",
-    "@gnosis.pm/safe-apps-wagmi": "2.1.0",
     "@types/react": "^18.0.27",
     "@types/react-dom": "^18.0.10",
     "@wagmi/core": "^0.8.19",
     "buffer": "^6.0.3",
     "ethers": "^5.7.2",
     "events": "^3.3.0",
+    "install": "^0.13.0",
     "process": "^0.11.10",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-scripts": "5.0.1",
+    "typescript": "^5.0.4",
     "util": "^0.12.5",
     "wagmi": "^0.10.15",
     "web-vitals": "^3.1.0"
   },
   "scripts": {
-    "start": "react-scripts start",
+    "dev": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test --passWithNoTests",
     "eject": "react-scripts eject"
@@ -37,5 +44,10 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "prettier": "^2.8.8",
+    "prettier-plugin-tailwindcss": "^0.3.0",
+    "tailwindcss": "^3.3.2"
   }
 }

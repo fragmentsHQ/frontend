@@ -8,11 +8,11 @@ import { SafeConnector } from '@gnosis.pm/safe-apps-wagmi';
 import { InjectedConnector } from 'wagmi/connectors/injected';
 import { MetaMaskConnector } from 'wagmi/connectors/metaMask';
 import { WalletConnectConnector } from 'wagmi/connectors/walletConnect';
-
 import { Buffer } from 'buffer';
 
 import { App } from './App';
 import reportWebVitals from './reportWebVitals';
+import './index.css'
 
 // polyfill Buffer for client
 if (!window.Buffer) {
@@ -49,7 +49,7 @@ const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement)
 root.render(
   <React.StrictMode>
     <WagmiConfig client={client}>
-      <App />
+        <App />
     </WagmiConfig>
   </React.StrictMode>,
 );
