@@ -1,13 +1,14 @@
 import React from "react";
 import { useAccount } from "wagmi";
 
-import { Account, Connect, NetworkSwitcher } from "./components";
 import Navbar from "./components/Navbar";
 import Main from "./components/Main";
 import BgImages from "./components/BgImages";
+import { useAutoConnect } from "./useAutoConnect";
 
 export function App() {
   const { address } = useAccount();
+  useAutoConnect();
 
   return (
     <>
