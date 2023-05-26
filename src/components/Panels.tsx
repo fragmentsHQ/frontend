@@ -8,7 +8,7 @@ import {
   Radio,
 } from "@heathmont/moon-core-tw";
 import { ControlsCloseSmall } from "@heathmont/moon-icons-tw";
-import { getProvider } from "@wagmi/core";
+import { getProvider, getAccount } from "@wagmi/core";
 import { BigNumber, ethers } from "ethers";
 import React, { useEffect, useState } from "react";
 import {
@@ -44,6 +44,7 @@ const panels = {
     category: ["Recurring", "One Time"],
     element: (selectedCategory: Category) => {
       const { chain } = useNetwork();
+      const { address } = getAccount();
       const provider = getProvider();
 
       const [fromToken, setFromToken] = useState<string | null>(null);
@@ -82,14 +83,20 @@ const panels = {
         let contract;
         try {
           contract = new ethers.Contract(
-            "0x7ea6eA49B0b0Ae9c5db7907d139D9Cd3439862a1",
+            chain?.testnet && fromToken
+              ? TOKEN_ADDRESSES[chain?.network][fromToken]
+              : ZERO_ADDRESS,
             erc20ABI,
             provider
           );
 
           let checkAllowance = await contract.allowance(
-            "0xCBa97c63F1CB376D6d298082A31332990cB33d1d",
-            "0x868606dA0fbBD60c40ba8c93A8944E7Ec2D9C193"
+            address ? address : ZERO_ADDRESS,
+            chain
+              ? CONTRACT_ADDRESSES[chain?.testnet ? "testnets" : "mainnets"][
+                  chain?.network
+                ]
+              : ZERO_ADDRESS
           );
           let allowance = checkAllowance.toString();
 
@@ -99,7 +106,11 @@ const panels = {
 
       const { config: configApprove } = usePrepareSendTransaction({
         request: {
-          to: "0x868606dA0fbBD60c40ba8c93A8944E7Ec2D9C193",
+          to: chain
+            ? CONTRACT_ADDRESSES[chain?.testnet ? "testnets" : "mainnets"][
+                chain?.network
+              ]
+            : ZERO_ADDRESS,
           data: callDataApproval,
         },
       });
@@ -109,7 +120,11 @@ const panels = {
 
       const { config: configCreateTimeTxn } = usePrepareSendTransaction({
         request: {
-          to: "0x868606dA0fbBD60c40ba8c93A8944E7Ec2D9C193",
+          to: chain
+            ? CONTRACT_ADDRESSES[chain?.testnet ? "testnets" : "mainnets"][
+                chain?.network
+              ]
+            : ZERO_ADDRESS,
           data: callDataCreateTimeTxn,
         },
       });
