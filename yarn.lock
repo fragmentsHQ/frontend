@@ -1690,6 +1690,11 @@
   resolved "https://registry.yarnpkg.com/@heathmont/moon-icons-tw/-/moon-icons-tw-9.28.3.tgz#80095ab2a8ce97e9172f4d6cc98771066a928d1c"
   integrity sha512-1JnENSkGLhjOfotOqDA62NdKCrJGg0blGddpGH/7nt4PKwsCVNEm8PJyfjOhqgUBzhCI9iE+zslQrwmjIkaxZw==
 
+"@heathmont/moon-themes-tw@^9.34.2":
+  version "9.34.2"
+  resolved "https://registry.yarnpkg.com/@heathmont/moon-themes-tw/-/moon-themes-tw-9.34.2.tgz#d8c3b91452badbf8ab63c2ec0314b7f2f39089e0"
+  integrity sha512-ajqquxt/x0SazQlzQA7tHdaElAFxoSFj9mkPDX05PQnY9LTf2G6DLjTAM3IWO90XDpOZLZl5IuE5p/iGXWQu8Q==
+
 "@heroicons/react@^2.0.18":
   version "2.0.18"
   resolved "https://registry.yarnpkg.com/@heroicons/react/-/react-2.0.18.tgz#f80301907c243df03c7e9fd76c0286e95361f7c1"
@@ -12013,6 +12018,11 @@ use-sidecar@^1.1.2:
   dependencies:
     detect-node-es "^1.1.0"
     tslib "^2.0.0"
+
+use-state-with-callback@^3.0.2:
+  version "3.0.2"
+  resolved "https://registry.yarnpkg.com/use-state-with-callback/-/use-state-with-callback-3.0.2.tgz#69c73179292393e2c35fb8b12cf61bb3314cf205"
+  integrity sha512-gs6t5ilsbi2UvoYXdw8+dwQg6yT3QfO/sYhm5Wa3tfwcL6BSad85FiET8ZtTWid4gjul1T1TJ8ReV4Wk1B7UZg==
 
 use-sync-external-store@1.2.0, use-sync-external-store@^1.2.0:
   version "1.2.0"

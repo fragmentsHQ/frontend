@@ -1,18 +1,19 @@
-import * as React from 'react';
-import * as ReactDOM from 'react-dom/client';
+import * as React from "react";
+import * as ReactDOM from "react-dom/client";
 
-import { WagmiConfig, configureChains, createClient } from 'wagmi';
-import { mainnet, goerli } from 'wagmi/chains';
-import { alchemyProvider } from 'wagmi/providers/alchemy';
-import { SafeConnector } from '@gnosis.pm/safe-apps-wagmi';
-import { InjectedConnector } from 'wagmi/connectors/injected';
-import { MetaMaskConnector } from 'wagmi/connectors/metaMask';
-import { WalletConnectConnector } from 'wagmi/connectors/walletConnect';
-import { Buffer } from 'buffer';
+import { WagmiConfig, configureChains, createClient } from "wagmi";
+import { mainnet, goerli } from "wagmi/chains";
+import { alchemyProvider } from "wagmi/providers/alchemy";
+import { SafeConnector } from "@gnosis.pm/safe-apps-wagmi";
+import { InjectedConnector } from "wagmi/connectors/injected";
+import { MetaMaskConnector } from "wagmi/connectors/metaMask";
+import { WalletConnectConnector } from "wagmi/connectors/walletConnect";
+import { Buffer } from "buffer";
 
-import { App } from './App';
-import reportWebVitals from './reportWebVitals';
-import './index.css'
+import { App } from "./App";
+import reportWebVitals from "./reportWebVitals";
+import "./index.css";
+import SourceContextWrapper from "./hooks/context";
 
 // polyfill Buffer for client
 if (!window.Buffer) {
@@ -20,9 +21,12 @@ if (!window.Buffer) {
 }
 
 const defaultChains = [mainnet, goerli];
-const alchemyId = process.env.REACT_APP_ALCHEMY_ID || 'UuUIg4H93f-Bz5qs91SuBrro7TW3UShO';
+const alchemyId =
+  process.env.REACT_APP_ALCHEMY_ID || "UuUIg4H93f-Bz5qs91SuBrro7TW3UShO";
 
-const { chains, provider } = configureChains(defaultChains, [alchemyProvider({ apiKey: alchemyId })]);
+const { chains, provider } = configureChains(defaultChains, [
+  alchemyProvider({ apiKey: alchemyId }),
+]);
 
 const client = createClient({
   connectors: [
@@ -37,7 +41,7 @@ const client = createClient({
     new InjectedConnector({
       chains,
       options: {
-        name: 'Injected',
+        name: "Injected",
         shimDisconnect: true,
       },
     }),
@@ -45,13 +49,17 @@ const client = createClient({
   provider,
 });
 
-const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
+const root = ReactDOM.createRoot(
+  document.getElementById("root") as HTMLElement
+);
 root.render(
   <React.StrictMode>
     <WagmiConfig client={client}>
+      <SourceContextWrapper>
         <App />
+      </SourceContextWrapper>
     </WagmiConfig>
-  </React.StrictMode>,
+  </React.StrictMode>
 );
 
 reportWebVitals();

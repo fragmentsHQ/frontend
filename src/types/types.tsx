@@ -9,4 +9,6 @@ type Options = {
   label: string;
 };
 
-export { Tokens, Category, Options };
+type AppModes = "Auto Pay" | "xStream";
+
+export { Tokens, Category, Options, AppModes };
