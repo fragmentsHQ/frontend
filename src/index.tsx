@@ -12,8 +12,9 @@ import { Buffer } from "buffer";
 
 import { App } from "./App";
 import reportWebVitals from "./reportWebVitals";
-import "./index.css";
 import SourceContextWrapper from "./hooks/context";
+import "react-csv-importer/dist/index.css";
+import "./index.scss";
 
 // polyfill Buffer for client
 if (!window.Buffer) {

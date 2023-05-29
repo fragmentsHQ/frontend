@@ -1,0 +1,13 @@
+@use '@carbon/react/scss/themes';
+@use '@carbon/react/scss/theme' with ($theme: themes.$g100);
+@use '@carbon/react';
+@import '@heathmont/moon-themes-tw/lib/moon.css';
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body
+   { background-color: #262229}
+
+p,div
+   { color: white}
