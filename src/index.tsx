@@ -1,8 +1,7 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom/client";
 import { Buffer } from "buffer";
-
-import { App } from "./App";
+import App from "./App";
 import reportWebVitals from "./reportWebVitals";
 import Layout from "./components/Layout"
 import "./index.scss";
@@ -24,7 +23,7 @@ root.render(
   <React.StrictMode>
     <BrowserRouter>
       <Layout>
-        <RoutesComp />
+        <App />
       </Layout>
     </BrowserRouter>
   </React.StrictMode>

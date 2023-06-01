@@ -12,6 +12,8 @@ import * as React from "react";
 import * as ReactDOM from "react-dom/client";
 
 import "react-csv-importer/dist/index.css";
+import Navbar from "./Navbar";
+import BgImages from "./BgImages";
 
 // polyfill Buffer for client
 if (!window.Buffer) {
@@ -54,7 +56,9 @@ const Layout = ({ children }) => {
         <>
             <WagmiConfig client={client}>
                 <SourceContextWrapper>
+                    <Navbar />
                     {children}
+                    <BgImages />
                 </SourceContextWrapper>
             </WagmiConfig>
         </>
