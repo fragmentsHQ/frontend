@@ -1,9 +1,24 @@
 import { ethers } from "ethers";
 import { Chain, erc20ABI } from "wagmi";
-import Fragments from "./fragments_abi.json";
+import Autopay from "./autoPay_abi.json";
+import Conditional from "./conditional_abi.json";
 
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
-const CONTRACT_ADDRESSES = {
+const AUTOPAY_CONTRACT_ADDRESSES = {
+  mainnets: {
+    polygon: "0x",
+    ethereum: "0x",
+    optimism: "0x",
+    arbitrum: "0x",
+    bsc: "0x",
+  },
+  testnets: {
+    polygonMumbai: "0xb0853E24843fA174E6cA3F5Acd4c2689Ea39FFef",
+    goerli: "0x6c03614d33eFC94Aca36dD80E3ff42Ab02d2017a",
+  },
+};
+
+const CONDITIONAL_CONTRACT_ADDRESSES = {
   mainnets: {
     polygon: "0x",
     ethereum: "0x",
@@ -48,14 +63,25 @@ const CONNEXT_DOMAINS = {
   polygonZkevmTestnet: "1887071092",
 };
 
-const FRAGMENTS_CONTRACT = (chain: Chain, provider) =>
+const AUTOPAY_CONTRACT = (chain: Chain, provider) =>
   new ethers.Contract(
     chain
-      ? CONTRACT_ADDRESSES[chain?.testnet ? "testnets" : "mainnets"][
+      ? AUTOPAY_CONTRACT_ADDRESSES[chain?.testnet ? "testnets" : "mainnets"][
           chain?.network
         ]
-      : CONTRACT_ADDRESSES["testnets"]["goerli"],
-    Fragments.abi,
+      : AUTOPAY_CONTRACT_ADDRESSES["testnets"]["goerli"],
+    Autopay.abi,
+    provider
+  );
+
+const CONDITIONAL_CONTRACT = (chain: Chain, provider) =>
+  new ethers.Contract(
+    chain
+      ? CONDITIONAL_CONTRACT_ADDRESSES[
+          chain?.testnet ? "testnets" : "mainnets"
+        ][chain?.network]
+      : CONDITIONAL_CONTRACT_ADDRESSES["testnets"]["goerli"],
+    Conditional.abi,
     provider
   );
 
@@ -63,9 +89,11 @@ const ERC20_CONTRACT = (tokenAddress, provider) =>
   new ethers.Contract(tokenAddress, erc20ABI, provider);
 
 export {
-  CONTRACT_ADDRESSES,
+  CONDITIONAL_CONTRACT_ADDRESSES,
+  AUTOPAY_CONTRACT_ADDRESSES,
+  CONDITIONAL_CONTRACT,
   TOKEN_ADDRESSES,
-  FRAGMENTS_CONTRACT,
+  AUTOPAY_CONTRACT,
   ERC20_CONTRACT,
   ZERO_ADDRESS,
   CONNEXT_DOMAINS,
