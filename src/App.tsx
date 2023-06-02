@@ -1,29 +1,19 @@
 import React from "react";
 import { useAccount } from "wagmi";
-
-import Navbar from "./components/Navbar";
-import Main from "./components/Main";
-import BgImages from "./components/BgImages";
 import { useAutoConnect } from "./useAutoConnect";
+import { Route, Routes } from 'react-router'
+import Main from './components/Main';
+import JobDetails from './components/JobDetails';
 
-export function App() {
+const App = () => {
   const { address } = useAccount();
   useAutoConnect();
-
   return (
-    <>
-      <Navbar />
-      <Main />
-      <BgImages />
-      {/* <Connect />
-      <p>HI Testing</p>
-
-      {address && (
-        <>
-          <Account />
-          <NetworkSwitcher />
-        </>
-      )} */}
-    </>
-  );
+    <Routes>
+      <Route path="/" element={<Main />} />
+      <Route path="job/:jobId" element={<JobDetails />} />
+    </Routes>
+  )
 }
+
+export default App
