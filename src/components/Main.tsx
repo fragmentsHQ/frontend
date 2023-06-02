@@ -67,10 +67,10 @@ const Main = () => {
     },
   ]);
   const [showThisSection, setShowThisSection] = useState({
-    0: true,
-    1: true,
-    2: true,
-    3: true,
+    0: false,
+    1: false,
+    2: false,
+    3: false,
   });
 
   useEffect(() => {
