@@ -17,9 +17,9 @@ import {
   TableBody,
   TableCell,
 } from "@carbon/react";
-import { Pagination, TextInput } from "carbon-components-react";
+import { Pagination } from "carbon-components-react";
 import { useCSVReader } from "react-papaparse";
-import panels from "./Panels";
+import panels from "../components/Panels";
 import { ArrowUpCircleIcon, CheckIcon } from "@heroicons/react/20/solid";
 
 function classNames(...classes) {
@@ -67,10 +67,10 @@ const Main = () => {
     },
   ]);
   const [showThisSection, setShowThisSection] = useState({
-    0: false,
-    1: false,
-    2: false,
-    3: false,
+    0: true,
+    1: true,
+    2: true,
+    3: true,
   });
 
   useEffect(() => {

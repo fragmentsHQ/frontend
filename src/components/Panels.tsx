@@ -34,6 +34,7 @@ import {
   ZERO_ADDRESS,
   CONDITIONAL_CONTRACT_ADDRESSES,
   CONDITIONAL_CONTRACT,
+  TOKEN_ADDRESSES_PRICE_FEEDS,
 } from "../constants/constants";
 import { SourceContext } from "../hooks/context";
 import { Category, Options, Tokens } from "../types/types";
@@ -332,6 +333,7 @@ const TimePanel = forwardRef(
       cycles,
       intervalCount,
       intervalType,
+      startTime,
     ]);
 
     useImperativeHandle(ref, () => ({
@@ -341,9 +343,9 @@ const TimePanel = forwardRef(
             BigNumber.from(allowance ? allowance : 0).eq(
               ethers.constants.MaxUint256
             )
-          )
+          ) {
             sendCreateTimeAsyncTxn?.();
-          else sendApproveTokenAsyncTxn?.();
+          } else sendApproveTokenAsyncTxn?.();
         } catch {}
       },
     }));
@@ -573,30 +575,31 @@ const TimePanel = forwardRef(
 );
 
 const PriceFeedPanel = forwardRef(
-  ({ selectedCategory, showThisSection, setShowThisSection }, ref) => {
+  (
+    { selectedCategory, showThisSection, setShowThisSection, dataRows },
+    ref
+  ) => {
     const { chain } = useNetwork();
     const { address } = getAccount();
     const provider = getProvider();
 
     const { sourceData, setSourceData } = useContext(SourceContext);
-    const [toChain, setToChain] = useState<string | null>(null);
-    const [toToken, setToToken] = useState<string | null>(null);
     const [isOpen, setIsOpen] = useState(false);
     const [intervalType, setIntervalType] = useState<Options | null>({
       value: "days",
       label: "days",
     });
-    const [timesValue, setTimesValue] = useState("");
-    const [amount, setAmount] = useState("");
-    const [toAddress, setToAddress] = useState("");
     const [allowance, setAllowance] = useState("");
+    const [token1, setToken1] = useState("MATIC");
+    const [token2, setToken2] = useState("USDC");
+    const [token1Price, setToken1Price] = useState("");
+    const [token2Price, setToken2Price] = useState("");
+    const [ratio, setRatio] = useState(0);
+    const [startTime, setStartTime] = useState<string | null>("");
+    const [cycles, setCycles] = useState<string | null>("");
+    const [intervalCount, setIntervalCount] = useState("1");
     const [callDataApproval, setCallDataApproval] = useState("");
     const [callDataPriceFeedTxn, setCallDataPriceFeedTxn] = useState("");
-    const [relayerFee, setRelayerFee] = useState("");
-    const [token1, setToken1] = useState("matic");
-    const [token2, setToken2] = useState("usdc");
-    const tokens = ["usdc", "matic", "eth"];
-    const timer = useRef<NodeJS.Timeout>();
 
     const handleChange = (e) => {
       const inputValue = e.target.value;
@@ -613,11 +616,10 @@ const PriceFeedPanel = forwardRef(
 
     const { config: configApprove } = usePrepareSendTransaction({
       request: {
-        to: chain
-          ? AUTOPAY_CONTRACT_ADDRESSES[
-              chain?.testnet ? "testnets" : "mainnets"
-            ][chain?.network]
-          : ZERO_ADDRESS,
+        to:
+          chain && sourceData.sourceToken
+            ? TOKEN_ADDRESSES[chain?.network][sourceData.sourceToken]
+            : ZERO_ADDRESS,
         data: callDataApproval,
       },
     });
@@ -628,7 +630,7 @@ const PriceFeedPanel = forwardRef(
     const { config: configPriceFeedTimeTxn } = usePrepareSendTransaction({
       request: {
         to: chain
-          ? AUTOPAY_CONTRACT_ADDRESSES[
+          ? CONDITIONAL_CONTRACT_ADDRESSES[
               chain?.testnet ? "testnets" : "mainnets"
             ][chain?.network]
           : ZERO_ADDRESS,
@@ -667,7 +669,9 @@ const PriceFeedPanel = forwardRef(
 
     const updateCallDataApproval = () => {
       const ERC20Contract = ERC20_CONTRACT(
-        chain ? TOKEN_ADDRESSES[chain?.network]["TEST"] : ZERO_ADDRESS,
+        chain && sourceData.sourceToken
+          ? TOKEN_ADDRESSES[chain?.network][sourceData.sourceToken]
+          : ZERO_ADDRESS,
         provider
       );
 
@@ -683,31 +687,149 @@ const PriceFeedPanel = forwardRef(
       );
     };
 
-    const updateCallDataCreateTimeTxn = () => {
+    const updateCallDataPriceFeedTxn = () => {
       const ConditionalContract = CONDITIONAL_CONTRACT(chain, provider);
 
       try {
+        console.log("here boi: ", [
+          [
+            ...dataRows
+              .slice(0, -1)
+              .map((e) => (e.toAddress ? e.toAddress : ZERO_ADDRESS)),
+          ],
+          [
+            ...dataRows
+              .slice(0, -1)
+              .map((e) =>
+                e.amountOfSourceToken ? e.amountOfSourceToken : "0"
+              ),
+          ],
+          ratio ? ratio : 0,
+          [
+            ...dataRows.slice(0, -1).map((e) => ({
+              _fromToken:
+                chain?.testnet && sourceData.sourceToken
+                  ? TOKEN_ADDRESSES[chain?.network][sourceData.sourceToken]
+                  : ZERO_ADDRESS,
+              _toToken:
+                chain?.testnet && sourceData.sourceToken && e.destinationChain
+                  ? TOKEN_ADDRESSES[e.destinationChain][sourceData.sourceToken]
+                  : ZERO_ADDRESS,
+              _tokenA: token1
+                ? TOKEN_ADDRESSES_PRICE_FEEDS[token1]
+                : ZERO_ADDRESS,
+              _tokenB: token2
+                ? TOKEN_ADDRESSES_PRICE_FEEDS[token2]
+                : ZERO_ADDRESS,
+            })),
+          ],
+          [
+            ...dataRows.slice(0, -1).map((e) => ({
+              _toChain: e.destinationChain
+                ? chainList[e.destinationChain].id
+                : ZERO_ADDRESS,
+              _destinationDomain: e.destinationChain
+                ? CONNEXT_DOMAINS[e.destinationChain]
+                : ZERO_ADDRESS,
+              _destinationContract: e.destinationChain
+                ? CONDITIONAL_CONTRACT_ADDRESSES[
+                    chain?.testnet ? "testnets" : "mainnets"
+                  ][e.destinationChain]
+                : ZERO_ADDRESS,
+            })),
+          ],
+          {
+            _cycles: cycles ? cycles : 1,
+            _startTime: startTime
+              ? startTime
+              : Math.trunc(Date.now() / 1000) + 3600,
+            _interval:
+              Number(intervalCount) *
+              (intervalType.value === "days"
+                ? 86400
+                : intervalType.value === "months"
+                ? 2629800
+                : intervalType.value === "weeks"
+                ? 604800
+                : intervalType.value === "years"
+                ? 31536000
+                : 1),
+            _web3FunctionHash: "QmdH2hpjdxFxGoUwd5t7H6pcEJgaJBRVL9EJKtKEHC1jjn",
+          },
+        ]);
         setCallDataPriceFeedTxn(
           ConditionalContract.interface.encodeFunctionData(
             "_createMultiplePriceFeedAutomate",
             [
-              toAddress ? toAddress : ZERO_ADDRESS,
-              amount ? amount : 0,
-              60,
-              chain?.testnet && sourceData.sourceToken
-                ? TOKEN_ADDRESSES[chain?.network][sourceData.sourceToken]
-                : ZERO_ADDRESS,
-              chain?.testnet && toChain && toToken
-                ? TOKEN_ADDRESSES[toChain][toToken]
-                : ZERO_ADDRESS,
-              toChain ? chainList[toChain].id : chain?.id ? chain?.id : 0,
-              toChain
-                ? AUTOPAY_CONTRACT_ADDRESSES[
-                    chain?.testnet ? "testnets" : "mainnets"
-                  ][chain?.network]
-                : ZERO_ADDRESS,
-              toChain ? CONNEXT_DOMAINS[chain?.network] : ZERO_ADDRESS,
-              relayerFee ? relayerFee : 0,
+              [
+                ...dataRows
+                  .slice(0, -1)
+                  .map((e) => (e.toAddress ? e.toAddress : ZERO_ADDRESS)),
+              ],
+              [
+                ...dataRows
+                  .slice(0, -1)
+                  .map((e) =>
+                    e.amountOfSourceToken ? e.amountOfSourceToken : "0"
+                  ),
+              ],
+              ratio ? ratio : 0,
+              [
+                ...dataRows.slice(0, -1).map((e) => ({
+                  _fromToken:
+                    chain?.testnet && sourceData.sourceToken
+                      ? TOKEN_ADDRESSES[chain?.network][sourceData.sourceToken]
+                      : ZERO_ADDRESS,
+                  _toToken:
+                    chain?.testnet &&
+                    sourceData.sourceToken &&
+                    e.destinationChain
+                      ? TOKEN_ADDRESSES[e.destinationChain][
+                          sourceData.sourceToken
+                        ]
+                      : ZERO_ADDRESS,
+                  _tokenA: token1
+                    ? TOKEN_ADDRESSES_PRICE_FEEDS[token1]
+                    : ZERO_ADDRESS,
+                  _tokenB: token2
+                    ? TOKEN_ADDRESSES_PRICE_FEEDS[token2]
+                    : ZERO_ADDRESS,
+                })),
+              ],
+              [
+                ...dataRows.slice(0, -1).map((e) => ({
+                  _toChain: e.destinationChain
+                    ? chainList[e.destinationChain].id
+                    : ZERO_ADDRESS,
+                  _destinationDomain: e.destinationChain
+                    ? CONNEXT_DOMAINS[e.destinationChain]
+                    : ZERO_ADDRESS,
+                  _destinationContract: e.destinationChain
+                    ? CONDITIONAL_CONTRACT_ADDRESSES[
+                        chain?.testnet ? "testnets" : "mainnets"
+                      ][e.destinationChain]
+                    : ZERO_ADDRESS,
+                })),
+              ],
+              {
+                _cycles: cycles ? cycles : 1,
+                _startTime: startTime
+                  ? startTime
+                  : Math.trunc(Date.now() / 1000) + 3600,
+                _interval:
+                  Number(intervalCount) *
+                  (intervalType.value === "days"
+                    ? 86400
+                    : intervalType.value === "months"
+                    ? 2629800
+                    : intervalType.value === "weeks"
+                    ? 604800
+                    : intervalType.value === "years"
+                    ? 31536000
+                    : 1),
+                _web3FunctionHash:
+                  "QmbN96rTEy8EYxPNVqCUmZgTZzufvCbNhmsVzM2rephoLa",
+              },
             ]
           )
         );
@@ -717,30 +839,25 @@ const PriceFeedPanel = forwardRef(
     useEffect(() => {
       fetchAllowance();
       updateCallDataApproval();
-      updateCallDataCreateTimeTxn();
+      updateCallDataPriceFeedTxn();
     }, [
       chain,
-      toAddress,
-      amount,
       sourceData.sourceToken,
-      toChain,
-      toToken,
-      relayerFee,
+      dataRows,
+      cycles,
+      intervalCount,
+      intervalType,
+      token1Price,
+      token2Price,
+      startTime,
+      token1,
+      token2,
+      ratio,
     ]);
 
     useEffect(() => {
-      timer.current = setTimeout(async () => {
-        const response = await fetch(
-          "https://connext-relayer-fee.vercel.app/6648936/1886350457"
-        );
-        const jsonData = await response.json();
-        setRelayerFee(jsonData?.FEE_USD);
-      }, 10000);
-
-      return () => {
-        clearTimeout(timer.current);
-      };
-    });
+      setRatio(Number(token1Price) / Number(token2Price));
+    }, [token1Price, token2Price]);
 
     useImperativeHandle(ref, () => ({
       executeTxn() {
@@ -768,15 +885,16 @@ const PriceFeedPanel = forwardRef(
                 <Input
                   type="text"
                   // placeholder="E.g. 9234324712"
+                  value={token1Price}
                   id="c-1"
                   className="rounded bg-[#262229] text-white"
-                  // onChange={(e) => setToAddress(e.target.value)}
+                  onChange={(e) => setToken1Price(e.target.value)}
                 />
                 <Dropdown
                   value={token1}
                   onChange={setToken1}
                   size="xl"
-                  className="absolute right-[5px] top-1/2 z-10 col-span-2 w-20 -translate-y-1/2 rounded-[10px] bg-[#464646]"
+                  className="w-22 absolute right-[5px] top-1/2 z-10 col-span-2 -translate-y-1/2 rounded-[10px] bg-[#464646]"
                 >
                   {({ open }) => (
                     <>
@@ -789,15 +907,20 @@ const PriceFeedPanel = forwardRef(
                       </Dropdown.Select>
 
                       <Dropdown.Options className="z-[10] w-full min-w-full rounded-md bg-[#464646]">
-                        {tokens.map((token, index) => (
-                          <Dropdown.Option value={token} key={index}>
-                            {({ selected, active }) => (
-                              <MenuItem isActive={active} isSelected={selected}>
-                                {token}
-                              </MenuItem>
-                            )}
-                          </Dropdown.Option>
-                        ))}
+                        {Object.keys(TOKEN_ADDRESSES_PRICE_FEEDS).map(
+                          (token, index) => (
+                            <Dropdown.Option value={token} key={index}>
+                              {({ selected, active }) => (
+                                <MenuItem
+                                  isActive={active}
+                                  isSelected={selected}
+                                >
+                                  {token}
+                                </MenuItem>
+                              )}
+                            </Dropdown.Option>
+                          )
+                        )}
                       </Dropdown.Options>
                     </>
                   )}
@@ -812,15 +935,16 @@ const PriceFeedPanel = forwardRef(
                 <Input
                   type="text"
                   // placeholder="E.g. 9234324712"
+                  value={token2Price}
                   id="c-1"
                   className="rounded bg-[#262229] text-white"
-                  // onChange={(e) => setToAddress(e.target.value)}
+                  onChange={(e) => setToken2Price(e.target.value)}
                 />
                 <Dropdown
                   value={token2}
                   onChange={setToken2}
                   size="xl"
-                  className="absolute right-0 top-1/2 z-10 col-span-2 w-20 -translate-y-1/2 rounded-[10px] bg-[#464646]"
+                  className="w-22 absolute right-0 top-1/2 z-10 col-span-2 -translate-y-1/2 rounded-[10px] bg-[#464646]"
                 >
                   {({ open }) => (
                     <>
@@ -833,15 +957,20 @@ const PriceFeedPanel = forwardRef(
                       </Dropdown.Select>
 
                       <Dropdown.Options className="z-[10] w-full min-w-full rounded-md bg-[#464646]">
-                        {tokens.map((token, index) => (
-                          <Dropdown.Option value={token} key={index}>
-                            {({ selected, active }) => (
-                              <MenuItem isActive={active} isSelected={selected}>
-                                {token}
-                              </MenuItem>
-                            )}
-                          </Dropdown.Option>
-                        ))}
+                        {Object.keys(TOKEN_ADDRESSES_PRICE_FEEDS).map(
+                          (token, index) => (
+                            <Dropdown.Option value={token} key={index}>
+                              {({ selected, active }) => (
+                                <MenuItem
+                                  isActive={active}
+                                  isSelected={selected}
+                                >
+                                  {token}
+                                </MenuItem>
+                              )}
+                            </Dropdown.Option>
+                          )
+                        )}
                       </Dropdown.Options>
                     </>
                   )}
@@ -855,13 +984,46 @@ const PriceFeedPanel = forwardRef(
               <Input
                 type="number"
                 placeholder="1"
+                value={ratio}
+                disabled
                 id="c-1"
                 className="rounded bg-[#262229] text-white"
-                // onChange={(e) => setToAddress(e.target.value)}
+                onChange={(e) => setRatio(e.target.value)}
+              />
+            </div>
+            <div>
+              <Label htmlFor="c-1" className="text-piccolo">
+                Start Time
+              </Label>
+              <Input
+                type="number"
+                placeholder="E.g. 9234324712"
+                id="c-1"
+                className="rounded bg-[#262229] text-white"
+                value={startTime}
+                onChange={(e) => {
+                  setStartTime(e.target.value);
+                  setShowThisSection({
+                    ...showThisSection,
+                    2: true,
+                  });
+                }}
               />
             </div>
             {selectedCategory === "Recurring" && (
-              <div className=" grid grid-cols-2 gap-x-2">
+              <div className="col-span-2 grid grid-cols-2 gap-x-2">
+                <div>
+                  <Label htmlFor="c-1" className="text-piccolo">
+                    No. of Cycles
+                  </Label>
+                  <Input
+                    type="number"
+                    placeholder="1"
+                    id="c-1"
+                    className="rounded bg-[#262229] text-white"
+                    onChange={(e) => setCycles(e.target.value)}
+                  />
+                </div>
                 <div>
                   <Label htmlFor="c-1" className="text-piccolo">
                     Interval
@@ -872,7 +1034,6 @@ const PriceFeedPanel = forwardRef(
                   >
                     Select Interval
                   </Button>
-
                   <Modal open={isOpen} onClose={closeModal}>
                     <Modal.Backdrop className="bg-black opacity-60" />
                     <Modal.Panel className="bg-[#282828] p-3">
@@ -892,10 +1053,12 @@ const PriceFeedPanel = forwardRef(
                           Repeat Every
                         </span>
                         <Input
-                          type="numeric"
+                          type="text"
                           placeholder="1"
                           id="c-1"
                           className="col-span-1 rounded bg-[#262229] text-white"
+                          value={intervalCount}
+                          onChange={(e) => setIntervalCount(e.target.value)}
                         />
                         <Dropdown
                           value={intervalType}
@@ -913,7 +1076,7 @@ const PriceFeedPanel = forwardRef(
                                 {intervalType?.label}
                               </Dropdown.Select>
 
-                              <Dropdown.Options className="z-[10] w-full bg-[#262229]">
+                              <Dropdown.Options className="z-[10] w-full min-w-full bg-[#262229]">
                                 {intervalTypes.map((size, index) => (
                                   <Dropdown.Option value={size} key={index}>
                                     {({ selected, active }) => (
@@ -932,76 +1095,81 @@ const PriceFeedPanel = forwardRef(
                         </Dropdown>
                       </div>
                       {/* <div className="px-6 py-4">
-                        <span className="col-span-2 block text-[#AFAEAE]">
-                          Ends
-                        </span>
-                        <Radio
-                          value={value}
-                          onChange={setValue}
-                          name="Form Item"
-                          className="mt-4 space-y-6"
-                        >
-                          <Radio.Option value="option1">
-                            <Radio.Indicator />
-                            Never
-                          </Radio.Option>
-                          <Radio.Option
-                            value="option2"
-                            className="grid grid-cols-3 items-center"
+                          <span className="col-span-2 block text-[#AFAEAE]">
+                            Ends
+                          </span>
+                          <Radio
+                            value={value}
+                            onChange={setValue}
+                            name="Form Item"
+                            className="mt-4 space-y-6"
                           >
-                            <div className="col-span-1 flex gap-2">
+                            <Radio.Option value="option1">
                               <Radio.Indicator />
-                              <span>On</span>
-                            </div>
-                            <div className="relative col-span-2 ml-5 max-w-sm">
-                              <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                                <svg
-                                  aria-hidden="true"
-                                  className="h-5 w-5 text-gray-500 dark:text-gray-400"
-                                  fill="currentColor"
-                                  viewBox="0 0 20 20"
-                                  xmlns="http://www.w3.org/2000/svg"
-                                >
-                                  <path
-                                    fill-rule="evenodd"
-                                    d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z"
-                                    clip-rule="evenodd"
-                                  ></path>
-                                </svg>
+                              Never
+                            </Radio.Option>
+                            <Radio.Option
+                              value="option2"
+                              className="grid grid-cols-3 items-center"
+                            >
+                              <div className="col-span-1 flex gap-2">
+                                <Radio.Indicator />
+                                <span>On</span>
                               </div>
-                              <input
-                                type="date"
-                                className="block w-full rounded-lg bg-[#262229] p-2.5 pl-10 text-sm "
-                                placeholder="Select date"
-                              />
-                            </div>
-                          </Radio.Option>
-                          <Radio.Option
-                            value="option2"
-                            className="grid grid-cols-3 items-center"
-                          >
-                            <div className="col-span-1 flex gap-2">
-                              <Radio.Indicator />
-                              <span>After</span>
-                            </div>
-                            <div className="relative col-span-2 ml-5 max-w-sm">
-                              <Input
-                                type="text"
-                                value={timesValue}
-                                onChange={handleChange}
-                                pattern="[0-9]*"
-                                inputMode="numeric"
-                                className="col-span-1 rounded bg-[#262229] text-white"
-                              />
-                            </div>
-                          </Radio.Option>
-                        </Radio>
-                      </div> */}
+                              <div className="relative col-span-2 ml-5 max-w-sm">
+                                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                                  <svg
+                                    aria-hidden="true"
+                                    className="h-5 w-5 text-gray-500 dark:text-gray-400"
+                                    fill="currentColor"
+                                    viewBox="0 0 20 20"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                  >
+                                    <path
+                                      fill-rule="evenodd"
+                                      d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z"
+                                      clip-rule="evenodd"
+                                    ></path>
+                                  </svg>
+                                </div>
+                                <input
+                                  type="date"
+                                  className="block w-full rounded-lg bg-[#262229] p-2.5 pl-10 text-sm "
+                                  placeholder="Select date"
+                                />
+                              </div>
+                            </Radio.Option>
+                            <Radio.Option
+                              value="option2"
+                              className="grid grid-cols-3 items-center"
+                            >
+                              <div className="col-span-1 flex gap-2">
+                                <Radio.Indicator />
+                                <span>After</span>
+                              </div>
+                              <div className="relative col-span-2 ml-5 max-w-sm">
+                                <Input
+                                  type="text"
+                                  value={timesValue}
+                                  onChange={handleChange}
+                                  pattern="[0-9]*"
+                                  inputMode="numeric"
+                                  className="col-span-1 rounded bg-[#262229] text-white"
+                                />
+                              </div>
+                            </Radio.Option>
+                          </Radio>
+                        </div> */}
                       <div className="flex justify-end gap-2 p-4 pt-2">
                         {/* <Button variant="secondary" onClick={closeModal}>
-                          Cancel
-                        </Button> */}
-                        <Button onClick={closeModal}>Confirm</Button>
+                            Cancel
+                          </Button> */}
+                        <Button
+                          className="rounded-md bg-[#262229]"
+                          onClick={closeModal}
+                        >
+                          Ok
+                        </Button>
                       </div>
                     </Modal.Panel>
                   </Modal>
