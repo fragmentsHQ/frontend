@@ -1,9 +1,11 @@
 import { ethers } from "ethers";
 import { Chain, erc20ABI } from "wagmi";
-import Fragments from "./fragments_abi.json";
+import Autopay from "./autoPay_abi.json";
+import Conditional from "./conditional_abi.json";
 
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
-const CONTRACT_ADDRESSES = {
+
+const AUTOPAY_CONTRACT_ADDRESSES = {
   mainnets: {
     polygon: "0x",
     ethereum: "0x",
@@ -12,8 +14,22 @@ const CONTRACT_ADDRESSES = {
     bsc: "0x",
   },
   testnets: {
-    polygonMumbai: "0x7A680B8CE96127c03F28348CcFB8c9BAB4f29FC5",
-    goerli: "0x868606dA0fbBD60c40ba8c93A8944E7Ec2D9C193",
+    polygonMumbai: "0xb0853E24843fA174E6cA3F5Acd4c2689Ea39FFef",
+    goerli: "0x6c03614d33eFC94Aca36dD80E3ff42Ab02d2017a",
+  },
+};
+
+const CONDITIONAL_CONTRACT_ADDRESSES = {
+  mainnets: {
+    polygon: "0x",
+    ethereum: "0x",
+    optimism: "0x",
+    arbitrum: "0x",
+    bsc: "0x",
+  },
+  testnets: {
+    polygonMumbai: "0xBE5F4C0c2F54f7e7fF8C11200674E419d60369E0",
+    goerli: "0x063e032f97C83FA8c40058EF1387599bbAd7364C",
   },
 };
 
@@ -40,6 +56,17 @@ const TOKEN_ADDRESSES = {
   },
 };
 
+const TOKEN_ADDRESSES_PRICE_FEEDS = {
+  WETH: "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+  MATIC: "0x7D1AfA7B718fb893dB30A3aBc0Cfc608AaCfeBB0",
+  USDC: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+  AAVE: "0x7fc66500c84a76ad7e9c93437bfc5ac33e2ddae9",
+  USDT: "0xdac17f958d2ee523a2206206994597c13d831ec7",
+  DAI: "0x6b175474e89094c44da98b954eedeac495271d0f",
+  SHIB: "0x95ad61b0a150d79219dcf64e1e6cc01f0b64c4ce",
+  WBTC: "0x2260fac5e5542a773aa44fbcfedf7c193bc2c599",
+};
+
 const CONNEXT_DOMAINS = {
   goerli: "1735353714",
   optimismGoerli: "1735356532",
@@ -48,14 +75,25 @@ const CONNEXT_DOMAINS = {
   polygonZkevmTestnet: "1887071092",
 };
 
-const FRAGMENTS_CONTRACT = (chain: Chain, provider) =>
+const AUTOPAY_CONTRACT = (chain: Chain, provider) =>
   new ethers.Contract(
     chain
-      ? CONTRACT_ADDRESSES[chain?.testnet ? "testnets" : "mainnets"][
+      ? AUTOPAY_CONTRACT_ADDRESSES[chain?.testnet ? "testnets" : "mainnets"][
           chain?.network
         ]
-      : CONTRACT_ADDRESSES["testnets"]["goerli"],
-    Fragments.abi,
+      : AUTOPAY_CONTRACT_ADDRESSES["testnets"]["goerli"],
+    Autopay.abi,
+    provider
+  );
+
+const CONDITIONAL_CONTRACT = (chain: Chain, provider) =>
+  new ethers.Contract(
+    chain
+      ? CONDITIONAL_CONTRACT_ADDRESSES[
+          chain?.testnet ? "testnets" : "mainnets"
+        ][chain?.network]
+      : CONDITIONAL_CONTRACT_ADDRESSES["testnets"]["goerli"],
+    Conditional.abi,
     provider
   );
 
@@ -63,10 +101,13 @@ const ERC20_CONTRACT = (tokenAddress, provider) =>
   new ethers.Contract(tokenAddress, erc20ABI, provider);
 
 export {
-  CONTRACT_ADDRESSES,
+  CONDITIONAL_CONTRACT_ADDRESSES,
+  AUTOPAY_CONTRACT_ADDRESSES,
+  CONDITIONAL_CONTRACT,
   TOKEN_ADDRESSES,
-  FRAGMENTS_CONTRACT,
+  AUTOPAY_CONTRACT,
   ERC20_CONTRACT,
   ZERO_ADDRESS,
   CONNEXT_DOMAINS,
+  TOKEN_ADDRESSES_PRICE_FEEDS,
 };

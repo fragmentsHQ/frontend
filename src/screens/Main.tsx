@@ -1,8 +1,11 @@
 import { Tab } from "@headlessui/react";
 import { Button, Dropdown, MenuItem } from "@heathmont/moon-core-tw";
-import React, { CSSProperties, useContext, useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import { useNetwork } from "wagmi";
-import { CONTRACT_ADDRESSES, TOKEN_ADDRESSES } from "../constants/constants";
+import {
+  AUTOPAY_CONTRACT_ADDRESSES,
+  TOKEN_ADDRESSES,
+} from "../constants/constants";
 import { SourceContext } from "../hooks/context";
 import { AppModes, Category, GasModes } from "../types/types";
 import {
@@ -14,9 +17,9 @@ import {
   TableBody,
   TableCell,
 } from "@carbon/react";
-import { Pagination, TextInput } from "carbon-components-react";
+import { Pagination } from "carbon-components-react";
 import { useCSVReader } from "react-papaparse";
-import panels from "./Panels";
+import panels from "../components/Panels";
 import { ArrowUpCircleIcon, CheckIcon } from "@heroicons/react/20/solid";
 
 function classNames(...classes) {
@@ -48,33 +51,51 @@ const gasModes: Array<GasModes> = ["Forward", "Gas Account"];
 
 const Main = () => {
   const { chain } = useNetwork();
-  const [selectedCategory, setSelectedCategory] =
-    useState<Category>("One Time");
+  const [selectedCategory, setSelectedCategory] = useState<Category | null>();
+  const [pageSize, setPageSize] = useState(10);
+  const [currentPage, setCurrentPage] = useState(1);
   const { sourceData, setSourceData } = useContext(SourceContext);
   const { CSVReader } = useCSVReader();
+  const panelRef = useRef(null);
   const [dataRows, setDataRows] = useState([
     {
-      id: "a",
-      toAddress: "0x0000000000000000000000000000000000000000",
+      id: "0",
+      toAddress: "",
       destinationToken: "",
       destinationChain: "",
-      amountOfSourceToken: "dfd",
-    },
-    {
-      id: "b",
-      toAddress: "0x0000000000000000000000000000000000000000",
-      destinationToken: "",
-      destinationChain: "",
-      amountOfSourceToken: "dfd",
-    },
-    {
-      id: "c",
-      toAddress: "0x0000000000000000000000000000000000000000",
-      destinationToken: "",
-      destinationChain: "",
-      amountOfSourceToken: "dfd",
+      amountOfSourceToken: "",
     },
   ]);
+  const [showThisSection, setShowThisSection] = useState({
+    0: true,
+    1: true,
+    2: true,
+    3: true,
+  });
+
+  useEffect(() => {
+    if (
+      dataRows[dataRows.length - 1]?.toAddress &&
+      dataRows[dataRows.length - 1]?.destinationChain &&
+      dataRows[dataRows.length - 1]?.destinationToken &&
+      dataRows[dataRows.length - 1]?.amountOfSourceToken
+    ) {
+      setDataRows([
+        ...dataRows,
+        {
+          id: String(dataRows.length),
+          toAddress: "",
+          destinationChain: "",
+          destinationToken: "",
+          amountOfSourceToken: "",
+        },
+      ]);
+      setShowThisSection({
+        ...showThisSection,
+        3: true,
+      });
+    }
+  }, [dataRows]);
 
   return (
     <div className="m-auto max-w-[67rem] px-10 py-8">
@@ -135,6 +156,10 @@ const Main = () => {
             <Dropdown
               value={sourceData.sourceToken}
               onChange={(e) => {
+                setShowThisSection({
+                  ...showThisSection,
+                  0: true,
+                });
                 setSourceData({ ...sourceData, sourceToken: e });
               }}
             >
@@ -212,14 +237,15 @@ const Main = () => {
           </div>
         </div>
       </div>
-      <div className="py-5">
+      <div
+        className={classNames(
+          "py-5 transition-opacity",
+          showThisSection[0] ? "opacity-100" : " opacity-0"
+        )}
+      >
         <div className="w-fit rounded-xl bg-[#282828] px-5">
           <div className="w-full px-2 py-5 sm:px-0">
-            <Tab.Group
-              onChange={(idx) => {
-                setSelectedCategory(categories[idx]);
-              }}
-            >
+            <Tab.Group>
               <Tab.List className="flex w-[18rem] gap-[1px] space-x-1 rounded-xl bg-[#464646] p-[5px]">
                 {categories.map((category) => (
                   <Tab
@@ -227,11 +253,18 @@ const Main = () => {
                     className={({ selected }) =>
                       classNames(
                         "w-full rounded-xl py-2.5 text-sm font-medium leading-5 text-white",
-                        selected
+                        selectedCategory === category
                           ? "bg-[#11954F] shadow"
                           : "bg-[#2E2E2E] hover:bg-white/[0.12] hover:text-white"
                       )
                     }
+                    onClick={() => {
+                      setSelectedCategory(category);
+                      setShowThisSection({
+                        ...showThisSection,
+                        1: true,
+                      });
+                    }}
                   >
                     {category}
                   </Tab>
@@ -241,7 +274,12 @@ const Main = () => {
           </div>
         </div>
       </div>
-      <div className="w-11/12 rounded-md ">
+      <div
+        className={classNames(
+          "w-11/12 rounded-md transition-opacity",
+          showThisSection[1] ? "opacity-100" : " opacity-0"
+        )}
+      >
         <Tab.Group>
           <div className="rounded-xl bg-[#282828] p-5">
             <Tab.List className="grid grid-cols-4 gap-[1px] space-x-1 rounded-xl bg-[#464646] p-[5px]">
@@ -271,20 +309,33 @@ const Main = () => {
                 key={idx}
                 className={classNames("rounded-xl  bg-[#282828] p-5")}
               >
-                <ul>{type.element(selectedCategory)}</ul>
+                <ul>
+                  {type.element(
+                    selectedCategory,
+                    showThisSection,
+                    setShowThisSection,
+                    dataRows,
+                    panelRef
+                  )}
+                </ul>
               </Tab.Panel>
             ))}
           </Tab.Panels>
         </Tab.Group>
       </div>
-      <div className="w-11/12 rounded-md  py-5">
+      <div
+        className={classNames(
+          "w-11/12 rounded-md  py-5 transition-opacity",
+          showThisSection[2] ? "opacity-100" : " opacity-0"
+        )}
+      >
         <div className="rounded-xl bg-[#282828] p-5">
           <CSVReader
             onUploadAccepted={(results: any) => {
               setDataRows(
-                results.data.slice(1, 11).map((elem, idx) => {
+                results.data.slice(1).map((elem, idx) => {
                   return {
-                    id: idx,
+                    id: String(idx),
                     toAddress: elem[0],
                     destinationChain: elem[1],
                     destinationToken: elem[2],
@@ -330,7 +381,13 @@ const Main = () => {
               </>
             )}
           </CSVReader>
-          <DataTable rows={dataRows} headers={headers}>
+          <DataTable
+            rows={dataRows.slice(
+              (currentPage - 1) * pageSize,
+              (currentPage - 1) * pageSize + pageSize
+            )}
+            headers={headers}
+          >
             {({
               rows,
               headers,
@@ -338,7 +395,7 @@ const Main = () => {
               getHeaderProps,
               getRowProps,
             }) => (
-              <Table {...getTableProps()}>
+              <Table className="overflow-visible" {...getTableProps()}>
                 <TableHead align="center">
                   <TableRow>
                     {headers.map((header) => (
@@ -360,17 +417,18 @@ const Main = () => {
                                   id={`input-${cell.id}`}
                                   type="text"
                                   value={cell.value}
-                                  className="h-8 w-full bg-transparent text-white outline-none"
+                                  placeholder="0x0000.."
+                                  className="h-8 w-full border-b border-solid border-gray-500 bg-transparent text-white outline-none"
                                   onChange={(e) => {
                                     setDataRows(
-                                      dataRows.map((row, index) => {
-                                        if (index === rowIdx) {
+                                      dataRows.map((_, index) => {
+                                        if (index === Number(row.id)) {
                                           return {
-                                            ...dataRows[rowIdx],
+                                            ...dataRows[row.id],
                                             toAddress: e.target.value,
                                           };
                                         }
-                                        return row;
+                                        return _;
                                       })
                                     );
                                   }}
@@ -381,14 +439,14 @@ const Main = () => {
                                   onChange={(e) => {
                                     setDataRows(
                                       //@ts-ignore
-                                      dataRows.map((row, index) => {
-                                        if (index === rowIdx) {
+                                      dataRows.map((_, index) => {
+                                        if (index === Number(row.id)) {
                                           return {
-                                            ...dataRows[rowIdx],
+                                            ...dataRows[row.id],
                                             destinationToken: e,
                                           };
                                         }
-                                        return row;
+                                        return _;
                                       })
                                     );
                                   }}
@@ -398,9 +456,11 @@ const Main = () => {
                                       <Dropdown.Select
                                         open={open}
                                         placeholder={
-                                          dataRows[rowIdx].destinationChain
-                                            ? "Choose a token"
-                                            : "Select Chain first"
+                                          chain?.network
+                                            ? dataRows[rowIdx].destinationChain
+                                              ? "Choose a token"
+                                              : "Select Chain first"
+                                            : null
                                         }
                                         className="bg-transparent"
                                       >
@@ -414,7 +474,7 @@ const Main = () => {
                                           </div>
                                         )}
                                       </Dropdown.Select>
-                                      <Dropdown.Options className="z-[10] bg-[#706976]">
+                                      <Dropdown.Options className="z-[10] min-w-[106%] bg-[#262229]">
                                         {chain?.network
                                           ? dataRows[rowIdx].destinationChain
                                             ? TOKEN_ADDRESSES[
@@ -459,18 +519,18 @@ const Main = () => {
                               ) : cell.id.includes("destinationChain") ? (
                                 <Dropdown
                                   value={cell.value}
-                                  className="bg-transparent"
+                                  className=" bg-transparent"
                                   onChange={(e) => {
                                     setDataRows(
                                       //@ts-ignore
-                                      dataRows.map((row, index) => {
-                                        if (index === rowIdx) {
+                                      dataRows.map((_, index) => {
+                                        if (index === Number(row.id)) {
                                           return {
-                                            ...dataRows[rowIdx],
+                                            ...dataRows[row.id],
                                             destinationChain: e,
                                           };
                                         }
-                                        return row;
+                                        return _;
                                       })
                                     );
                                   }}
@@ -481,7 +541,7 @@ const Main = () => {
                                         open={open}
                                         // label="Start Time"
                                         placeholder="Select Chain"
-                                        className="bg-transparent"
+                                        className=" bg-transparent"
                                       >
                                         {cell.value && (
                                           <div className="flex items-center gap-2">
@@ -493,10 +553,10 @@ const Main = () => {
                                           </div>
                                         )}
                                       </Dropdown.Select>
-                                      <Dropdown.Options className="z-10 bg-[#262229]">
+                                      <Dropdown.Options className="z-10 min-w-[106%] bg-[#262229]">
                                         {chain
                                           ? Object.keys(
-                                              CONTRACT_ADDRESSES[
+                                              AUTOPAY_CONTRACT_ADDRESSES[
                                                 chain?.testnet
                                                   ? "testnets"
                                                   : "mainnets"
@@ -538,14 +598,14 @@ const Main = () => {
                                   className="h-8 w-full bg-transparent text-white outline-none"
                                   onChange={(e) => {
                                     setDataRows(
-                                      dataRows.map((row, index) => {
-                                        if (index === rowIdx) {
+                                      dataRows.map((_, index) => {
+                                        if (index === Number(row.id)) {
                                           return {
-                                            ...dataRows[rowIdx],
+                                            ...dataRows[row.id],
                                             amountOfSourceToken: e.target.value,
                                           };
                                         }
-                                        return row;
+                                        return _;
                                       })
                                     );
                                   }}
@@ -561,20 +621,28 @@ const Main = () => {
               </Table>
             )}
           </DataTable>
-          {/* <Pagination
+          <Pagination
             backwardText="Previous page"
             forwardText="Next page"
             itemsPerPageText="Items per page:"
-            onChange={function noRefCheck() {}}
-            page={1}
-            pageSize={10}
+            onChange={(e) => {
+              setPageSize(e.pageSize);
+              setCurrentPage(e.page);
+            }}
+            page={currentPage}
+            pageSize={pageSize}
             pageSizes={[10, 20, 30, 40, 50]}
-            totalItems={103}
+            totalItems={dataRows.length}
             // className="w-full"
-          /> */}
+          />
         </div>
       </div>
-      <div className="w-11/12  px-2 sm:px-0">
+      <div
+        className={classNames(
+          "w-11/12  px-2 transition-opacity sm:px-0",
+          showThisSection[3] ? "opacity-100" : " opacity-0"
+        )}
+      >
         <div className="rounded-md bg-[#282828] p-5">
           <div className="m-auto pt-3 text-center">
             Choose how the task should be paid for. The cost of each execution
@@ -611,6 +679,9 @@ const Main = () => {
           <Button
             size="sm"
             className="m-auto mt-16 h-12 w-[10rem] rounded-lg bg-[#2BFFB1] text-lg font-bold text-black"
+            onClick={() => {
+              panelRef.current.executeTxn();
+            }}
           >
             Confirm
           </Button>
