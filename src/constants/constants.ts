@@ -3,6 +3,8 @@ import { Chain, erc20ABI } from "wagmi";
 import Autopay from "./autoPay_abi.json";
 import Conditional from "./conditional_abi.json";
 
+const ISPRODUCTION = process.env.NODE_ENV === "production";
+
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 
 const AUTOPAY_CONTRACT_ADDRESSES = {
@@ -14,7 +16,7 @@ const AUTOPAY_CONTRACT_ADDRESSES = {
     bsc: "0x",
   },
   testnets: {
-    polygonMumbai: "0xb0853E24843fA174E6cA3F5Acd4c2689Ea39FFef",
+    maticmum: "0xb0853E24843fA174E6cA3F5Acd4c2689Ea39FFef",
     goerli: "0x6c03614d33eFC94Aca36dD80E3ff42Ab02d2017a",
   },
 };
@@ -28,7 +30,7 @@ const CONDITIONAL_CONTRACT_ADDRESSES = {
     bsc: "0x",
   },
   testnets: {
-    polygonMumbai: "0xBE5F4C0c2F54f7e7fF8C11200674E419d60369E0",
+    maticmum: "0xBE5F4C0c2F54f7e7fF8C11200674E419d60369E0",
     goerli: "0x063e032f97C83FA8c40058EF1387599bbAd7364C",
   },
 };
@@ -41,11 +43,11 @@ const TOKEN_ADDRESSES = {
   },
   goerli: {
     TEST: "0x7ea6eA49B0b0Ae9c5db7907d139D9Cd3439862a1",
-  },
+  }, //goerli
   optimismGoerli: {
     TEST: "0x68Db1c8d85C09d546097C65ec7DCBFF4D6497CbF",
   },
-  polygonMumbai: {
+  maticmum: {
     TEST: "0xeDb95D8037f769B72AAab41deeC92903A98C9E16",
   },
   arbitrum: {
@@ -70,7 +72,7 @@ const TOKEN_ADDRESSES_PRICE_FEEDS = {
 const CONNEXT_DOMAINS = {
   goerli: "1735353714",
   optimismGoerli: "1735356532",
-  polygonMumbai: "9991",
+  maticmum: "9991",
   arbitrumGoerli: "1734439522",
   polygonZkevmTestnet: "1887071092",
 };
@@ -110,4 +112,5 @@ export {
   ZERO_ADDRESS,
   CONNEXT_DOMAINS,
   TOKEN_ADDRESSES_PRICE_FEEDS,
+  ISPRODUCTION,
 };
