@@ -1,8 +1,7 @@
 import { Tab } from "@headlessui/react";
 import { Button, Dropdown, MenuItem, Input } from "@heathmont/moon-core-tw";
 import { ArrowLeftIcon } from "@heroicons/react/20/solid";
-import React, { useState } from "react";
-import { useNetwork } from "wagmi";
+import React, { useState, useEffect } from "react";
 import {
   DataTable,
   Table,
@@ -13,6 +12,34 @@ import {
   TableCell,
 } from "@carbon/react";
 import { Pagination } from "carbon-components-react";
+
+import { parseEther } from "ethers/lib/utils";
+
+import {
+  erc20ABI,
+  useNetwork,
+  usePrepareSendTransaction,
+  useSendTransaction
+} from "wagmi";
+import { getProvider, getAccount } from "@wagmi/core";
+import * as chainList from "wagmi/chains";
+import {
+  CONNEXT_DOMAINS,
+  AUTOPAY_CONTRACT_ADDRESSES,
+  ERC20_CONTRACT,
+  AUTOPAY_CONTRACT,
+  TOKEN_ADDRESSES,
+  ZERO_ADDRESS,
+  CONDITIONAL_CONTRACT_ADDRESSES,
+  CONDITIONAL_CONTRACT,
+  TOKEN_ADDRESSES_PRICE_FEEDS,
+  TREASURY_CONTRACT_ADDRESSES,
+  TREASURY_CONTRACT,
+  ETH
+} from "../constants/constants";
+import { SourceContext } from "../hooks/context";
+import { Category, Options, Tokens } from "../types/types";
+
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(" ");
@@ -43,10 +70,14 @@ const headers = [
 
 const Balance = () => {
   const { chain } = useNetwork();
+  const { address } = getAccount();
+  const provider = getProvider();
   const [selectedCategory, setSelectedCategory] = useState("Deposit");
   const [selectedTableCategory, setSelectedTableCategory] = useState("All");
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+  const [inputAmount, setInputAmount] = useState(0);
+
   const [dataRows, setDataRows] = useState([
     {
       id: "0",
@@ -58,6 +89,71 @@ const Balance = () => {
     },
   ]);
 
+  const [callDataDeposit, setCallDataDeposit] = useState("");
+  const [callDataWithdraw, setCallDataWithdraw] = useState("");
+
+  console.log(callDataDeposit, callDataWithdraw);
+
+  const { config: configWithdraw } = usePrepareSendTransaction({
+    request: {
+      to: chain
+        ? TREASURY_CONTRACT_ADDRESSES[
+        chain?.testnet ? "testnets" : "mainnets"
+        ][chain?.network]
+        : ZERO_ADDRESS,
+      data: callDataDeposit,
+    },
+  });
+
+  const { sendTransactionAsync: sendWithdrawTokenAsyncTxn } = useSendTransaction(configWithdraw);
+
+  const { config: configDeposit } = usePrepareSendTransaction({
+    request: {
+      to: chain
+        ? TREASURY_CONTRACT_ADDRESSES[
+        chain?.testnet ? "testnets" : "mainnets"
+        ][chain?.network]
+        : ZERO_ADDRESS,
+      data: callDataDeposit,
+    },
+  });
+
+  const { sendTransactionAsync: sendDepositTokenAsyncTxn } = useSendTransaction(configDeposit);
+
+  const handleUpdateDeposit = async () => {
+
+    const TreasuryContract = TREASURY_CONTRACT(chain, provider);
+
+    setCallDataDeposit(
+      TreasuryContract.interface.encodeFunctionData("depositFunds", [
+        address,
+        ETH,
+        parseEther(inputAmount.toString())
+      ])
+    );
+
+  }
+
+  const handleUpdateWithdraw = async () => {
+    const TreasuryContract = TREASURY_CONTRACT(chain, provider);
+
+    setCallDataWithdraw(
+      TreasuryContract.interface.encodeFunctionData("withdrawFunds", [
+        address,
+        ETH,
+        parseEther(inputAmount.toString())
+      ])
+    );
+  }
+
+  useEffect(() => {
+    if (address) {
+      handleUpdateDeposit();
+      handleUpdateWithdraw();
+    }
+  }, [inputAmount])
+
+
   const panels = {
     Deposit: (
       <div className="W-full grid grid-cols-4 gap-6">
@@ -65,8 +161,12 @@ const Balance = () => {
           placeholder="0.0"
           type="number"
           className="col-span-3 h-12 rounded-xl bg-[#464646]"
+          onChange={(e) => {
+            setInputAmount(Number(e.target.value));
+          }}
+          value={inputAmount}
         />
-        <Button className="col-span-1 h-12 rounded-xl bg-[#00A16B] font-semibold text-black">
+        <Button onClick={() => sendDepositTokenAsyncTxn?.()} className="col-span-1 h-12 rounded-xl bg-[#00A16B] font-semibold text-black">
           Deposit
         </Button>
       </div>
@@ -76,7 +176,7 @@ const Balance = () => {
         <div className="col-span-3 flex h-12 items-center justify-center rounded-xl bg-[#464646]">
           Your Balance to Withdraw is: $69.420
         </div>
-        <Button className="col-span-1 h-12 rounded-xl bg-[#00A16B] font-semibold text-black">
+        <Button onClick={() => sendWithdrawTokenAsyncTxn?.()} className="col-span-1 h-12 rounded-xl bg-[#00A16B] font-semibold text-black">
           Withdraw
         </Button>
       </div>
@@ -136,7 +236,7 @@ const Balance = () => {
             {Object.values(panels).map((panel, idx) => (
               <Tab.Panel
                 key={idx}
-                // className={classNames("rounded-xl  bg-[#282828] p-5")}
+              // className={classNames("rounded-xl  bg-[#282828] p-5")}
               >
                 {panel}
               </Tab.Panel>
@@ -239,7 +339,7 @@ const Balance = () => {
             pageSize={pageSize}
             pageSizes={[10, 20, 30, 40, 50]}
             totalItems={dataRows.length}
-            // className="w-full"
+          // className="w-full"
           />
         </div>
       </div>
