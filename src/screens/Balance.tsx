@@ -12,7 +12,7 @@ import {
   TableCell,
 } from "@carbon/react";
 import { Pagination } from "carbon-components-react";
-
+import { ethers } from "ethers";
 import { parseEther } from "ethers/lib/utils";
 
 import {
@@ -68,6 +68,10 @@ const headers = [
   },
 ];
 
+const getEclipsedText = (text) => {
+  return text.slice(0, 6) + "....." + text.slice(text.length-6, text.length);
+}
+
 const Balance = () => {
   const { chain } = useNetwork();
   const { address } = getAccount();
@@ -77,6 +81,9 @@ const Balance = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [inputAmount, setInputAmount] = useState(0);
+  const [balanceEth, setBalanceEth] = useState(0);
+  const [balanceDollar, setBalanceDollar] = useState(0)
+
 
   const [dataRows, setDataRows] = useState([
     {
@@ -92,7 +99,67 @@ const Balance = () => {
   const [callDataDeposit, setCallDataDeposit] = useState("");
   const [callDataWithdraw, setCallDataWithdraw] = useState("");
 
-  console.log(callDataDeposit, callDataWithdraw);
+  const fetchPrevTransactions = async () => {
+    try {
+      const contract = TREASURY_CONTRACT(chain, provider);
+
+      const filter = contract.filters.FundsDeposited(address, null, null);
+
+      const events = await contract.queryFilter(filter);
+
+      console.log("*** DEBUG",events);
+
+      const rows = events.map((event) => {
+        const { token, amount } = event.args;
+
+        return {
+          id: event.transactionHash,
+          date: token.toLocaleString(),
+          txnHash: event.transactionHash,
+          status: "Success",
+          txnAmount: `${amount.toString()} ETH`,
+          gasPaid: "0.00005 ETH "
+        };
+      })
+
+      setDataRows(rows)
+    }
+    catch (err) {
+      console.error(err);
+    }
+  }
+
+  const convertDollar = async (priceInETH: number) => {
+    try {
+
+      const amount = await fetch("https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd");
+      const amountJson = await amount.json();
+      const amountInDollar = amountJson.ethereum.usd;
+
+      console.log(convertDollar);
+
+      setBalanceDollar(priceInETH * amountInDollar);
+
+
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  const fetchBalance = async () => {
+    try {
+      const contract = TREASURY_CONTRACT(chain, provider);
+
+      let checkBalance = await contract.userTokenBalance(address, ETH);
+
+      let allowance = checkBalance.toString();
+      console.log("***", allowance);
+
+      setBalanceEth(allowance);
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   const { config: configWithdraw } = usePrepareSendTransaction({
     request: {
@@ -152,7 +219,12 @@ const Balance = () => {
       handleUpdateWithdraw();
     }
   }, [inputAmount])
-
+  useEffect(() => {
+    if (address) {
+      fetchBalance();
+      fetchPrevTransactions();
+    }
+  }, [address])
 
   const panels = {
     Deposit: (
@@ -192,8 +264,8 @@ const Balance = () => {
       <div className="mt-8 flex items-center justify-between">
         <div className="flex flex-col gap-2">
           <div className="flex items-end gap-6">
-            <span className="text-3xl font-bold">$ 364.26</span>
-            <span className="text-lg font-medium">0.20 ETH</span>
+            <span className="text-3xl font-bold">$ {balanceDollar}</span>
+            <span className="text-lg font-medium">{balanceEth} ETH</span>
           </div>
           <div>
             <div className="text-[#AFAEAE]">Your account balance</div>
@@ -304,10 +376,10 @@ const Balance = () => {
                             <TableCell>
                               {cell.id.includes("date") ? (
                                 <div className="text-[#AFAEAE]">
-                                  {cell.value}
+                                  {getEclipsedText(cell.value)}
                                 </div>
                               ) : cell.id.includes("txnHash") ? (
-                                <div>{cell.value}</div>
+                                  <div>{getEclipsedText(cell.value)}</div>
                               ) : cell.id.includes("status") ? (
                                 <div className="text-[#00FFA9]">
                                   {cell.value}
