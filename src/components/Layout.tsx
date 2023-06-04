@@ -1,6 +1,7 @@
-import { WagmiConfig, configureChains, createClient } from "wagmi";
+import { WagmiConfig, configureChains, createConfig } from "wagmi";
 import { mainnet, goerli, polygon, polygonMumbai } from "wagmi/chains";
 import { alchemyProvider } from "wagmi/providers/alchemy";
+import { publicProvider } from "wagmi/providers/public";
 import {
   braveWallet,
   coinbaseWallet,
@@ -15,7 +16,6 @@ import {
   RainbowKitProvider,
 } from "@rainbow-me/rainbowkit";
 import SourceContextWrapper from "../hooks/context";
-import { publicProvider } from "wagmi/providers/public";
 import * as React from "react";
 import * as ReactDOM from "react-dom/client";
 import { ISPRODUCTION } from "../constants/constants";
@@ -23,16 +23,12 @@ import "react-csv-importer/dist/index.css";
 import Navbar from "./Navbar";
 import BgImages from "./BgImages";
 
-// polyfill Buffer for client
-const { chains, provider } = configureChains(
-  [ISPRODUCTION ? polygon : polygonMumbai, goerli],
+const { chains, publicClient, webSocketPublicClient } = configureChains(
+  // [ISPRODUCTION ? polygon : goerli],
+  ISPRODUCTION ? [mainnet, polygon] : [goerli, polygonMumbai],
   [
-    alchemyProvider({
-      apiKey: ISPRODUCTION
-        ? process.env.NEXT_PUBLIC_ALCHEMY_KEY
-        : process.env.NEXT_PUBLIC_ALCHEMY_KEY_TESTING,
-    }),
-    publicProvider(),
+    alchemyProvider({ apiKey: "q-gyDMWPExy6buiSYXupWffZ5fnn5fSp" }),
+    // publicProvider(),
   ]
 );
 
@@ -54,12 +50,17 @@ const connectors = connectorsForWallets([
   },
 ]);
 
-const wagmiClient = createClient({ autoConnect: true, connectors, provider });
+const config = createConfig({
+  autoConnect: true,
+  connectors,
+  publicClient,
+  webSocketPublicClient,
+});
 
 const Layout = ({ children }) => {
   return (
     <>
-      <WagmiConfig client={wagmiClient}>
+      <WagmiConfig config={config}>
         <RainbowKitProvider
           appInfo={{
             appName: "framents",
