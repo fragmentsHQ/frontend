@@ -342,15 +342,15 @@ const TimePanel = forwardRef(
       startTime,
     ]);
 
-    useEffect(() => {
-      interval.current = setInterval(() => {
-        fetchAllowance();
-      }, 2000);
+    // useEffect(() => {
+    //   interval.current = setInterval(() => {
+    //     fetchAllowance();
+    //   }, 2000);
 
-      return () => {
-        clearTimeout(interval.current);
-      };
-    }, []);
+    //   return () => {
+    //     clearTimeout(interval.current);
+    //   };
+    // }, []);
 
     useImperativeHandle(
       ref,
@@ -898,15 +898,15 @@ const PriceFeedPanel = forwardRef(
       setRatio(Number(token1Price) / Number(token2Price));
     }, [token1Price, token2Price]);
 
-    useEffect(() => {
-      interval.current = setInterval(() => {
-        fetchAllowance();
-      }, 2000);
+    // useEffect(() => {
+    //   interval.current = setInterval(() => {
+    //     fetchAllowance();
+    //   }, 2000);
 
-      return () => {
-        clearTimeout(interval.current);
-      };
-    }, []);
+    //   return () => {
+    //     clearTimeout(interval.current);
+    //   };
+    // }, []);
 
     useImperativeHandle(
       ref,
@@ -1591,15 +1591,15 @@ const GasPricePanel = forwardRef(
       [allowance, sourceData.sourceToken]
     );
 
-    useEffect(() => {
-      interval.current = setInterval(() => {
-        fetchAllowance();
-      }, 2000);
+    // useEffect(() => {
+    //   interval.current = setInterval(() => {
+    //     fetchAllowance();
+    //   }, 2000);
 
-      return () => {
-        clearTimeout(interval.current);
-      };
-    }, []);
+    //   return () => {
+    //     clearTimeout(interval.current);
+    //   };
+    // }, []);
 
     return (
       <>
