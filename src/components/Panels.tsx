@@ -8,7 +8,7 @@ import {
   Radio,
 } from "@heathmont/moon-core-tw";
 import { ControlsCloseSmall } from "@heathmont/moon-icons-tw";
-import { getProvider, getAccount } from "@wagmi/core";
+import { useAccount, useConnect } from "wagmi";
 import { BigNumber, ethers } from "ethers";
 import { parseUnits } from "ethers/lib/utils.js";
 import React, {
@@ -144,8 +144,8 @@ const TimePanel = forwardRef(
     ref
   ) => {
     const { chain } = useNetwork();
-    const { address } = getAccount();
-    const provider = getProvider();
+    const { address } = useAccount();
+    const provider = ethers.getDefaultProvider();
 
     const { sourceData, setSourceData } = useContext(SourceContext);
     const [startTime, setStartTime] = useState<string | null>("");
@@ -340,17 +340,18 @@ const TimePanel = forwardRef(
       intervalCount,
       intervalType,
       startTime,
+      provider,
     ]);
 
-    useEffect(() => {
-      interval.current = setInterval(() => {
-        fetchAllowance();
-      }, 2000);
+    // useEffect(() => {
+    //   interval.current = setInterval(() => {
+    //     fetchAllowance();
+    //   }, 2000);
 
-      return () => {
-        clearTimeout(interval.current);
-      };
-    }, []);
+    //   return () => {
+    //     clearTimeout(interval.current);
+    //   };
+    // }, []);
 
     useImperativeHandle(
       ref,
@@ -612,8 +613,8 @@ const PriceFeedPanel = forwardRef(
     ref
   ) => {
     const { chain } = useNetwork();
-    const { address } = getAccount();
-    const provider = getProvider();
+    const { address } = useAccount();
+    const provider = ethers.getDefaultProvider();
 
     const { sourceData, setSourceData } = useContext(SourceContext);
     const [isOpen, setIsOpen] = useState(false);
@@ -898,15 +899,15 @@ const PriceFeedPanel = forwardRef(
       setRatio(Number(token1Price) / Number(token2Price));
     }, [token1Price, token2Price]);
 
-    useEffect(() => {
-      interval.current = setInterval(() => {
-        fetchAllowance();
-      }, 2000);
+    // useEffect(() => {
+    //   interval.current = setInterval(() => {
+    //     fetchAllowance();
+    //   }, 2000);
 
-      return () => {
-        clearTimeout(interval.current);
-      };
-    }, []);
+    //   return () => {
+    //     clearTimeout(interval.current);
+    //   };
+    // }, []);
 
     useImperativeHandle(
       ref,
@@ -1300,8 +1301,8 @@ const GasPricePanel = forwardRef(
     ref
   ) => {
     const { chain } = useNetwork();
-    const { address } = getAccount();
-    const provider = getProvider();
+    const { address } = useAccount();
+    const provider = ethers.getDefaultProvider();
 
     const { sourceData, setSourceData } = useContext(SourceContext);
     const [isOpen, setIsOpen] = useState(false);
@@ -1591,15 +1592,15 @@ const GasPricePanel = forwardRef(
       [allowance, sourceData.sourceToken]
     );
 
-    useEffect(() => {
-      interval.current = setInterval(() => {
-        fetchAllowance();
-      }, 2000);
+    // useEffect(() => {
+    //   interval.current = setInterval(() => {
+    //     fetchAllowance();
+    //   }, 2000);
 
-      return () => {
-        clearTimeout(interval.current);
-      };
-    }, []);
+    //   return () => {
+    //     clearTimeout(interval.current);
+    //   };
+    // }, []);
 
     return (
       <>

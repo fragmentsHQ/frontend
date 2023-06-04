@@ -1,6 +1,6 @@
 import React from "react";
 import { useAccount } from "wagmi";
-import { useAutoConnect } from "./useAutoConnect";
+// import { useAutoConnect } from "./useAutoConnect";
 import { Route, Routes } from "react-router";
 import Main from "./screens/Main";
 import Balance from "./screens/Balance";
@@ -8,7 +8,7 @@ import Task from "./screens/Task";
 
 const App = () => {
   const { address } = useAccount();
-  useAutoConnect();
+
   return (
     <Routes>
       <Route path="/" element={<Main />} />

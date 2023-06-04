@@ -97,6 +97,7 @@ const Main = () => {
     }
   }, [dataRows]);
 
+  console.log("here: ", chain);
   return (
     <div className="m-auto max-w-[67rem] px-10 py-8">
       <h3 className="text-[1.45rem] font-bold tracking-[0.5px]">
@@ -683,7 +684,7 @@ const Main = () => {
               panelRef.current.executeTxn();
             }}
           >
-            {panelRef?.current?.hasEnoughAllowance() ? "Confirm" : "Approve"}
+            {panelRef?.current?.hasEnoughAllowance() ? "Confirm" : "Confirm"}
           </Button>
         </div>
       </div>
