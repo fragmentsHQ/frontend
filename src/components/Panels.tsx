@@ -10,13 +10,14 @@ import {
 import { ControlsCloseSmall } from "@heathmont/moon-icons-tw";
 import { getProvider, getAccount } from "@wagmi/core";
 import { BigNumber, ethers } from "ethers";
+import { parseUnits } from "ethers/lib/utils.js";
 import React, {
   useContext,
   useEffect,
-  useRef,
   useState,
   useImperativeHandle,
   forwardRef,
+  useRef,
 } from "react";
 import {
   erc20ABI,
@@ -93,7 +94,7 @@ const panels = {
   },
   "Gas Price Estimate": {
     id: 2,
-    category: ["One Time"],
+    category: ["One Time", "Recurring"],
     element: (
       selectedCategory: Category,
       showThisSection,
@@ -114,7 +115,7 @@ const panels = {
   },
   "ABI Functions": {
     id: 3,
-    category: ["One Time"],
+    category: ["One Time", "Recurring"],
     element: (
       selectedCategory: Category,
       showThisSection,
@@ -155,20 +156,10 @@ const TimePanel = forwardRef(
       value: "days",
       label: "days",
     });
-    const [timesValue, setTimesValue] = useState("");
     const [allowance, setAllowance] = useState("");
     const [callDataApproval, setCallDataApproval] = useState("");
     const [callDataCreateTimeTxn, setCallDataCreateTimeTxn] = useState("");
-
-    const handleChange = (e) => {
-      const inputValue = e.target.value;
-
-      if (!isNaN(inputValue) && inputValue !== "") {
-        setTimesValue(inputValue + " times");
-      } else {
-        setTimesValue("");
-      }
-    };
+    const interval = useRef<NodeJS.Timer>();
 
     const closeModal = () => setIsOpen(false);
     const openModal = () => setIsOpen(true);
@@ -177,7 +168,7 @@ const TimePanel = forwardRef(
       request: {
         to:
           chain && sourceData.sourceToken
-            ? TOKEN_ADDRESSES[chain?.network][sourceData.sourceToken]
+            ? TOKEN_ADDRESSES[chain?.network][sourceData.sourceToken].address
             : ZERO_ADDRESS,
         data: callDataApproval,
       },
@@ -201,13 +192,20 @@ const TimePanel = forwardRef(
     const { sendTransactionAsync: sendCreateTimeAsyncTxn } =
       useSendTransaction(configCreateTimeTxn);
 
+    console.log(
+      "here: ",
+      chain?.testnet && sourceData.sourceToken
+        ? TOKEN_ADDRESSES[chain?.network][sourceData.sourceToken].address
+        : ZERO_ADDRESS
+    );
+
     const fetchAllowance = async () => {
       let contract;
 
       try {
         contract = new ethers.Contract(
           chain?.testnet && sourceData.sourceToken
-            ? TOKEN_ADDRESSES[chain?.network][sourceData.sourceToken]
+            ? TOKEN_ADDRESSES[chain?.network][sourceData.sourceToken].address
             : ZERO_ADDRESS,
           erc20ABI,
           provider
@@ -230,7 +228,7 @@ const TimePanel = forwardRef(
     const updateCallDataApproval = () => {
       const ERC20Contract = ERC20_CONTRACT(
         chain && sourceData.sourceToken
-          ? TOKEN_ADDRESSES[chain?.network][sourceData.sourceToken]
+          ? TOKEN_ADDRESSES[chain?.network][sourceData.sourceToken].address
           : ZERO_ADDRESS,
         provider
       );
@@ -263,7 +261,14 @@ const TimePanel = forwardRef(
                 ...dataRows
                   .slice(0, -1)
                   .map((e) =>
-                    e.amountOfSourceToken ? e.amountOfSourceToken : "0"
+                    e.amountOfSourceToken
+                      ? parseUnits(
+                          e.amountOfSourceToken,
+                          TOKEN_ADDRESSES[chain?.network][
+                            sourceData.sourceToken
+                          ].decimals
+                        )
+                      : "0"
                   ),
               ],
               [
@@ -271,6 +276,7 @@ const TimePanel = forwardRef(
                   _fromToken:
                     chain?.testnet && sourceData.sourceToken
                       ? TOKEN_ADDRESSES[chain?.network][sourceData.sourceToken]
+                          .address
                       : ZERO_ADDRESS,
                   _toToken:
                     chain?.testnet &&
@@ -278,7 +284,7 @@ const TimePanel = forwardRef(
                     e.destinationChain
                       ? TOKEN_ADDRESSES[e.destinationChain][
                           sourceData.sourceToken
-                        ]
+                        ].address
                       : ZERO_ADDRESS,
                 })),
               ],
@@ -336,19 +342,45 @@ const TimePanel = forwardRef(
       startTime,
     ]);
 
-    useImperativeHandle(ref, () => ({
-      executeTxn() {
-        try {
-          if (
+    useEffect(() => {
+      interval.current = setInterval(() => {
+        fetchAllowance();
+      }, 2000);
+
+      return () => {
+        clearTimeout(interval.current);
+      };
+    }, []);
+
+    useImperativeHandle(
+      ref,
+      () => ({
+        executeTxn() {
+          try {
+            if (
+              BigNumber.from(allowance ? allowance : 0).eq(
+                ethers.constants.MaxUint256
+              )
+            ) {
+              sendCreateTimeAsyncTxn?.();
+            } else sendApproveTokenAsyncTxn?.();
+          } catch {}
+        },
+
+        hasEnoughAllowance() {
+          console.log(
+            "here: ",
             BigNumber.from(allowance ? allowance : 0).eq(
               ethers.constants.MaxUint256
             )
-          ) {
-            sendCreateTimeAsyncTxn?.();
-          } else sendApproveTokenAsyncTxn?.();
-        } catch {}
-      },
-    }));
+          );
+          return BigNumber.from(allowance ? allowance : 0).eq(
+            ethers.constants.MaxUint256
+          );
+        },
+      }),
+      [allowance, sourceData.sourceToken]
+    );
 
     return (
       <>
@@ -600,16 +632,7 @@ const PriceFeedPanel = forwardRef(
     const [intervalCount, setIntervalCount] = useState("1");
     const [callDataApproval, setCallDataApproval] = useState("");
     const [callDataPriceFeedTxn, setCallDataPriceFeedTxn] = useState("");
-
-    const handleChange = (e) => {
-      const inputValue = e.target.value;
-
-      if (!isNaN(inputValue) && inputValue !== "") {
-        setTimesValue(inputValue + " times");
-      } else {
-        setTimesValue("");
-      }
-    };
+    const interval = useRef<NodeJS.Timer>();
 
     const closeModal = () => setIsOpen(false);
     const openModal = () => setIsOpen(true);
@@ -618,7 +641,7 @@ const PriceFeedPanel = forwardRef(
       request: {
         to:
           chain && sourceData.sourceToken
-            ? TOKEN_ADDRESSES[chain?.network][sourceData.sourceToken]
+            ? TOKEN_ADDRESSES[chain?.network][sourceData.sourceToken].address
             : ZERO_ADDRESS,
         data: callDataApproval,
       },
@@ -647,7 +670,7 @@ const PriceFeedPanel = forwardRef(
       try {
         contract = new ethers.Contract(
           chain?.testnet && sourceData.sourceToken
-            ? TOKEN_ADDRESSES[chain?.network][sourceData.sourceToken]
+            ? TOKEN_ADDRESSES[chain?.network][sourceData.sourceToken].address
             : ZERO_ADDRESS,
           erc20ABI,
           provider
@@ -670,7 +693,7 @@ const PriceFeedPanel = forwardRef(
     const updateCallDataApproval = () => {
       const ERC20Contract = ERC20_CONTRACT(
         chain && sourceData.sourceToken
-          ? TOKEN_ADDRESSES[chain?.network][sourceData.sourceToken]
+          ? TOKEN_ADDRESSES[chain?.network][sourceData.sourceToken].address
           : ZERO_ADDRESS,
         provider
       );
@@ -701,19 +724,27 @@ const PriceFeedPanel = forwardRef(
             ...dataRows
               .slice(0, -1)
               .map((e) =>
-                e.amountOfSourceToken ? e.amountOfSourceToken : "0"
+                e.amountOfSourceToken
+                  ? parseUnits(
+                      e.amountOfSourceToken,
+                      TOKEN_ADDRESSES[chain?.network][sourceData.sourceToken]
+                        .decimals
+                    )
+                  : "0"
               ),
           ],
-          ratio ? ratio : 0,
+          ratio ? parseUnits(ratio, 18) : 0,
           [
             ...dataRows.slice(0, -1).map((e) => ({
               _fromToken:
                 chain?.testnet && sourceData.sourceToken
                   ? TOKEN_ADDRESSES[chain?.network][sourceData.sourceToken]
+                      .address
                   : ZERO_ADDRESS,
               _toToken:
                 chain?.testnet && sourceData.sourceToken && e.destinationChain
                   ? TOKEN_ADDRESSES[e.destinationChain][sourceData.sourceToken]
+                      .address
                   : ZERO_ADDRESS,
               _tokenA: token1
                 ? TOKEN_ADDRESSES_PRICE_FEEDS[token1]
@@ -754,7 +785,7 @@ const PriceFeedPanel = forwardRef(
                 : intervalType.value === "years"
                 ? 31536000
                 : 1),
-            _web3FunctionHash: "QmdH2hpjdxFxGoUwd5t7H6pcEJgaJBRVL9EJKtKEHC1jjn",
+            _web3FunctionHash: "QmSfTUv1XZmsVVRTNWtZqVC78mMPzi5hjSJTHbFHvzrc9p",
           },
         ]);
         setCallDataPriceFeedTxn(
@@ -770,7 +801,14 @@ const PriceFeedPanel = forwardRef(
                 ...dataRows
                   .slice(0, -1)
                   .map((e) =>
-                    e.amountOfSourceToken ? e.amountOfSourceToken : "0"
+                    e.amountOfSourceToken
+                      ? parseUnits(
+                          e.amountOfSourceToken,
+                          TOKEN_ADDRESSES[chain?.network][
+                            sourceData.sourceToken
+                          ].decimals
+                        )
+                      : "0"
                   ),
               ],
               ratio ? ratio : 0,
@@ -779,6 +817,7 @@ const PriceFeedPanel = forwardRef(
                   _fromToken:
                     chain?.testnet && sourceData.sourceToken
                       ? TOKEN_ADDRESSES[chain?.network][sourceData.sourceToken]
+                          .address
                       : ZERO_ADDRESS,
                   _toToken:
                     chain?.testnet &&
@@ -786,7 +825,7 @@ const PriceFeedPanel = forwardRef(
                     e.destinationChain
                       ? TOKEN_ADDRESSES[e.destinationChain][
                           sourceData.sourceToken
-                        ]
+                        ].address
                       : ZERO_ADDRESS,
                   _tokenA: token1
                     ? TOKEN_ADDRESSES_PRICE_FEEDS[token1]
@@ -859,19 +898,39 @@ const PriceFeedPanel = forwardRef(
       setRatio(Number(token1Price) / Number(token2Price));
     }, [token1Price, token2Price]);
 
-    useImperativeHandle(ref, () => ({
-      executeTxn() {
-        try {
-          if (
-            BigNumber.from(allowance ? allowance : 0).eq(
-              ethers.constants.MaxUint256
+    useEffect(() => {
+      interval.current = setInterval(() => {
+        fetchAllowance();
+      }, 2000);
+
+      return () => {
+        clearTimeout(interval.current);
+      };
+    }, []);
+
+    useImperativeHandle(
+      ref,
+      () => ({
+        executeTxn() {
+          try {
+            if (
+              BigNumber.from(allowance ? allowance : 0).eq(
+                ethers.constants.MaxUint256
+              )
             )
-          )
-            sendCreatePriceFeedAsyncTxn?.();
-          else sendApproveTokenAsyncTxn?.();
-        } catch {}
-      },
-    }));
+              sendCreatePriceFeedAsyncTxn?.();
+            else sendApproveTokenAsyncTxn?.();
+          } catch {}
+        },
+
+        hasEnoughAllowance() {
+          return BigNumber.from(allowance ? allowance : 0).eq(
+            ethers.constants.MaxUint256
+          );
+        },
+      }),
+      [allowance, sourceData.sourceToken]
+    );
 
     return (
       <>
@@ -888,7 +947,13 @@ const PriceFeedPanel = forwardRef(
                   value={token1Price}
                   id="c-1"
                   className="rounded bg-[#262229] text-white"
-                  onChange={(e) => setToken1Price(e.target.value)}
+                  onChange={(e) => {
+                    setToken1Price(e.target.value);
+                    setShowThisSection({
+                      ...showThisSection,
+                      2: true,
+                    });
+                  }}
                 />
                 <Dropdown
                   value={token1}
@@ -1230,52 +1295,38 @@ const PriceFeedPanel = forwardRef(
 );
 
 const GasPricePanel = forwardRef(
-  ({ selectedCategory, showThisSection, setShowThisSection }, ref) => {
+  (
+    { selectedCategory, showThisSection, setShowThisSection, dataRows },
+    ref
+  ) => {
     const { chain } = useNetwork();
     const { address } = getAccount();
     const provider = getProvider();
 
     const { sourceData, setSourceData } = useContext(SourceContext);
-    const [toChain, setToChain] = useState<string | null>("polygonMumbai");
-    const [toToken, setToToken] = useState<string | null>(null);
     const [isOpen, setIsOpen] = useState(false);
-    const [value, setValue] = useState("");
     const [intervalType, setIntervalType] = useState<Options | null>({
       value: "days",
       label: "days",
     });
-    const [timesValue, setTimesValue] = useState("");
-    const [amount, setAmount] = useState("");
-    const [toAddress, setToAddress] = useState("");
     const [allowance, setAllowance] = useState("");
+    const [gasPrice, setGasPrice] = useState(0);
+    const [startTime, setStartTime] = useState<string | null>("");
+    const [cycles, setCycles] = useState<string | null>("");
+    const [intervalCount, setIntervalCount] = useState("1");
     const [callDataApproval, setCallDataApproval] = useState("");
-    const [callDataCreateTimeTxn, setCallDataCreateTimeTxn] = useState("");
-    const [relayerFee, setRelayerFee] = useState("");
-    const [token1, setToken1] = useState("matic");
-    const [token2, setToken2] = useState("usdc");
-    const tokens = ["usdc", "matic", "eth"];
-    const timer = useRef<NodeJS.Timeout>();
-
-    const handleChange = (e) => {
-      const inputValue = e.target.value;
-
-      if (!isNaN(inputValue) && inputValue !== "") {
-        setTimesValue(inputValue + " times");
-      } else {
-        setTimesValue("");
-      }
-    };
+    const [callDataPriceFeedTxn, setCallDataPriceFeedTxn] = useState("");
+    const interval = useRef<NodeJS.Timer>();
 
     const closeModal = () => setIsOpen(false);
     const openModal = () => setIsOpen(true);
 
     const { config: configApprove } = usePrepareSendTransaction({
       request: {
-        to: chain
-          ? AUTOPAY_CONTRACT_ADDRESSES[
-              chain?.testnet ? "testnets" : "mainnets"
-            ][chain?.network]
-          : ZERO_ADDRESS,
+        to:
+          chain && sourceData.sourceToken
+            ? TOKEN_ADDRESSES[chain?.network][sourceData.sourceToken].address
+            : ZERO_ADDRESS,
         data: callDataApproval,
       },
     });
@@ -1283,19 +1334,19 @@ const GasPricePanel = forwardRef(
     const { sendTransactionAsync: sendApproveTokenAsyncTxn } =
       useSendTransaction(configApprove);
 
-    const { config: configCreateTimeTxn } = usePrepareSendTransaction({
+    const { config: configGasPriceTimeTxn } = usePrepareSendTransaction({
       request: {
         to: chain
-          ? AUTOPAY_CONTRACT_ADDRESSES[
+          ? CONDITIONAL_CONTRACT_ADDRESSES[
               chain?.testnet ? "testnets" : "mainnets"
             ][chain?.network]
           : ZERO_ADDRESS,
-        data: callDataCreateTimeTxn,
+        data: callDataPriceFeedTxn,
       },
     });
 
-    const { sendTransactionAsync: sendCreateTimeAsyncTxn } =
-      useSendTransaction(configCreateTimeTxn);
+    const { sendTransactionAsync: sendCreateGasPriceAsyncTxn } =
+      useSendTransaction(configGasPriceTimeTxn);
 
     const fetchAllowance = async () => {
       let contract;
@@ -1303,7 +1354,7 @@ const GasPricePanel = forwardRef(
       try {
         contract = new ethers.Contract(
           chain?.testnet && sourceData.sourceToken
-            ? TOKEN_ADDRESSES[chain?.network][sourceData.sourceToken]
+            ? TOKEN_ADDRESSES[chain?.network][sourceData.sourceToken].address
             : ZERO_ADDRESS,
           erc20ABI,
           provider
@@ -1312,7 +1363,7 @@ const GasPricePanel = forwardRef(
         let checkAllowance = await contract.allowance(
           address ? address : ZERO_ADDRESS,
           chain
-            ? AUTOPAY_CONTRACT_ADDRESSES[
+            ? CONDITIONAL_CONTRACT_ADDRESSES[
                 chain?.testnet ? "testnets" : "mainnets"
               ][chain?.network]
             : ZERO_ADDRESS
@@ -1325,14 +1376,16 @@ const GasPricePanel = forwardRef(
 
     const updateCallDataApproval = () => {
       const ERC20Contract = ERC20_CONTRACT(
-        chain ? TOKEN_ADDRESSES[chain?.network]["TEST"] : ZERO_ADDRESS,
+        chain && sourceData.sourceToken
+          ? TOKEN_ADDRESSES[chain?.network][sourceData.sourceToken].address
+          : ZERO_ADDRESS,
         provider
       );
 
       setCallDataApproval(
         ERC20Contract.interface.encodeFunctionData("approve", [
           chain
-            ? AUTOPAY_CONTRACT_ADDRESSES[
+            ? CONDITIONAL_CONTRACT_ADDRESSES[
                 chain?.testnet ? "testnets" : "mainnets"
               ][chain?.network]
             : ZERO_ADDRESS,
@@ -1341,30 +1394,160 @@ const GasPricePanel = forwardRef(
       );
     };
 
-    const updateCallDataCreateTimeTxn = () => {
-      const AutoPayContract = AUTOPAY_CONTRACT(chain, provider);
+    const updateCallDataGasPriceTxn = () => {
+      const ConditionalContract = CONDITIONAL_CONTRACT(chain, provider);
 
       try {
-        setCallDataCreateTimeTxn(
-          AutoPayContract.interface.encodeFunctionData("_createTimeAutomate", [
-            toAddress ? toAddress : ZERO_ADDRESS,
-            amount ? amount : 0,
-            60,
-            chain?.testnet && sourceData.sourceToken
-              ? TOKEN_ADDRESSES[chain?.network][sourceData.sourceToken]
-              : ZERO_ADDRESS,
-            chain?.testnet && toChain && toToken
-              ? TOKEN_ADDRESSES[toChain][toToken]
-              : ZERO_ADDRESS,
-            toChain ? chainList[toChain].id : chain?.id ? chain?.id : 0,
-            toChain
-              ? AUTOPAY_CONTRACT_ADDRESSES[
-                  chain?.testnet ? "testnets" : "mainnets"
-                ][chain?.network]
-              : ZERO_ADDRESS,
-            toChain ? CONNEXT_DOMAINS[chain?.network] : ZERO_ADDRESS,
-            relayerFee ? relayerFee : 0,
-          ])
+        console.log("here boi: ", [
+          [
+            ...dataRows
+              .slice(0, -1)
+              .map((e) => (e.toAddress ? e.toAddress : ZERO_ADDRESS)),
+          ],
+          [
+            ...dataRows
+              .slice(0, -1)
+              .map((e) =>
+                e.amountOfSourceToken
+                  ? parseUnits(
+                      e.amountOfSourceToken,
+                      TOKEN_ADDRESSES[chain?.network][sourceData.sourceToken]
+                        .decimals
+                    )
+                  : "0"
+              ),
+          ],
+          gasPrice ? gasPrice : 0,
+          [
+            ...dataRows.slice(0, -1).map((e) => ({
+              _fromToken:
+                chain?.testnet && sourceData.sourceToken
+                  ? TOKEN_ADDRESSES[chain?.network][sourceData.sourceToken]
+                      .address
+                  : ZERO_ADDRESS,
+              _toToken:
+                chain?.testnet && sourceData.sourceToken && e.destinationChain
+                  ? TOKEN_ADDRESSES[e.destinationChain][sourceData.sourceToken]
+                      .address
+                  : ZERO_ADDRESS,
+              _tokenA: ZERO_ADDRESS,
+              _tokenB: ZERO_ADDRESS,
+            })),
+          ],
+          [
+            ...dataRows.slice(0, -1).map((e) => ({
+              _toChain: e.destinationChain
+                ? chainList[e.destinationChain].id
+                : ZERO_ADDRESS,
+              _destinationDomain: e.destinationChain
+                ? CONNEXT_DOMAINS[e.destinationChain]
+                : ZERO_ADDRESS,
+              _destinationContract: e.destinationChain
+                ? CONDITIONAL_CONTRACT_ADDRESSES[
+                    chain?.testnet ? "testnets" : "mainnets"
+                  ][e.destinationChain]
+                : ZERO_ADDRESS,
+            })),
+          ],
+          {
+            _cycles: cycles ? cycles : 1,
+            _startTime: startTime
+              ? startTime
+              : Math.trunc(Date.now() / 1000) + 3600,
+            _interval:
+              Number(intervalCount) *
+              (intervalType.value === "days"
+                ? 86400
+                : intervalType.value === "months"
+                ? 2629800
+                : intervalType.value === "weeks"
+                ? 604800
+                : intervalType.value === "years"
+                ? 31536000
+                : 1),
+            _web3FunctionHash: "QmaR3iZVSzJJ43uWRbrbUvs2CUheHVXCTiU6hJ85asD2RW",
+          },
+        ]);
+
+        setCallDataPriceFeedTxn(
+          ConditionalContract.interface.encodeFunctionData(
+            "_createMultiplePriceFeedAutomate",
+            [
+              [
+                ...dataRows
+                  .slice(0, -1)
+                  .map((e) => (e.toAddress ? e.toAddress : ZERO_ADDRESS)),
+              ],
+              [
+                ...dataRows
+                  .slice(0, -1)
+                  .map((e) =>
+                    e.amountOfSourceToken
+                      ? parseUnits(
+                          e.amountOfSourceToken,
+                          TOKEN_ADDRESSES[chain?.network][
+                            sourceData.sourceToken
+                          ].decimals
+                        )
+                      : "0"
+                  ),
+              ],
+              gasPrice ? gasPrice : 0,
+              [
+                ...dataRows.slice(0, -1).map((e) => ({
+                  _fromToken:
+                    chain?.testnet && sourceData.sourceToken
+                      ? TOKEN_ADDRESSES[chain?.network][sourceData.sourceToken]
+                          .address
+                      : ZERO_ADDRESS,
+                  _toToken:
+                    chain?.testnet &&
+                    sourceData.sourceToken &&
+                    e.destinationChain
+                      ? TOKEN_ADDRESSES[e.destinationChain][
+                          sourceData.sourceToken
+                        ].address
+                      : ZERO_ADDRESS,
+                  _tokenA: ZERO_ADDRESS,
+                  _tokenB: ZERO_ADDRESS,
+                })),
+              ],
+              [
+                ...dataRows.slice(0, -1).map((e) => ({
+                  _toChain: e.destinationChain
+                    ? chainList[e.destinationChain].id
+                    : ZERO_ADDRESS,
+                  _destinationDomain: e.destinationChain
+                    ? CONNEXT_DOMAINS[e.destinationChain]
+                    : ZERO_ADDRESS,
+                  _destinationContract: e.destinationChain
+                    ? CONDITIONAL_CONTRACT_ADDRESSES[
+                        chain?.testnet ? "testnets" : "mainnets"
+                      ][e.destinationChain]
+                    : ZERO_ADDRESS,
+                })),
+              ],
+              {
+                _cycles: cycles ? cycles : 1,
+                _startTime: startTime
+                  ? startTime
+                  : Math.trunc(Date.now() / 1000) + 3600,
+                _interval:
+                  Number(intervalCount) *
+                  (intervalType.value === "days"
+                    ? 86400
+                    : intervalType.value === "months"
+                    ? 2629800
+                    : intervalType.value === "weeks"
+                    ? 604800
+                    : intervalType.value === "years"
+                    ? 31536000
+                    : 1),
+                _web3FunctionHash:
+                  "QmaR3iZVSzJJ43uWRbrbUvs2CUheHVXCTiU6hJ85asD2RW",
+              },
+            ]
+          )
         );
       } catch {}
     };
@@ -1372,30 +1555,51 @@ const GasPricePanel = forwardRef(
     useEffect(() => {
       fetchAllowance();
       updateCallDataApproval();
-      updateCallDataCreateTimeTxn();
+      updateCallDataGasPriceTxn();
     }, [
       chain,
-      toAddress,
-      amount,
       sourceData.sourceToken,
-      toChain,
-      toToken,
-      relayerFee,
+      dataRows,
+      cycles,
+      intervalCount,
+      intervalType,
+      startTime,
+      gasPrice,
     ]);
 
+    useImperativeHandle(
+      ref,
+      () => ({
+        executeTxn() {
+          try {
+            if (
+              BigNumber.from(allowance ? allowance : 0).eq(
+                ethers.constants.MaxUint256
+              )
+            )
+              sendCreateGasPriceAsyncTxn?.();
+            else sendApproveTokenAsyncTxn?.();
+          } catch {}
+        },
+
+        hasEnoughAllowance() {
+          return BigNumber.from(allowance ? allowance : 0).eq(
+            ethers.constants.MaxUint256
+          );
+        },
+      }),
+      [allowance, sourceData.sourceToken]
+    );
+
     useEffect(() => {
-      timer.current = setTimeout(async () => {
-        const response = await fetch(
-          "https://connext-relayer-fee.vercel.app/6648936/1886350457"
-        );
-        const jsonData = await response.json();
-        setRelayerFee(jsonData?.FEE_USD);
-      }, 10000);
+      interval.current = setInterval(() => {
+        fetchAllowance();
+      }, 2000);
 
       return () => {
-        clearTimeout(timer.current);
+        clearTimeout(interval.current);
       };
-    });
+    }, []);
 
     return (
       <>
@@ -1408,10 +1612,16 @@ const GasPricePanel = forwardRef(
               <div className="relative">
                 <Input
                   type="text"
-                  placeholder="E.g. 9234324712"
+                  placeholder="E.g. 21"
                   id="c-1"
                   className="rounded bg-[#262229] text-white"
-                  // onChange={(e) => setToAddress(e.target.value)}
+                  onChange={(e) => {
+                    setGasPrice(e.target.value);
+                    setShowThisSection({
+                      ...showThisSection,
+                      2: true,
+                    });
+                  }}
                 />
                 <div className="absolute right-[5px] top-1/2 z-10 col-span-2 w-20 -translate-y-1/2 rounded-[10px] bg-[#464646] text-center">
                   gwei
@@ -1419,6 +1629,25 @@ const GasPricePanel = forwardRef(
               </div>
             </div>
             <div>
+              <Label htmlFor="c-1" className="text-piccolo">
+                Start Time
+              </Label>
+              <Input
+                type="number"
+                placeholder="E.g. 9234324712"
+                id="c-1"
+                className="rounded bg-[#262229] text-white"
+                value={startTime}
+                onChange={(e) => {
+                  setStartTime(e.target.value);
+                  setShowThisSection({
+                    ...showThisSection,
+                    2: true,
+                  });
+                }}
+              />
+            </div>
+            {/* <div>
               <Label htmlFor="c-1" className="text-piccolo">
                 Chain
               </Label>
@@ -1454,9 +1683,21 @@ const GasPricePanel = forwardRef(
                   </>
                 )}
               </Dropdown>
-            </div>
+            </div> */}
             {selectedCategory === "Recurring" && (
-              <div className=" grid grid-cols-2 gap-x-2">
+              <div className="col-span-2 grid grid-cols-2 gap-x-2">
+                <div>
+                  <Label htmlFor="c-1" className="text-piccolo">
+                    No. of Cycles
+                  </Label>
+                  <Input
+                    type="number"
+                    placeholder="1"
+                    id="c-1"
+                    className="rounded bg-[#262229] text-white"
+                    onChange={(e) => setCycles(e.target.value)}
+                  />
+                </div>
                 <div>
                   <Label htmlFor="c-1" className="text-piccolo">
                     Interval
@@ -1467,13 +1708,12 @@ const GasPricePanel = forwardRef(
                   >
                     Select Interval
                   </Button>
-
                   <Modal open={isOpen} onClose={closeModal}>
                     <Modal.Backdrop className="bg-black opacity-60" />
                     <Modal.Panel className="bg-[#282828] p-3">
                       <div className="border-beerus relative px-6 pb-4 pt-5">
                         <h3 className="text-moon-18 text-bulma font-medium">
-                          Recurring Schedule
+                          Select Frequency
                         </h3>
                         <span
                           className="absolute right-5 top-4 inline-block h-8 w-8 cursor-pointer"
@@ -1487,10 +1727,12 @@ const GasPricePanel = forwardRef(
                           Repeat Every
                         </span>
                         <Input
-                          type="numeric"
+                          type="text"
                           placeholder="1"
                           id="c-1"
                           className="col-span-1 rounded bg-[#262229] text-white"
+                          value={intervalCount}
+                          onChange={(e) => setIntervalCount(e.target.value)}
                         />
                         <Dropdown
                           value={intervalType}
@@ -1508,7 +1750,7 @@ const GasPricePanel = forwardRef(
                                 {intervalType?.label}
                               </Dropdown.Select>
 
-                              <Dropdown.Options className="z-[10] w-full bg-[#262229]">
+                              <Dropdown.Options className="z-[10] w-full min-w-full bg-[#262229]">
                                 {intervalTypes.map((size, index) => (
                                   <Dropdown.Option value={size} key={index}>
                                     {({ selected, active }) => (
@@ -1526,77 +1768,82 @@ const GasPricePanel = forwardRef(
                           )}
                         </Dropdown>
                       </div>
-                      <div className="px-6 py-4">
-                        <span className="col-span-2 block text-[#AFAEAE]">
-                          Ends
-                        </span>
-                        <Radio
-                          value={value}
-                          onChange={setValue}
-                          name="Form Item"
-                          className="mt-4 space-y-6"
-                        >
-                          <Radio.Option value="option1">
-                            <Radio.Indicator />
-                            Never
-                          </Radio.Option>
-                          <Radio.Option
-                            value="option2"
-                            className="grid grid-cols-3 items-center"
+                      {/* <div className="px-6 py-4">
+                          <span className="col-span-2 block text-[#AFAEAE]">
+                            Ends
+                          </span>
+                          <Radio
+                            value={value}
+                            onChange={setValue}
+                            name="Form Item"
+                            className="mt-4 space-y-6"
                           >
-                            <div className="col-span-1 flex gap-2">
+                            <Radio.Option value="option1">
                               <Radio.Indicator />
-                              <span>On</span>
-                            </div>
-                            <div className="relative col-span-2 ml-5 max-w-sm">
-                              <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                                <svg
-                                  aria-hidden="true"
-                                  className="h-5 w-5 text-gray-500 dark:text-gray-400"
-                                  fill="currentColor"
-                                  viewBox="0 0 20 20"
-                                  xmlns="http://www.w3.org/2000/svg"
-                                >
-                                  <path
-                                    fill-rule="evenodd"
-                                    d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z"
-                                    clip-rule="evenodd"
-                                  ></path>
-                                </svg>
+                              Never
+                            </Radio.Option>
+                            <Radio.Option
+                              value="option2"
+                              className="grid grid-cols-3 items-center"
+                            >
+                              <div className="col-span-1 flex gap-2">
+                                <Radio.Indicator />
+                                <span>On</span>
                               </div>
-                              <input
-                                type="date"
-                                className="block w-full rounded-lg bg-[#262229] p-2.5 pl-10 text-sm "
-                                placeholder="Select date"
-                              />
-                            </div>
-                          </Radio.Option>
-                          <Radio.Option
-                            value="option2"
-                            className="grid grid-cols-3 items-center"
-                          >
-                            <div className="col-span-1 flex gap-2">
-                              <Radio.Indicator />
-                              <span>After</span>
-                            </div>
-                            <div className="relative col-span-2 ml-5 max-w-sm">
-                              <Input
-                                type="text"
-                                value={timesValue}
-                                onChange={handleChange}
-                                pattern="[0-9]*"
-                                inputMode="numeric"
-                                className="col-span-1 rounded bg-[#262229] text-white"
-                              />
-                            </div>
-                          </Radio.Option>
-                        </Radio>
-                      </div>
+                              <div className="relative col-span-2 ml-5 max-w-sm">
+                                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                                  <svg
+                                    aria-hidden="true"
+                                    className="h-5 w-5 text-gray-500 dark:text-gray-400"
+                                    fill="currentColor"
+                                    viewBox="0 0 20 20"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                  >
+                                    <path
+                                      fill-rule="evenodd"
+                                      d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z"
+                                      clip-rule="evenodd"
+                                    ></path>
+                                  </svg>
+                                </div>
+                                <input
+                                  type="date"
+                                  className="block w-full rounded-lg bg-[#262229] p-2.5 pl-10 text-sm "
+                                  placeholder="Select date"
+                                />
+                              </div>
+                            </Radio.Option>
+                            <Radio.Option
+                              value="option2"
+                              className="grid grid-cols-3 items-center"
+                            >
+                              <div className="col-span-1 flex gap-2">
+                                <Radio.Indicator />
+                                <span>After</span>
+                              </div>
+                              <div className="relative col-span-2 ml-5 max-w-sm">
+                                <Input
+                                  type="text"
+                                  value={timesValue}
+                                  onChange={handleChange}
+                                  pattern="[0-9]*"
+                                  inputMode="numeric"
+                                  className="col-span-1 rounded bg-[#262229] text-white"
+                                />
+                              </div>
+                            </Radio.Option>
+                          </Radio>
+                        </div> */}
                       <div className="flex justify-end gap-2 p-4 pt-2">
-                        <Button variant="secondary" onClick={closeModal}>
-                          Cancel
+                        {/* <Button variant="secondary" onClick={closeModal}>
+                            Cancel
+                          </Button> */}
+                        <Button
+                          className="rounded-md bg-[#262229]"
+                          onClick={closeModal}
+                        >
+                          Ok
                         </Button>
-                        <Button onClick={closeModal}>Create</Button>
                       </div>
                     </Modal.Panel>
                   </Modal>
@@ -1605,52 +1852,6 @@ const GasPricePanel = forwardRef(
             )}
           </div>
         </div>
-        {/* <Button
-          size="md"
-          className="mt-7 min-w-[93px] rounded-lg bg-[#1ae77a] text-black"
-          onClick={() => {
-            try {
-              if (relayerFee === "") {
-                return;
-              }
-              if (
-                BigNumber.from(allowance ? allowance : 0).eq(
-                  ethers.constants.MaxUint256
-                )
-              )
-                sendCreateTimeAsyncTxn?.();
-              else sendApproveTokenAsyncTxn?.();
-            } catch {}
-          }}
-        >
-          {relayerFee === "" ? (
-            <div role="status">
-              <svg
-                aria-hidden="true"
-                className="mr-2 h-6 w-6 animate-spin fill-black text-gray-200 dark:text-gray-600"
-                viewBox="0 0 100 101"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z"
-                  fill="currentColor"
-                />
-                <path
-                  d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z"
-                  fill="currentFill"
-                />
-              </svg>
-              <span className="sr-only">Loading...</span>
-            </div>
-          ) : BigNumber.from(allowance ? allowance : 0).eq(
-              ethers.constants.MaxUint256
-            ) ? (
-            "Confirm"
-          ) : (
-            "Approve"
-          )}
-        </Button> */}
       </>
     );
   }
@@ -1660,7 +1861,6 @@ const ABIPanel = forwardRef(
   ({ selectedCategory, showThisSection, setShowThisSection }, ref) => {
     const [fromToken, setFromToken] = useState<Tokens | null>(null);
     const [isOpen, setIsOpen] = useState(false);
-    const [timesValue, setTimesValue] = useState("");
     const [intervalType, setIntervalType] = useState<Options | null>({
       value: "days",
       label: "days",
@@ -1670,7 +1870,6 @@ const ABIPanel = forwardRef(
     const handleChange = (e) => {
       const inputValue = e.target.value;
 
-      // Check if the input value is a valid number
       if (!isNaN(inputValue) && inputValue !== "") {
         setTimesValue(inputValue + " times");
       } else {
