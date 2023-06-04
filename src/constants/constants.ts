@@ -52,24 +52,62 @@ const TREASURY_CONTRACT_ADDRESSES = {
 
 const TOKEN_ADDRESSES = {
   polygon: {
-    USDC: "0x",
-    USDT: "0x",
-    DAI: "0x",
+    USDC: {
+      address: "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174",
+      decimals: 6,
+    },
+    USDT: {
+      address: "0xc2132D05D31c914a87C6611C10748AEb04B58e8F",
+      decimals: 6,
+    },
+    DAI: {
+      address: "0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063",
+      decimals: 18,
+    },
+  },
+  mainnet: {
+    USDC: {
+      address: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+      decimals: 6,
+    },
+    USDT: {
+      address: "0xdAC17F958D2ee523a2206206994597C13D831ec7",
+      decimals: 6,
+    },
+    DAI: {
+      address: "0x6B175474E89094C44Da98b954EedeAC495271d0F",
+      decimals: 18,
+    },
   },
   goerli: {
-    TEST: "0x7ea6eA49B0b0Ae9c5db7907d139D9Cd3439862a1",
+    TEST: {
+      address: "0x7ea6eA49B0b0Ae9c5db7907d139D9Cd3439862a1",
+      decimals: 18,
+    },
   },
   optimismGoerli: {
-    TEST: "0x68Db1c8d85C09d546097C65ec7DCBFF4D6497CbF",
+    TEST: {
+      address: "0x68Db1c8d85C09d546097C65ec7DCBFF4D6497CbF",
+      decimals: 18,
+    },
   },
   polygonMumbai: {
-    TEST: "0xeDb95D8037f769B72AAab41deeC92903A98C9E16",
+    TEST: {
+      address: "0xeDb95D8037f769B72AAab41deeC92903A98C9E16",
+      decimals: 18,
+    },
   },
-  arbitrum: {
-    TEST: "0xDC805eAaaBd6F68904cA706C221c72F8a8a68F9f",
+  arbitrumGoerli: {
+    TEST: {
+      address: "0xDC805eAaaBd6F68904cA706C221c72F8a8a68F9f",
+      decimals: 18,
+    },
   },
   "polygon-zkevm": {
-    TEST: "0x5f921E4DE609472632CEFc72a3846eCcfbed4ed8",
+    TEST: {
+      address: "0x5f921E4DE609472632CEFc72a3846eCcfbed4ed8",
+      decimals: 18,
+    },
   },
 };
 
