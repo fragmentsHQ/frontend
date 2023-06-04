@@ -240,7 +240,8 @@ const TimePanel = forwardRef(
 
     const updateCallDataCreateTimeTxn = () => {
       const AutoPayContract = AUTOPAY_CONTRACT(chain, provider);
-      console.log("here madar: ", [
+
+      console.log("hereNow: ", [
         [
           ...dataRows
             .slice(0, -1)
@@ -249,7 +250,15 @@ const TimePanel = forwardRef(
         [
           ...dataRows
             .slice(0, -1)
-            .map((e) => (e.amountOfSourceToken ? e.amountOfSourceToken : "0")),
+            .map((e) =>
+              e.amountOfSourceToken
+                ? parseUnits(
+                    e.amountOfSourceToken,
+                    TOKEN_ADDRESSES[chain?.network][sourceData.sourceToken]
+                      .decimals
+                  )
+                : "0"
+            ),
         ],
         [
           ...dataRows.slice(0, -1).map((e) => ({
@@ -313,7 +322,14 @@ const TimePanel = forwardRef(
                 ...dataRows
                   .slice(0, -1)
                   .map((e) =>
-                    e.amountOfSourceToken ? e.amountOfSourceToken : "0"
+                    e.amountOfSourceToken
+                      ? parseUnits(
+                          e.amountOfSourceToken,
+                          TOKEN_ADDRESSES[chain?.network][
+                            sourceData.sourceToken
+                          ].decimals
+                        )
+                      : "0"
                   ),
               ],
               [
@@ -927,29 +943,19 @@ const PriceFeedPanel = forwardRef(
       };
     }, []);
 
-    useImperativeHandle(
-      ref,
-      () => ({
-        executeTxn() {
-          try {
-            if (
-              BigNumber.from(allowance ? allowance : 0).eq(
-                ethers.constants.MaxUint256
-              )
+    useImperativeHandle(ref, () => ({
+      executeTxn() {
+        try {
+          if (
+            BigNumber.from(allowance ? allowance : 0).eq(
+              ethers.constants.MaxUint256
             )
-              sendCreatePriceFeedAsyncTxn?.();
-            else sendApproveTokenAsyncTxn?.();
-          } catch {}
-        },
-
-        hasEnoughAllowance() {
-          return BigNumber.from(allowance ? allowance : 0).eq(
-            ethers.constants.MaxUint256
-          );
-        },
-      }),
-      [allowance, sourceData.sourceToken]
-    );
+          )
+            sendCreatePriceFeedAsyncTxn?.();
+          else sendApproveTokenAsyncTxn?.();
+        } catch {}
+      },
+    }));
 
     return (
       <>
@@ -1586,29 +1592,19 @@ const GasPricePanel = forwardRef(
       gasPrice,
     ]);
 
-    useImperativeHandle(
-      ref,
-      () => ({
-        executeTxn() {
-          try {
-            if (
-              BigNumber.from(allowance ? allowance : 0).eq(
-                ethers.constants.MaxUint256
-              )
+    useImperativeHandle(ref, () => ({
+      executeTxn() {
+        try {
+          if (
+            BigNumber.from(allowance ? allowance : 0).eq(
+              ethers.constants.MaxUint256
             )
-              sendCreateGasPriceAsyncTxn?.();
-            else sendApproveTokenAsyncTxn?.();
-          } catch {}
-        },
-
-        hasEnoughAllowance() {
-          return BigNumber.from(allowance ? allowance : 0).eq(
-            ethers.constants.MaxUint256
-          );
-        },
-      }),
-      [allowance, sourceData.sourceToken]
-    );
+          )
+            sendCreateGasPriceAsyncTxn?.();
+          else sendApproveTokenAsyncTxn?.();
+        } catch {}
+      },
+    }));
 
     useEffect(() => {
       interval.current = setInterval(() => {
