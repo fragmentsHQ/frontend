@@ -192,13 +192,6 @@ const TimePanel = forwardRef(
     const { sendTransactionAsync: sendCreateTimeAsyncTxn } =
       useSendTransaction(configCreateTimeTxn);
 
-    console.log(
-      "here: ",
-      chain?.testnet && sourceData.sourceToken
-        ? TOKEN_ADDRESSES[chain?.network][sourceData.sourceToken].address
-        : ZERO_ADDRESS
-    );
-
     const fetchAllowance = async () => {
       let contract;
 
@@ -261,14 +254,7 @@ const TimePanel = forwardRef(
                 ...dataRows
                   .slice(0, -1)
                   .map((e) =>
-                    e.amountOfSourceToken
-                      ? parseUnits(
-                          e.amountOfSourceToken,
-                          TOKEN_ADDRESSES[chain?.network][
-                            sourceData.sourceToken
-                          ].decimals
-                        )
-                      : "0"
+                    e.amountOfSourceToken ? e.amountOfSourceToken : "0"
                   ),
               ],
               [
@@ -342,45 +328,19 @@ const TimePanel = forwardRef(
       startTime,
     ]);
 
-    useEffect(() => {
-      interval.current = setInterval(() => {
-        fetchAllowance();
-      }, 2000);
-
-      return () => {
-        clearTimeout(interval.current);
-      };
-    }, []);
-
-    useImperativeHandle(
-      ref,
-      () => ({
-        executeTxn() {
-          try {
-            if (
-              BigNumber.from(allowance ? allowance : 0).eq(
-                ethers.constants.MaxUint256
-              )
-            ) {
-              sendCreateTimeAsyncTxn?.();
-            } else sendApproveTokenAsyncTxn?.();
-          } catch {}
-        },
-
-        hasEnoughAllowance() {
-          console.log(
-            "here: ",
+    useImperativeHandle(ref, () => ({
+      executeTxn() {
+        try {
+          if (
             BigNumber.from(allowance ? allowance : 0).eq(
               ethers.constants.MaxUint256
             )
-          );
-          return BigNumber.from(allowance ? allowance : 0).eq(
-            ethers.constants.MaxUint256
-          );
-        },
-      }),
-      [allowance, sourceData.sourceToken]
-    );
+          )
+            sendCreateTimeAsyncTxn?.();
+          else sendApproveTokenAsyncTxn?.();
+        } catch {}
+      },
+    }));
 
     return (
       <>
