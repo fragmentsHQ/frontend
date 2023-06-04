@@ -57,7 +57,7 @@ const Navbar = () => {
                   if (connected) {
                     return (
                       <div className="flex items-center gap-3">
-                        <div className="flex items-center rounded-md border-2 border-solid border-[#464646] px-3 py-1 text-sm">
+                        <div onClick={() => navigate("/balance")} className="flex cursor-pointer items-center rounded-md border-2 border-solid border-[#464646] px-3 py-2 text-sm">
                           {"Balance: " +
                             Number(account.balanceFormatted).toFixed(2) +
                             `  ${account.balanceSymbol}`}
@@ -90,13 +90,6 @@ const Navbar = () => {
             );
           }}
         </ConnectButton.Custom>
-        <Button
-          size="lg"
-          onClick={() => navigate("/balance")}
-          className="inline-flex w-full justify-center rounded-md bg-[#464646] bg-opacity-20 px-4 py-2 text-sm font-medium text-white hover:bg-opacity-30 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75"
-        >
-          Balance
-        </Button>
       </div>
     </div>
   );
