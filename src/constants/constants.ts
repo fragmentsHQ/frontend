@@ -127,7 +127,7 @@ const TOKEN_ADDRESSES_PRICE_FEEDS = {
 const CONNEXT_DOMAINS = {
   goerli: "1735353714",
   optimismGoerli: "1735356532",
-  maticmum: "9991",
+  polygonMumbai: "9991",
   arbitrumGoerli: "1734439522",
   polygonZkevmTestnet: "1887071092",
 };
