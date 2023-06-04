@@ -4,12 +4,13 @@ import { Fragment, useEffect, useRef, useState } from "react";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { ChevronDownIcon } from "@heroicons/react/20/solid";
 import { Button } from "@heathmont/moon-core-tw";
-
+import { useNavigate } from "react-router-dom";
 const Navbar = () => {
+  const navigate = useNavigate();
   return (
     <div className="flex justify-between p-10">
       <img
-        className="aspect-[183/24] h-fit w-[12rem]"
+        className="my-auto aspect-[183/24] h-fit w-[12rem]"
         src="/logo/FragmentsLogo.png"
         alt="Fragments Logo"
       />
@@ -89,6 +90,13 @@ const Navbar = () => {
             );
           }}
         </ConnectButton.Custom>
+        <Button
+          size="lg"
+          onClick={() => navigate("/balance")}
+          className="inline-flex w-full justify-center rounded-md bg-[#464646] bg-opacity-20 px-4 py-2 text-sm font-medium text-white hover:bg-opacity-30 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75"
+        >
+          Balance
+        </Button>
       </div>
     </div>
   );

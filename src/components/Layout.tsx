@@ -28,9 +28,7 @@ const { chains, provider } = configureChains(
   [ISPRODUCTION ? polygon : polygonMumbai, goerli],
   [
     alchemyProvider({
-      apiKey: ISPRODUCTION
-        ? process.env.NEXT_PUBLIC_ALCHEMY_KEY
-        : process.env.NEXT_PUBLIC_ALCHEMY_KEY_TESTING,
+      apiKey: "q-gyDMWPExy6buiSYXupWffZ5fnn5fSp",
     }),
     publicProvider(),
   ]

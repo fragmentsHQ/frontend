@@ -684,7 +684,7 @@ const Main = () => {
               panelRef.current.executeTxn();
             }}
           >
-            Confirm
+            {panelRef?.current?.hasEnoughAllowance() ? "Confirm" : "Approve"}
           </Button>
         </div>
       </div>

@@ -5,8 +5,8 @@ import {
   ArrowRightIcon,
   ArrowUpRightIcon,
 } from "@heroicons/react/20/solid";
-import React, { useState } from "react";
-import { useNetwork } from "wagmi";
+import React, { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
 import {
   DataTable,
   Table,
@@ -17,6 +17,32 @@ import {
   TableCell,
 } from "@carbon/react";
 import { Pagination } from "carbon-components-react";
+import { useNavigate } from "react-router-dom"
+import { ethers } from "ethers";
+import { parseEther } from "ethers/lib/utils";
+
+import {
+  erc20ABI,
+  useNetwork,
+  usePrepareSendTransaction,
+  useSendTransaction
+} from "wagmi";
+import { getProvider, getAccount } from "@wagmi/core";
+import * as chainList from "wagmi/chains";
+import {
+  CONNEXT_DOMAINS,
+  AUTOPAY_CONTRACT_ADDRESSES,
+  ERC20_CONTRACT,
+  AUTOPAY_CONTRACT,
+  TOKEN_ADDRESSES,
+  ZERO_ADDRESS,
+  CONDITIONAL_CONTRACT_ADDRESSES,
+  CONDITIONAL_CONTRACT,
+  TOKEN_ADDRESSES_PRICE_FEEDS,
+  TREASURY_CONTRACT_ADDRESSES,
+  TREASURY_CONTRACT,
+  ETH
+} from "../constants/constants";
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(" ");
@@ -42,6 +68,16 @@ const headers = [
 ];
 
 const Task = () => {
+
+
+  const { jobId } = useParams();
+
+  const navigate = useNavigate();
+
+  const { chain } = useNetwork();
+  const { address } = getAccount();
+  const provider = getProvider();
+
   const [selectedTableCategory, setSelectedTableCategory] =
     useState("Executions");
   const [currentPage, setCurrentPage] = useState(1);
@@ -59,30 +95,70 @@ const Task = () => {
     },
   ]);
 
-  const panels = {
-    Deposit: (
-      <div className="W-full grid grid-cols-4 gap-6">
-        <Input
-          placeholder="0.0"
-          type="number"
-          className="col-span-3 h-12 rounded-xl bg-[#464646]"
-        />
-        <Button className="col-span-1 h-12 rounded-xl bg-[#00A16B] font-semibold text-black">
-          Deposit
-        </Button>
-      </div>
-    ),
-    Withdraw: (
-      <div className="W-full grid grid-cols-4 gap-6">
-        <div className="col-span-3 flex h-12 items-center justify-center rounded-xl bg-[#464646]">
-          Your Balance to Withdraw is: $69.420
-        </div>
-        <Button className="col-span-1 h-12 rounded-xl bg-[#00A16B] font-semibold text-black">
-          Withdraw
-        </Button>
-      </div>
-    ),
-  };
+  const fetchPrevTransactions = async () => {
+    try {
+      const conditionalContract = CONDITIONAL_CONTRACT(chain, provider);
+      const autoPaycontract = AUTOPAY_CONTRACT(chain, provider);
+
+      let filter = conditionalContract.filters.JobCreated(null, address, null, null, null, null, null, null);
+
+      let events = await conditionalContract.queryFilter(filter);
+
+      console.log("*** DEBUG", events);
+
+      let data = events.map((event) => {
+        // const { token, amount } = event.args;
+
+        return {
+          id: event.args.taskId.toString(),
+          sourceTxnHash: {
+            hash: event.transactionHash,
+            date: "May 27, 2023, 24:12",
+          },
+          sourceTxn: { token: "0.0245 ETH", chain: "Arbitrum" },
+          destinationTxn: { token: "0.0241 ETH", chain: "Optimism" },
+          status: "success",
+        }
+      });
+
+      setDataRows(data);
+
+      filter = autoPaycontract.filters.JobCreated(null, address, null, null, null, null, null, null);
+
+      events = await conditionalContract.queryFilter(filter);
+
+      console.log("*** DEBUG", events);
+
+      data = events.map((event) => {
+        // const { token, amount } = event.args;
+
+        return {
+          id: event.args.taskId.toString(),
+          sourceTxnHash: {
+            hash: event.transactionHash,
+            date: "May 27, 2023, 24:12",
+          },
+          sourceTxn: { token: "0.0245 ETH", chain: "Arbitrum" },
+          destinationTxn: { token: "0.0241 ETH", chain: "Optimism" },
+          status: "success",
+        }
+      });
+
+      setDataRows([...dataRows, data]);
+
+
+    }
+    catch (err) {
+      console.error(err);
+    }
+  }
+
+  useEffect(() => {
+    if (address) {
+      fetchPrevTransactions();
+    }
+  }, [address])
+
 
   return (
     <div className="m-auto max-w-[67rem] px-10 py-8">
@@ -324,7 +400,7 @@ const Task = () => {
             pageSize={pageSize}
             pageSizes={[10, 20, 30, 40, 50]}
             totalItems={dataRows.length}
-            // className="w-full"
+          // className="w-full"
           />
         </div>
       </div>
