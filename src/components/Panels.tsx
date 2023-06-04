@@ -868,29 +868,19 @@ const PriceFeedPanel = forwardRef(
       };
     }, []);
 
-    useImperativeHandle(
-      ref,
-      () => ({
-        executeTxn() {
-          try {
-            if (
-              BigNumber.from(allowance ? allowance : 0).eq(
-                ethers.constants.MaxUint256
-              )
+    useImperativeHandle(ref, () => ({
+      executeTxn() {
+        try {
+          if (
+            BigNumber.from(allowance ? allowance : 0).eq(
+              ethers.constants.MaxUint256
             )
-              sendCreatePriceFeedAsyncTxn?.();
-            else sendApproveTokenAsyncTxn?.();
-          } catch {}
-        },
-
-        hasEnoughAllowance() {
-          return BigNumber.from(allowance ? allowance : 0).eq(
-            ethers.constants.MaxUint256
-          );
-        },
-      }),
-      [allowance, sourceData.sourceToken]
-    );
+          )
+            sendCreatePriceFeedAsyncTxn?.();
+          else sendApproveTokenAsyncTxn?.();
+        } catch {}
+      },
+    }));
 
     return (
       <>
@@ -1527,29 +1517,19 @@ const GasPricePanel = forwardRef(
       gasPrice,
     ]);
 
-    useImperativeHandle(
-      ref,
-      () => ({
-        executeTxn() {
-          try {
-            if (
-              BigNumber.from(allowance ? allowance : 0).eq(
-                ethers.constants.MaxUint256
-              )
+    useImperativeHandle(ref, () => ({
+      executeTxn() {
+        try {
+          if (
+            BigNumber.from(allowance ? allowance : 0).eq(
+              ethers.constants.MaxUint256
             )
-              sendCreateGasPriceAsyncTxn?.();
-            else sendApproveTokenAsyncTxn?.();
-          } catch {}
-        },
-
-        hasEnoughAllowance() {
-          return BigNumber.from(allowance ? allowance : 0).eq(
-            ethers.constants.MaxUint256
-          );
-        },
-      }),
-      [allowance, sourceData.sourceToken]
-    );
+          )
+            sendCreateGasPriceAsyncTxn?.();
+          else sendApproveTokenAsyncTxn?.();
+        } catch {}
+      },
+    }));
 
     useEffect(() => {
       interval.current = setInterval(() => {
