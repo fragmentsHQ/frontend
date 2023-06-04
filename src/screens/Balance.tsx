@@ -2,6 +2,7 @@ import { Tab } from "@headlessui/react";
 import { Button, Dropdown, MenuItem, Input } from "@heathmont/moon-core-tw";
 import { ArrowLeftIcon } from "@heroicons/react/20/solid";
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom"
 import {
   DataTable,
   Table,
@@ -37,8 +38,6 @@ import {
   TREASURY_CONTRACT,
   ETH
 } from "../constants/constants";
-import { SourceContext } from "../hooks/context";
-import { Category, Options, Tokens } from "../types/types";
 
 
 function classNames(...classes) {
@@ -73,6 +72,9 @@ const getEclipsedText = (text) => {
 }
 
 const Balance = () => {
+
+  const navigate = useNavigate();
+
   const { chain } = useNetwork();
   const { address } = getAccount();
   const provider = getProvider();
@@ -257,7 +259,7 @@ const Balance = () => {
 
   return (
     <div className="m-auto max-w-[67rem] px-10 py-8">
-      <button className="flex items-center gap-2 text-sm text-[#AFAEAE]">
+      <button onClick={() => navigate("/")} className="flex items-center gap-2 text-sm text-[#AFAEAE]">
         <ArrowLeftIcon className="w-4" />
         Back
       </button>
