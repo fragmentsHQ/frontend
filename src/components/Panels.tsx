@@ -192,13 +192,6 @@ const TimePanel = forwardRef(
     const { sendTransactionAsync: sendCreateTimeAsyncTxn } =
       useSendTransaction(configCreateTimeTxn);
 
-    console.log(
-      "here: ",
-      chain?.testnet && sourceData.sourceToken
-        ? TOKEN_ADDRESSES[chain?.network][sourceData.sourceToken].address
-        : ZERO_ADDRESS
-    );
-
     const fetchAllowance = async () => {
       let contract;
 
@@ -247,6 +240,74 @@ const TimePanel = forwardRef(
 
     const updateCallDataCreateTimeTxn = () => {
       const AutoPayContract = AUTOPAY_CONTRACT(chain, provider);
+
+      console.log("hereNow: ", [
+        [
+          ...dataRows
+            .slice(0, -1)
+            .map((e) => (e.toAddress ? e.toAddress : ZERO_ADDRESS)),
+        ],
+        [
+          ...dataRows
+            .slice(0, -1)
+            .map((e) =>
+              e.amountOfSourceToken
+                ? parseUnits(
+                    e.amountOfSourceToken,
+                    TOKEN_ADDRESSES[chain?.network][sourceData.sourceToken]
+                      .decimals
+                  )
+                : "0"
+            ),
+        ],
+        [
+          ...dataRows.slice(0, -1).map((e) => ({
+            _fromToken:
+              chain?.testnet && sourceData.sourceToken
+                ? TOKEN_ADDRESSES[chain?.network][sourceData.sourceToken]
+                    .address
+                : ZERO_ADDRESS,
+            _toToken:
+              chain?.testnet && sourceData.sourceToken && e.destinationChain
+                ? TOKEN_ADDRESSES[e.destinationChain][sourceData.sourceToken]
+                    .address
+                : ZERO_ADDRESS,
+          })),
+        ],
+        [
+          ...dataRows.slice(0, -1).map((e) => ({
+            _toChain: e.destinationChain
+              ? chainList[e.destinationChain].id
+              : ZERO_ADDRESS,
+            _destinationDomain: e.destinationChain
+              ? CONNEXT_DOMAINS[e.destinationChain]
+              : ZERO_ADDRESS,
+            _destinationContract: e.destinationChain
+              ? AUTOPAY_CONTRACT_ADDRESSES[
+                  chain?.testnet ? "testnets" : "mainnets"
+                ][e.destinationChain]
+              : ZERO_ADDRESS,
+          })),
+        ],
+        {
+          _cycles: cycles ? cycles : 1,
+          _startTime: startTime
+            ? startTime
+            : Math.trunc(Date.now() / 1000) + 3600,
+          _interval:
+            Number(intervalCount) *
+            (intervalType.value === "days"
+              ? 86400
+              : intervalType.value === "months"
+              ? 2629800
+              : intervalType.value === "weeks"
+              ? 604800
+              : intervalType.value === "years"
+              ? 31536000
+              : 1),
+          _web3FunctionHash: "QmbN96rTEy8EYxPNVqCUmZgTZzufvCbNhmsVzM2rephoLa",
+        },
+      ]);
       try {
         setCallDataCreateTimeTxn(
           AutoPayContract.interface.encodeFunctionData(
@@ -342,45 +403,19 @@ const TimePanel = forwardRef(
       startTime,
     ]);
 
-    useEffect(() => {
-      interval.current = setInterval(() => {
-        fetchAllowance();
-      }, 2000);
-
-      return () => {
-        clearTimeout(interval.current);
-      };
-    }, []);
-
-    useImperativeHandle(
-      ref,
-      () => ({
-        executeTxn() {
-          try {
-            if (
-              BigNumber.from(allowance ? allowance : 0).eq(
-                ethers.constants.MaxUint256
-              )
-            ) {
-              sendCreateTimeAsyncTxn?.();
-            } else sendApproveTokenAsyncTxn?.();
-          } catch {}
-        },
-
-        hasEnoughAllowance() {
-          console.log(
-            "here: ",
+    useImperativeHandle(ref, () => ({
+      executeTxn() {
+        try {
+          if (
             BigNumber.from(allowance ? allowance : 0).eq(
               ethers.constants.MaxUint256
             )
-          );
-          return BigNumber.from(allowance ? allowance : 0).eq(
-            ethers.constants.MaxUint256
-          );
-        },
-      }),
-      [allowance, sourceData.sourceToken]
-    );
+          )
+            sendCreateTimeAsyncTxn?.();
+          else sendApproveTokenAsyncTxn?.();
+        } catch {}
+      },
+    }));
 
     return (
       <>
@@ -867,7 +902,7 @@ const PriceFeedPanel = forwardRef(
                     ? 31536000
                     : 1),
                 _web3FunctionHash:
-                  "QmbN96rTEy8EYxPNVqCUmZgTZzufvCbNhmsVzM2rephoLa",
+                  "QmaYK9kW85VsZUusYHGqzJQizu3Kifs73Np217LfLLhQDH",
               },
             ]
           )
@@ -908,29 +943,19 @@ const PriceFeedPanel = forwardRef(
       };
     }, []);
 
-    useImperativeHandle(
-      ref,
-      () => ({
-        executeTxn() {
-          try {
-            if (
-              BigNumber.from(allowance ? allowance : 0).eq(
-                ethers.constants.MaxUint256
-              )
+    useImperativeHandle(ref, () => ({
+      executeTxn() {
+        try {
+          if (
+            BigNumber.from(allowance ? allowance : 0).eq(
+              ethers.constants.MaxUint256
             )
-              sendCreatePriceFeedAsyncTxn?.();
-            else sendApproveTokenAsyncTxn?.();
-          } catch {}
-        },
-
-        hasEnoughAllowance() {
-          return BigNumber.from(allowance ? allowance : 0).eq(
-            ethers.constants.MaxUint256
-          );
-        },
-      }),
-      [allowance, sourceData.sourceToken]
-    );
+          )
+            sendCreatePriceFeedAsyncTxn?.();
+          else sendApproveTokenAsyncTxn?.();
+        } catch {}
+      },
+    }));
 
     return (
       <>
@@ -1567,29 +1592,19 @@ const GasPricePanel = forwardRef(
       gasPrice,
     ]);
 
-    useImperativeHandle(
-      ref,
-      () => ({
-        executeTxn() {
-          try {
-            if (
-              BigNumber.from(allowance ? allowance : 0).eq(
-                ethers.constants.MaxUint256
-              )
+    useImperativeHandle(ref, () => ({
+      executeTxn() {
+        try {
+          if (
+            BigNumber.from(allowance ? allowance : 0).eq(
+              ethers.constants.MaxUint256
             )
-              sendCreateGasPriceAsyncTxn?.();
-            else sendApproveTokenAsyncTxn?.();
-          } catch {}
-        },
-
-        hasEnoughAllowance() {
-          return BigNumber.from(allowance ? allowance : 0).eq(
-            ethers.constants.MaxUint256
-          );
-        },
-      }),
-      [allowance, sourceData.sourceToken]
-    );
+          )
+            sendCreateGasPriceAsyncTxn?.();
+          else sendApproveTokenAsyncTxn?.();
+        } catch {}
+      },
+    }));
 
     useEffect(() => {
       interval.current = setInterval(() => {
