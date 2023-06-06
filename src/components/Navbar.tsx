@@ -1,8 +1,5 @@
 import React from "react";
-import { Menu, Transition } from "@headlessui/react";
-import { Fragment, useEffect, useRef, useState } from "react";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
-import { ChevronDownIcon } from "@heroicons/react/20/solid";
 import { Button } from "@heathmont/moon-core-tw";
 import { useNavigate } from "react-router-dom";
 const Navbar = () => {

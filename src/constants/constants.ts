@@ -10,6 +10,13 @@ const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 
 const ETH = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE";
 
+const Web3FunctionHash = {
+  autopay: "QmbN96rTEy8EYxPNVqCUmZgTZzufvCbNhmsVzM2rephoLa",
+  gas: "",
+  conditional: "",
+  contract: ""
+};
+
 const AUTOPAY_CONTRACT_ADDRESSES = {
   mainnets: {
     polygon: "0x",
@@ -136,8 +143,8 @@ const AUTOPAY_CONTRACT = (chain: Chain, provider) =>
   new ethers.Contract(
     chain
       ? AUTOPAY_CONTRACT_ADDRESSES[chain?.testnet ? "testnets" : "mainnets"][
-          chain?.network
-        ]
+      chain?.network
+      ]
       : AUTOPAY_CONTRACT_ADDRESSES["testnets"]["goerli"],
     Autopay.abi,
     provider
@@ -147,8 +154,8 @@ const CONDITIONAL_CONTRACT = (chain: Chain, provider) =>
   new ethers.Contract(
     chain
       ? CONDITIONAL_CONTRACT_ADDRESSES[
-          chain?.testnet ? "testnets" : "mainnets"
-        ][chain?.network]
+      chain?.testnet ? "testnets" : "mainnets"
+      ][chain?.network]
       : CONDITIONAL_CONTRACT_ADDRESSES["testnets"]["goerli"],
     Conditional.abi,
     provider
@@ -158,8 +165,8 @@ const TREASURY_CONTRACT = (chain: Chain, provider) =>
   new ethers.Contract(
     chain
       ? TREASURY_CONTRACT_ADDRESSES[chain?.testnet ? "testnets" : "mainnets"][
-          chain?.network
-        ]
+      chain?.network
+      ]
       : TREASURY_CONTRACT_ADDRESSES["testnets"]["goerli"],
     Treasury.abi,
     provider
@@ -182,4 +189,5 @@ export {
   TOKEN_ADDRESSES_PRICE_FEEDS,
   ISPRODUCTION,
   ETH,
+  Web3FunctionHash
 };

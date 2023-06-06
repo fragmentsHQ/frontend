@@ -9,51 +9,36 @@ import { ISPRODUCTION } from "../constants/constants";
 import Navbar from "./Navbar";
 import BgImages from "./BgImages";
 
-import { getDefaultWallets, RainbowKitProvider, darkTheme } from '@rainbow-me/rainbowkit'
+import { RainbowKitProvider, darkTheme, getDefaultWallets } from '@rainbow-me/rainbowkit'
 
-import { WagmiConfig, createConfig, configureChains, mainnet } from 'wagmi'
+import { WagmiConfig, createConfig, configureChains } from 'wagmi'
+import { mainnet, goerli, polygon, polygonMumbai } from "wagmi/chains";
 
 import { alchemyProvider } from 'wagmi/providers/alchemy'
 import { publicProvider } from 'wagmi/providers/public'
 
-import { CoinbaseWalletConnector } from 'wagmi/connectors/coinbaseWallet'
-import { InjectedConnector } from 'wagmi/connectors/injected'
-import { MetaMaskConnector } from 'wagmi/connectors/metaMask'
-import { WalletConnectConnector } from 'wagmi/connectors/walletConnect'
-
-// Configure chains & providers with the Alchemy provider.
-// Two popular providers are Alchemy (alchemy.com) and Infura (infura.io)
 const { chains, publicClient, webSocketPublicClient } = configureChains(
-  [mainnet],
-  [alchemyProvider({ apiKey: 'gyDMWPExy6buiSYXupWffZ5fnn5fSp' }), publicProvider()],
+  // @ts-ignore
+  ISPRODUCTION ? [mainnet, polygon] : [polygonMumbai, goerli],
+  [
+    alchemyProvider({
+      apiKey: "q-gyDMWPExy6buiSYXupWffZ5fnn5fSp",
+    }),
+    publicProvider(),
+  ]
 )
+
+const { connectors } = getDefaultWallets({
+  appName: 'Fragments',
+  projectId: 'YOUR_PROJECT_ID',
+  chains
+});
 
 
 // Set up wagmi config
 const config = createConfig({
   autoConnect: true,
-  connectors: [
-    new MetaMaskConnector({ chains }),
-    new CoinbaseWalletConnector({
-      chains,
-      options: {
-        appName: 'wagmi',
-      },
-    }),
-    new WalletConnectConnector({
-      chains,
-      options: {
-        projectId: '...',
-      },
-    }),
-    new InjectedConnector({
-      chains,
-      options: {
-        name: 'Injected',
-        shimDisconnect: true,
-      },
-    }),
-  ],
+  connectors,
   publicClient,
   webSocketPublicClient,
 })
@@ -69,9 +54,7 @@ const Layout = ({ children }) => {
             learnMoreUrl: "",
           }}
           chains={chains}
-          // initialChain={ISPRODUCTION ? polygon : goerli} // Optional, initialChain={1}, initialChain={chain.mainnet}, initialChain={gnosisChain}
           showRecentTransactions={true}
-          // coolMode
           theme={darkTheme()}
         >
           <SourceContextWrapper>
