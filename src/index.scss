@@ -1,0 +1,38 @@
+@use '@carbon/react/scss/themes';
+@use '@carbon/react/scss/theme' with ($theme: themes.$g100);
+@use '@carbon/react';
+@import '@heathmont/moon-themes-tw/lib/moon.css';
+@import '@rainbow-me/rainbowkit/styles.css';
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body
+   { background-color: #262229}
+
+p,div
+   { color: white}
+
+   
+::-webkit-scrollbar {
+   width: 10px; /* Set the width of the scrollbar */
+ }
+ 
+ 
+ ::-webkit-scrollbar-track {
+   background: #f1f1f1; /* Set the background color of the track */
+ }
+ 
+ 
+ ::-webkit-scrollbar-thumb {
+   background: #888; /* Set the color of the scrollbar handle */
+ }
+ 
+ 
+ ::-webkit-scrollbar-thumb:hover {
+   background: #555; /* Set the color of the scrollbar handle on hover */
+ }
+
+ .cds--data-table-content{
+  overflow: initial;
+ }
