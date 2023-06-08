@@ -57,7 +57,15 @@ const Main = () => {
   const { sourceData, setSourceData } = useContext(SourceContext);
   const { CSVReader } = useCSVReader();
   const panelRef = useRef(null);
-  const [dataRows, setDataRows] = useState([
+  const [dataRows, setDataRows] = useState<
+    {
+      id: string;
+      toAddress: string;
+      destinationToken: string;
+      destinationChain: string;
+      amountOfSourceToken: string;
+    }[]
+  >([
     {
       id: "0",
       toAddress: "",
@@ -66,7 +74,12 @@ const Main = () => {
       amountOfSourceToken: "",
     },
   ]);
-  const [showThisSection, setShowThisSection] = useState({
+  const [showThisSection, setShowThisSection] = useState<{
+    0: boolean;
+    1: boolean;
+    2: boolean;
+    3: boolean;
+  }>({
     0: true,
     1: true,
     2: true,
@@ -135,7 +148,7 @@ const Main = () => {
                     {chain?.network
                       ? Object.keys(TOKEN_ADDRESSES[chain?.network]).map(
                           (token, index) => (
-                            <Dropdown.Option value={token}>
+                            <Dropdown.Option value={token} key={index}>
                               {({ selected, active }) => {
                                 return (
                                   <MenuItem
@@ -399,8 +412,8 @@ const Main = () => {
               <Table className="overflow-visible" {...getTableProps()}>
                 <TableHead align="center">
                   <TableRow>
-                    {headers.map((header) => (
-                      <TableHeader {...getHeaderProps({ header })}>
+                    {headers.map((header, idx) => (
+                      <TableHeader {...getHeaderProps({ header })} key={idx}>
                         {header.header}
                       </TableHeader>
                     ))}
@@ -412,7 +425,7 @@ const Main = () => {
                       {(() => {
                         return row.cells.map((cell) => {
                           return (
-                            <TableCell>
+                            <TableCell key={cell.id}>
                               {cell.id.includes("toAddress") ? (
                                 <input
                                   id={`input-${cell.id}`}
@@ -565,7 +578,7 @@ const Main = () => {
                                             ).map((chain, index) => (
                                               <Dropdown.Option
                                                 value={chain}
-                                                // key={index}
+                                                key={index}
                                               >
                                                 {({ selected, active }) => {
                                                   return (
