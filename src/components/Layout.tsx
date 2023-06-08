@@ -1,10 +1,12 @@
-import { WagmiConfig, configureChains, createClient } from "wagmi";
+import {
+  WagmiConfig,
+  configureChains,
+  createClient,
+  createConfig,
+} from "wagmi";
 import { mainnet, goerli } from "wagmi/chains";
 import { alchemyProvider } from "wagmi/providers/alchemy";
-import { SafeConnector } from "@gnosis.pm/safe-apps-wagmi";
-import { InjectedConnector } from "wagmi/connectors/injected";
-import { MetaMaskConnector } from "wagmi/connectors/metaMask";
-import { WalletConnectConnector } from "wagmi/connectors/walletConnect";
+import { SafeConnector } from "wagmi/connectors/safe";
 import { Buffer } from "buffer";
 
 import SourceContextWrapper from "../hooks/context";
@@ -17,52 +19,45 @@ import BgImages from "./BgImages";
 
 // polyfill Buffer for client
 if (!window.Buffer) {
-    window.Buffer = Buffer;
+  window.Buffer = Buffer;
 }
 
 const defaultChains = [mainnet, goerli];
 const alchemyId =
-    process.env.REACT_APP_ALCHEMY_ID || "UuUIg4H93f-Bz5qs91SuBrro7TW3UShO";
+  process.env.REACT_APP_ALCHEMY_ID || "UuUIg4H93f-Bz5qs91SuBrro7TW3UShO";
 
-const { chains, provider } = configureChains(defaultChains, [
-    alchemyProvider({ apiKey: alchemyId }),
-]);
+const { chains, publicClient, webSocketPublicClient } = configureChains(
+  defaultChains,
+  [alchemyProvider({ apiKey: alchemyId })]
+);
 
-const client = createClient({
-    connectors: [
-        new SafeConnector({ chains }),
-        new MetaMaskConnector({ chains }),
-        new WalletConnectConnector({
-            chains,
-            options: {
-                qrcode: true,
-            },
-        }),
-        new InjectedConnector({
-            chains,
-            options: {
-                name: "Injected",
-                shimDisconnect: true,
-            },
-        }),
-    ],
-    provider,
+const config = createConfig({
+  autoConnect: false,
+  publicClient,
+  webSocketPublicClient,
+  connectors: [
+    new SafeConnector({
+      chains,
+      options: {
+        allowedDomains: [/gnosis-safe.io$/, /app.safe.global$/],
+        debug: true,
+      },
+    }),
+  ],
 });
 
-
-
 const Layout = ({ children }) => {
-    return (
-        <>
-            <WagmiConfig client={client}>
-                <SourceContextWrapper>
-                    <Navbar />
-                    {children}
-                    <BgImages />
-                </SourceContextWrapper>
-            </WagmiConfig>
-        </>
-    )
-}
+  return (
+    <>
+      <WagmiConfig config={config}>
+        <SourceContextWrapper>
+          <Navbar />
+          {children}
+          <BgImages />
+        </SourceContextWrapper>
+      </WagmiConfig>
+    </>
+  );
+};
 
-export default Layout
+export default Layout;
