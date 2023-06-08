@@ -277,7 +277,9 @@ const TimePanel = forwardRef<any, propType>(
                 ...dataRows
                   .slice(0, -1)
                   .map((e) =>
-                    e.amountOfSourceToken ? e.amountOfSourceToken : "0"
+                    e.amountOfSourceToken
+                      ? parseUnits(e.amountOfSourceToken)
+                      : "0"
                   ),
               ],
               [
