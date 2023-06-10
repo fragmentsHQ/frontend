@@ -263,6 +263,97 @@ const TimePanel = forwardRef<any, propType>(
     const updateCallDataCreateTimeTxn = () => {
       const AutoPayContract = AUTOPAY_CONTRACT(chain, provider);
 
+      console.log("settin calldata: ", [
+        [
+          ...dataRows
+            .slice(0, -1)
+            .map((e) => (e.toAddress ? e.toAddress : ZERO_ADDRESS)),
+        ],
+        [
+          ...dataRows
+            .slice(0, -1)
+            .map((e) =>
+              e.amountOfSourceToken
+                ? parseUnits(
+                    e.amountOfSourceToken,
+                    TOKEN_ADDRESSES[chain?.id][sourceData.sourceToken].decimals
+                  )
+                : "0"
+            ),
+        ],
+        [
+          ...dataRows
+            .slice(0, -1)
+            .map((e) =>
+              chain?.testnet && sourceData.sourceToken
+                ? TOKEN_ADDRESSES[chain?.id][sourceData.sourceToken].address
+                : ZERO_ADDRESS
+            ),
+        ],
+        [
+          ...dataRows
+            .slice(0, -1)
+            .map((e) =>
+              chain?.testnet && sourceData.sourceToken && e.destinationChain
+                ? TOKEN_ADDRESSES[e.destinationChain][sourceData.sourceToken]
+                    .address
+                : ZERO_ADDRESS
+            ),
+        ],
+        [
+          ...dataRows
+            .slice(0, -1)
+            .map((e) =>
+              e.destinationChain ? e.destinationChain : ZERO_ADDRESS
+            ),
+        ],
+        [
+          ...dataRows
+            .slice(0, -1)
+            .map((e) =>
+              e.destinationChain
+                ? CONNEXT_DOMAINS[e.destinationChain]
+                : ZERO_ADDRESS
+            ),
+        ],
+        [
+          ...dataRows
+            .slice(0, -1)
+            .map((e) =>
+              e.destinationChain
+                ? AUTOPAY_CONTRACT_ADDRESSES[
+                    chain?.testnet ? "testnets" : "mainnets"
+                  ][e.destinationChain]
+                : ZERO_ADDRESS
+            ),
+        ],
+        [...dataRows.slice(0, -1).map((_) => (cycles ? cycles : 1))],
+        [
+          ...dataRows
+            .slice(0, -1)
+            .map((_) =>
+              startTime ? startTime : Math.trunc(Date.now() / 1000) + 3600
+            ),
+        ],
+        [
+          ...dataRows
+            .slice(0, -1)
+            .map(
+              (_) =>
+                Number(intervalCount) *
+                (intervalType.value === "days"
+                  ? 86400
+                  : intervalType.value === "months"
+                  ? 2629800
+                  : intervalType.value === "weeks"
+                  ? 604800
+                  : intervalType.value === "years"
+                  ? 31536000
+                  : 1)
+            ),
+        ],
+        "QmRdcGs5h8UP8ETFdS7Yj7iahDTjfQNHMsJp3dYRec5Gf2",
+      ]);
       try {
         setCallDataCreateTimeTxn(
           AutoPayContract.interface.encodeFunctionData(
@@ -280,9 +371,8 @@ const TimePanel = forwardRef<any, propType>(
                     e.amountOfSourceToken
                       ? parseUnits(
                           e.amountOfSourceToken,
-                          TOKEN_ADDRESSES[chain?.network][
-                            sourceData.sourceToken
-                          ].decimals
+                          TOKEN_ADDRESSES[chain?.id][sourceData.sourceToken]
+                            .decimals
                         )
                       : "0"
                   ),
