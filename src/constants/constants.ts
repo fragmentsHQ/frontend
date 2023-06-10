@@ -19,7 +19,7 @@ const AUTOPAY_CONTRACT_ADDRESSES = {
     bsc: "0x",
   },
   testnets: {
-    maticmum: "0x7f464d4f3D46552F936cb68c21a0A2dB3E32919F",
+    polygonMumbai: "0x7f464d4f3D46552F936cb68c21a0A2dB3E32919F",
     goerli: "0xa8e3315ce15caddb4616aefd073e4cbf002c5d73",
   },
 };
@@ -33,7 +33,7 @@ const CONDITIONAL_CONTRACT_ADDRESSES = {
     bsc: "0x",
   },
   testnets: {
-    maticmum: "0x927CFeBA7c83f2626ca09A815Bce899190Cb5800",
+    polygonMumbai: "0x927CFeBA7c83f2626ca09A815Bce899190Cb5800",
     goerli: "0xDc7EcF12CFf43ea2d40Ad475b6BB0C5Fe6dD368A",
   },
 };
@@ -93,7 +93,7 @@ const TOKEN_ADDRESSES = {
       decimals: 18,
     },
   },
-  maticmum: {
+  polygonMumbai: {
     TEST: {
       address: "0xeDb95D8037f769B72AAab41deeC92903A98C9E16",
       decimals: 18,

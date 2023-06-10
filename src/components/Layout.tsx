@@ -63,7 +63,7 @@ const connectors = connectorsForWallets([
 ]);
 
 const config = createConfig({
-  autoConnect: false,
+  autoConnect: true,
   publicClient,
   webSocketPublicClient,
   connectors,
