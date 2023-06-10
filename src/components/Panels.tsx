@@ -283,56 +283,83 @@ const TimePanel = forwardRef<any, propType>(
                   ),
               ],
               [
-                ...dataRows.slice(0, -1).map((e) => ({
-                  _fromToken:
+                ...dataRows
+                  .slice(0, -1)
+                  .map((e) =>
                     chain?.testnet && sourceData.sourceToken
                       ? TOKEN_ADDRESSES[chain?.network][sourceData.sourceToken]
                           .address
-                      : ZERO_ADDRESS,
-                  _toToken:
+                      : ZERO_ADDRESS
+                  ),
+              ],
+              [
+                ...dataRows
+                  .slice(0, -1)
+                  .map((e) =>
                     chain?.testnet &&
                     sourceData.sourceToken &&
                     e.destinationChain
                       ? TOKEN_ADDRESSES[e.destinationChain][
                           sourceData.sourceToken
                         ].address
-                      : ZERO_ADDRESS,
-                })),
+                      : ZERO_ADDRESS
+                  ),
               ],
               [
-                ...dataRows.slice(0, -1).map((e) => ({
-                  _toChain: e.destinationChain
-                    ? chainList[e.destinationChain].id
-                    : ZERO_ADDRESS,
-                  _destinationDomain: e.destinationChain
-                    ? CONNEXT_DOMAINS[e.destinationChain]
-                    : ZERO_ADDRESS,
-                  _destinationContract: e.destinationChain
-                    ? AUTOPAY_CONTRACT_ADDRESSES[
-                        chain?.testnet ? "testnets" : "mainnets"
-                      ][e.destinationChain]
-                    : ZERO_ADDRESS,
-                })),
+                ...dataRows
+                  .slice(0, -1)
+                  .map((e) =>
+                    e.destinationChain
+                      ? chainList[e.destinationChain].id
+                      : ZERO_ADDRESS
+                  ),
               ],
-              {
-                _cycles: cycles ? cycles : 1,
-                _startTime: startTime
-                  ? startTime
-                  : Math.trunc(Date.now() / 1000) + 3600,
-                _interval:
-                  Number(intervalCount) *
-                  (intervalType.value === "days"
-                    ? 86400
-                    : intervalType.value === "months"
-                    ? 2629800
-                    : intervalType.value === "weeks"
-                    ? 604800
-                    : intervalType.value === "years"
-                    ? 31536000
-                    : 1),
-                _web3FunctionHash:
-                  "QmbN96rTEy8EYxPNVqCUmZgTZzufvCbNhmsVzM2rephoLa",
-              },
+              [
+                ...dataRows
+                  .slice(0, -1)
+                  .map((e) =>
+                    e.destinationChain
+                      ? CONNEXT_DOMAINS[e.destinationChain]
+                      : ZERO_ADDRESS
+                  ),
+              ],
+              [
+                ...dataRows
+                  .slice(0, -1)
+                  .map((e) =>
+                    e.destinationChain
+                      ? AUTOPAY_CONTRACT_ADDRESSES[
+                          chain?.testnet ? "testnets" : "mainnets"
+                        ][e.destinationChain]
+                      : ZERO_ADDRESS
+                  ),
+              ],
+              [...dataRows.slice(0, -1).map((_) => (cycles ? cycles : 1))],
+              [
+                ...dataRows
+                  .slice(0, -1)
+                  .map((_) =>
+                    startTime ? startTime : Math.trunc(Date.now() / 1000) + 3600
+                  ),
+              ],
+              [
+                ...dataRows
+                  .slice(0, -1)
+                  .map(
+                    (_) =>
+                      Number(intervalCount) *
+                      (intervalType.value === "days"
+                        ? 86400
+                        : intervalType.value === "months"
+                        ? 2629800
+                        : intervalType.value === "weeks"
+                        ? 604800
+                        : intervalType.value === "years"
+                        ? 31536000
+                        : 1)
+                  ),
+              ],
+              "QmRdcGs5h8UP8ETFdS7Yj7iahDTjfQNHMsJp3dYRec5Gf2",
             ]
           ) as `0x${string}`
         );
