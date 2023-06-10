@@ -8,7 +8,6 @@ import {
   Radio,
 } from "@heathmont/moon-core-tw";
 import { ControlsCloseSmall } from "@heathmont/moon-icons-tw";
-import { getProvider, getAccount } from "@wagmi/core";
 import { BigNumber, ethers } from "ethers";
 import { parseUnits } from "ethers/lib/utils.js";
 import React, {
@@ -21,6 +20,8 @@ import React, {
 } from "react";
 import {
   erc20ABI,
+  useAccount,
+  useContractRead,
   useNetwork,
   usePrepareSendTransaction,
   useSendTransaction,
@@ -138,14 +139,35 @@ const panels = {
 
 export default panels;
 
-const TimePanel = forwardRef(
+interface ShowThisSection {
+  0: boolean;
+  1: boolean;
+  2: boolean;
+  3: boolean;
+}
+
+interface DataRows {
+  id: string;
+  toAddress: string;
+  destinationToken: string;
+  destinationChain: string;
+  amountOfSourceToken: string;
+}
+interface propType {
+  selectedCategory: Category;
+  showThisSection: ShowThisSection;
+  setShowThisSection: React.Dispatch<React.SetStateAction<ShowThisSection>>;
+  dataRows: DataRows[];
+}
+
+const TimePanel = forwardRef<any, propType>(
   (
     { selectedCategory, showThisSection, setShowThisSection, dataRows },
     ref
   ) => {
     const { chain } = useNetwork();
-    const { address } = getAccount();
-    const provider = getProvider();
+    const { address } = useAccount();
+    const provider = ethers.getDefaultProvider();
 
     const { sourceData, setSourceData } = useContext(SourceContext);
     const [startTime, setStartTime] = useState<string | null>("");
@@ -156,67 +178,68 @@ const TimePanel = forwardRef(
       value: "days",
       label: "days",
     });
-    const [allowance, setAllowance] = useState("");
-    const [callDataApproval, setCallDataApproval] = useState("");
-    const [callDataCreateTimeTxn, setCallDataCreateTimeTxn] = useState("");
-    const interval = useRef<NodeJS.Timer>();
+    const [callDataApproval, setCallDataApproval] =
+      useState<`0x${string}`>("0x");
+    const [callDataCreateTimeTxn, setCallDataCreateTimeTxn] =
+      useState<`0x${string}`>("0x");
 
     const closeModal = () => setIsOpen(false);
     const openModal = () => setIsOpen(true);
 
-    const { config: configApprove } = usePrepareSendTransaction({
-      request: {
-        to:
-          chain && sourceData.sourceToken
-            ? TOKEN_ADDRESSES[chain?.network][sourceData.sourceToken].address
-            : ZERO_ADDRESS,
-        data: callDataApproval,
-      },
-    });
-
-    const { sendTransactionAsync: sendApproveTokenAsyncTxn } =
-      useSendTransaction(configApprove);
-
-    const { config: configCreateTimeTxn } = usePrepareSendTransaction({
-      request: {
-        to: chain
+    const {
+      data: allowance,
+      isError,
+      isLoading,
+    } = useContractRead({
+      address:
+        chain && sourceData.sourceToken
+          ? TOKEN_ADDRESSES[chain?.network][sourceData.sourceToken].address
+          : ZERO_ADDRESS,
+      abi: erc20ABI,
+      functionName: "allowance",
+      args: [
+        address ? address : ZERO_ADDRESS,
+        chain
           ? AUTOPAY_CONTRACT_ADDRESSES[
               chain?.testnet ? "testnets" : "mainnets"
             ][chain?.network]
           : ZERO_ADDRESS,
-        data: callDataCreateTimeTxn,
-        // gasLimit: 3000000,
-      },
+      ],
+      watch: true,
     });
 
-    const { sendTransactionAsync: sendCreateTimeAsyncTxn } =
-      useSendTransaction(configCreateTimeTxn);
+    const {
+      // data,
+      // error,
+      // isLoading,
+      // isError,
+      sendTransactionAsync: sendApproveTokenAsyncTxn,
+    } = useSendTransaction({
+      to:
+        chain && sourceData.sourceToken
+          ? TOKEN_ADDRESSES[chain?.network][sourceData.sourceToken].address
+          : ZERO_ADDRESS,
+      data: callDataApproval,
+      account: address,
+      value: BigInt(0),
+    });
 
-    const fetchAllowance = async () => {
-      let contract;
-
-      try {
-        contract = new ethers.Contract(
-          chain?.testnet && sourceData.sourceToken
-            ? TOKEN_ADDRESSES[chain?.network][sourceData.sourceToken].address
-            : ZERO_ADDRESS,
-          erc20ABI,
-          provider
-        );
-
-        let checkAllowance = await contract.allowance(
-          address ? address : ZERO_ADDRESS,
-          chain
-            ? AUTOPAY_CONTRACT_ADDRESSES[
-                chain?.testnet ? "testnets" : "mainnets"
-              ][chain?.network]
-            : ZERO_ADDRESS
-        );
-        let allowance = checkAllowance.toString();
-
-        setAllowance(allowance);
-      } catch {}
-    };
+    const {
+      // data,
+      // error,
+      // isLoading,
+      // isError,
+      sendTransactionAsync: sendCreateTimeAsyncTxn,
+    } = useSendTransaction({
+      to: chain
+        ? AUTOPAY_CONTRACT_ADDRESSES[chain?.testnet ? "testnets" : "mainnets"][
+            chain?.network
+          ]
+        : ZERO_ADDRESS,
+      data: callDataCreateTimeTxn,
+      account: address,
+      value: BigInt(0),
+    });
 
     const updateCallDataApproval = () => {
       const ERC20Contract = ERC20_CONTRACT(
@@ -234,7 +257,7 @@ const TimePanel = forwardRef(
               ][chain?.network]
             : ZERO_ADDRESS,
           ethers.constants.MaxUint256,
-        ])
+        ]) as `0x${string}`
       );
     };
 
@@ -333,64 +356,90 @@ const TimePanel = forwardRef(
                   ),
               ],
               [
-                ...dataRows.slice(0, -1).map((e) => ({
-                  _fromToken:
+                ...dataRows
+                  .slice(0, -1)
+                  .map((e) =>
                     chain?.testnet && sourceData.sourceToken
                       ? TOKEN_ADDRESSES[chain?.network][sourceData.sourceToken]
                           .address
-                      : ZERO_ADDRESS,
-                  _toToken:
+                      : ZERO_ADDRESS
+                  ),
+              ],
+              [
+                ...dataRows
+                  .slice(0, -1)
+                  .map((e) =>
                     chain?.testnet &&
                     sourceData.sourceToken &&
                     e.destinationChain
                       ? TOKEN_ADDRESSES[e.destinationChain][
                           sourceData.sourceToken
                         ].address
-                      : ZERO_ADDRESS,
-                })),
+                      : ZERO_ADDRESS
+                  ),
               ],
               [
-                ...dataRows.slice(0, -1).map((e) => ({
-                  _toChain: e.destinationChain
-                    ? chainList[e.destinationChain].id
-                    : ZERO_ADDRESS,
-                  _destinationDomain: e.destinationChain
-                    ? CONNEXT_DOMAINS[e.destinationChain]
-                    : ZERO_ADDRESS,
-                  _destinationContract: e.destinationChain
-                    ? AUTOPAY_CONTRACT_ADDRESSES[
-                        chain?.testnet ? "testnets" : "mainnets"
-                      ][e.destinationChain]
-                    : ZERO_ADDRESS,
-                })),
+                ...dataRows
+                  .slice(0, -1)
+                  .map((e) =>
+                    e.destinationChain
+                      ? chainList[e.destinationChain].id
+                      : ZERO_ADDRESS
+                  ),
               ],
-              {
-                _cycles: cycles ? cycles : 1,
-                _startTime: startTime
-                  ? startTime
-                  : Math.trunc(Date.now() / 1000) + 3600,
-                _interval:
-                  Number(intervalCount) *
-                  (intervalType.value === "days"
-                    ? 86400
-                    : intervalType.value === "months"
-                    ? 2629800
-                    : intervalType.value === "weeks"
-                    ? 604800
-                    : intervalType.value === "years"
-                    ? 31536000
-                    : 1),
-                _web3FunctionHash:
-                  "QmbN96rTEy8EYxPNVqCUmZgTZzufvCbNhmsVzM2rephoLa",
-              },
+              [
+                ...dataRows
+                  .slice(0, -1)
+                  .map((e) =>
+                    e.destinationChain
+                      ? CONNEXT_DOMAINS[e.destinationChain]
+                      : ZERO_ADDRESS
+                  ),
+              ],
+              [
+                ...dataRows
+                  .slice(0, -1)
+                  .map((e) =>
+                    e.destinationChain
+                      ? AUTOPAY_CONTRACT_ADDRESSES[
+                          chain?.testnet ? "testnets" : "mainnets"
+                        ][e.destinationChain]
+                      : ZERO_ADDRESS
+                  ),
+              ],
+              [...dataRows.slice(0, -1).map((_) => (cycles ? cycles : 1))],
+              [
+                ...dataRows
+                  .slice(0, -1)
+                  .map((_) =>
+                    startTime ? startTime : Math.trunc(Date.now() / 1000) + 3600
+                  ),
+              ],
+              [
+                ...dataRows
+                  .slice(0, -1)
+                  .map(
+                    (_) =>
+                      Number(intervalCount) *
+                      (intervalType.value === "days"
+                        ? 86400
+                        : intervalType.value === "months"
+                        ? 2629800
+                        : intervalType.value === "weeks"
+                        ? 604800
+                        : intervalType.value === "years"
+                        ? 31536000
+                        : 1)
+                  ),
+              ],
+              "QmRdcGs5h8UP8ETFdS7Yj7iahDTjfQNHMsJp3dYRec5Gf2",
             ]
-          )
+          ) as `0x${string}`
         );
       } catch {}
     };
 
     useEffect(() => {
-      fetchAllowance();
       updateCallDataApproval();
       updateCallDataCreateTimeTxn();
     }, [
@@ -414,6 +463,12 @@ const TimePanel = forwardRef(
             sendCreateTimeAsyncTxn?.();
           else sendApproveTokenAsyncTxn?.();
         } catch {}
+      },
+
+      hasEnoughAllowance() {
+        return BigNumber.from(allowance ? allowance : 0).eq(
+          ethers.constants.MaxUint256
+        );
       },
     }));
 
@@ -527,76 +582,8 @@ const TimePanel = forwardRef(
                             )}
                           </Dropdown>
                         </div>
-                        {/* <div className="px-6 py-4">
-                          <span className="col-span-2 block text-[#AFAEAE]">
-                            Ends
-                          </span>
-                          <Radio
-                            value={value}
-                            onChange={setValue}
-                            name="Form Item"
-                            className="mt-4 space-y-6"
-                          >
-                            <Radio.Option value="option1">
-                              <Radio.Indicator />
-                              Never
-                            </Radio.Option>
-                            <Radio.Option
-                              value="option2"
-                              className="grid grid-cols-3 items-center"
-                            >
-                              <div className="col-span-1 flex gap-2">
-                                <Radio.Indicator />
-                                <span>On</span>
-                              </div>
-                              <div className="relative col-span-2 ml-5 max-w-sm">
-                                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                                  <svg
-                                    aria-hidden="true"
-                                    className="h-5 w-5 text-gray-500 dark:text-gray-400"
-                                    fill="currentColor"
-                                    viewBox="0 0 20 20"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                  >
-                                    <path
-                                      fill-rule="evenodd"
-                                      d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z"
-                                      clip-rule="evenodd"
-                                    ></path>
-                                  </svg>
-                                </div>
-                                <input
-                                  type="date"
-                                  className="block w-full rounded-lg bg-[#262229] p-2.5 pl-10 text-sm "
-                                  placeholder="Select date"
-                                />
-                              </div>
-                            </Radio.Option>
-                            <Radio.Option
-                              value="option2"
-                              className="grid grid-cols-3 items-center"
-                            >
-                              <div className="col-span-1 flex gap-2">
-                                <Radio.Indicator />
-                                <span>After</span>
-                              </div>
-                              <div className="relative col-span-2 ml-5 max-w-sm">
-                                <Input
-                                  type="text"
-                                  value={timesValue}
-                                  onChange={handleChange}
-                                  pattern="[0-9]*"
-                                  inputMode="numeric"
-                                  className="col-span-1 rounded bg-[#262229] text-white"
-                                />
-                              </div>
-                            </Radio.Option>
-                          </Radio>
-                        </div> */}
+
                         <div className="flex justify-end gap-2 p-4 pt-2">
-                          {/* <Button variant="secondary" onClick={closeModal}>
-                            Cancel
-                          </Button> */}
                           <Button
                             className="rounded-md bg-[#262229]"
                             onClick={closeModal}
@@ -612,43 +599,19 @@ const TimePanel = forwardRef(
             )}
           </div>
         </div>
-        {/* <Button
-          size="md"
-          className="mt-7 min-w-[93px] rounded-lg bg-[#1ae77a] text-black"
-          onClick={() => {
-            console.log("works??");
-            try {
-              if (
-                BigNumber.from(allowance ? allowance : 0).eq(
-                  ethers.constants.MaxUint256
-                )
-              )
-                sendCreateTimeAsyncTxn?.();
-              else sendApproveTokenAsyncTxn?.();
-            } catch (e) {
-              console.log("here", e);
-            }
-          }}
-        >
-          {BigNumber.from(allowance ? allowance : 0).eq(
-            ethers.constants.MaxUint256
-          )
-            ? "Confirm"
-            : "Approve"}
-        </Button> */}
       </>
     );
   }
 );
 
-const PriceFeedPanel = forwardRef(
+const PriceFeedPanel = forwardRef<any, propType>(
   (
     { selectedCategory, showThisSection, setShowThisSection, dataRows },
     ref
   ) => {
     const { chain } = useNetwork();
-    const { address } = getAccount();
-    const provider = getProvider();
+    const { address } = useAccount();
+    const provider = ethers.getDefaultProvider();
 
     const { sourceData, setSourceData } = useContext(SourceContext);
     const [isOpen, setIsOpen] = useState(false);
@@ -656,7 +619,6 @@ const PriceFeedPanel = forwardRef(
       value: "days",
       label: "days",
     });
-    const [allowance, setAllowance] = useState("");
     const [token1, setToken1] = useState("MATIC");
     const [token2, setToken2] = useState("USDC");
     const [token1Price, setToken1Price] = useState("");
@@ -665,65 +627,69 @@ const PriceFeedPanel = forwardRef(
     const [startTime, setStartTime] = useState<string | null>("");
     const [cycles, setCycles] = useState<string | null>("");
     const [intervalCount, setIntervalCount] = useState("1");
-    const [callDataApproval, setCallDataApproval] = useState("");
-    const [callDataPriceFeedTxn, setCallDataPriceFeedTxn] = useState("");
+    const [callDataApproval, setCallDataApproval] =
+      useState<`0x${string}`>("0x");
+    const [callDataPriceFeedTxn, setCallDataPriceFeedTxn] =
+      useState<`0x${string}`>("0x");
     const interval = useRef<NodeJS.Timer>();
 
     const closeModal = () => setIsOpen(false);
     const openModal = () => setIsOpen(true);
 
-    const { config: configApprove } = usePrepareSendTransaction({
-      request: {
-        to:
-          chain && sourceData.sourceToken
-            ? TOKEN_ADDRESSES[chain?.network][sourceData.sourceToken].address
-            : ZERO_ADDRESS,
-        data: callDataApproval,
-      },
-    });
-
-    const { sendTransactionAsync: sendApproveTokenAsyncTxn } =
-      useSendTransaction(configApprove);
-
-    const { config: configPriceFeedTimeTxn } = usePrepareSendTransaction({
-      request: {
-        to: chain
+    const {
+      data: allowance,
+      isError,
+      isLoading,
+    } = useContractRead({
+      address:
+        chain && sourceData.sourceToken
+          ? TOKEN_ADDRESSES[chain?.network][sourceData.sourceToken].address
+          : ZERO_ADDRESS,
+      abi: erc20ABI,
+      functionName: "allowance",
+      args: [
+        address ? address : ZERO_ADDRESS,
+        chain
           ? CONDITIONAL_CONTRACT_ADDRESSES[
               chain?.testnet ? "testnets" : "mainnets"
             ][chain?.network]
           : ZERO_ADDRESS,
-        data: callDataPriceFeedTxn,
-      },
+      ],
+      watch: true,
     });
 
-    const { sendTransactionAsync: sendCreatePriceFeedAsyncTxn } =
-      useSendTransaction(configPriceFeedTimeTxn);
+    const {
+      // data,
+      // error,
+      // isLoading,
+      // isError,
+      sendTransactionAsync: sendApproveTokenAsyncTxn,
+    } = useSendTransaction({
+      to:
+        chain && sourceData.sourceToken
+          ? TOKEN_ADDRESSES[chain?.network][sourceData.sourceToken].address
+          : ZERO_ADDRESS,
+      data: callDataApproval,
+      account: address,
+      value: BigInt(0),
+    });
 
-    const fetchAllowance = async () => {
-      let contract;
-
-      try {
-        contract = new ethers.Contract(
-          chain?.testnet && sourceData.sourceToken
-            ? TOKEN_ADDRESSES[chain?.network][sourceData.sourceToken].address
-            : ZERO_ADDRESS,
-          erc20ABI,
-          provider
-        );
-
-        let checkAllowance = await contract.allowance(
-          address ? address : ZERO_ADDRESS,
-          chain
-            ? CONDITIONAL_CONTRACT_ADDRESSES[
-                chain?.testnet ? "testnets" : "mainnets"
-              ][chain?.network]
-            : ZERO_ADDRESS
-        );
-        let allowance = checkAllowance.toString();
-
-        setAllowance(allowance);
-      } catch {}
-    };
+    const {
+      // data,
+      // error,
+      // isLoading,
+      // isError,
+      sendTransactionAsync: sendCreatePriceFeedAsyncTxn,
+    } = useSendTransaction({
+      to: chain
+        ? CONDITIONAL_CONTRACT_ADDRESSES[
+            chain?.testnet ? "testnets" : "mainnets"
+          ][chain?.network]
+        : ZERO_ADDRESS,
+      data: callDataPriceFeedTxn,
+      account: address,
+      value: BigInt(0),
+    });
 
     const updateCallDataApproval = () => {
       const ERC20Contract = ERC20_CONTRACT(
@@ -741,7 +707,7 @@ const PriceFeedPanel = forwardRef(
               ][chain?.network]
             : ZERO_ADDRESS,
           ethers.constants.MaxUint256,
-        ])
+        ]) as `0x${string}`
       );
     };
 
@@ -749,80 +715,80 @@ const PriceFeedPanel = forwardRef(
       const ConditionalContract = CONDITIONAL_CONTRACT(chain, provider);
 
       try {
-        console.log("here boi: ", [
-          [
-            ...dataRows
-              .slice(0, -1)
-              .map((e) => (e.toAddress ? e.toAddress : ZERO_ADDRESS)),
-          ],
-          [
-            ...dataRows
-              .slice(0, -1)
-              .map((e) =>
-                e.amountOfSourceToken
-                  ? parseUnits(
-                      e.amountOfSourceToken,
-                      TOKEN_ADDRESSES[chain?.network][sourceData.sourceToken]
-                        .decimals
-                    )
-                  : "0"
-              ),
-          ],
-          ratio ? parseUnits(ratio, 18) : 0,
-          [
-            ...dataRows.slice(0, -1).map((e) => ({
-              _fromToken:
-                chain?.testnet && sourceData.sourceToken
-                  ? TOKEN_ADDRESSES[chain?.network][sourceData.sourceToken]
-                      .address
-                  : ZERO_ADDRESS,
-              _toToken:
-                chain?.testnet && sourceData.sourceToken && e.destinationChain
-                  ? TOKEN_ADDRESSES[e.destinationChain][sourceData.sourceToken]
-                      .address
-                  : ZERO_ADDRESS,
-              _tokenA: token1
-                ? TOKEN_ADDRESSES_PRICE_FEEDS[token1]
-                : ZERO_ADDRESS,
-              _tokenB: token2
-                ? TOKEN_ADDRESSES_PRICE_FEEDS[token2]
-                : ZERO_ADDRESS,
-            })),
-          ],
-          [
-            ...dataRows.slice(0, -1).map((e) => ({
-              _toChain: e.destinationChain
-                ? chainList[e.destinationChain].id
-                : ZERO_ADDRESS,
-              _destinationDomain: e.destinationChain
-                ? CONNEXT_DOMAINS[e.destinationChain]
-                : ZERO_ADDRESS,
-              _destinationContract: e.destinationChain
-                ? CONDITIONAL_CONTRACT_ADDRESSES[
-                    chain?.testnet ? "testnets" : "mainnets"
-                  ][e.destinationChain]
-                : ZERO_ADDRESS,
-            })),
-          ],
-          {
-            _cycles: cycles ? cycles : 1,
-            _startTime: startTime
-              ? startTime
-              : Math.trunc(Date.now() / 1000) + 3600,
-            _interval:
-              Number(intervalCount) *
-              (intervalType.value === "days"
-                ? 86400
-                : intervalType.value === "months"
-                ? 2629800
-                : intervalType.value === "weeks"
-                ? 604800
-                : intervalType.value === "years"
-                ? 31536000
-                : 1),
-            _web3FunctionHash: "QmSfTUv1XZmsVVRTNWtZqVC78mMPzi5hjSJTHbFHvzrc9p",
-          },
-        ]);
+        // console.log("here boi: ", [
+        //   [
+        //     ...dataRows
+        //       .slice(0, -1)
+        //       .map((e) => (e.toAddress ? e.toAddress : ZERO_ADDRESS)),
+        //   ],
+        //   [
+        //     ...dataRows
+        //       .slice(0, -1)
+        //       .map((e) =>
+        //         e.amountOfSourceToken
+        //           ? parseUnits(
+        //               e.amountOfSourceToken,
+        //               TOKEN_ADDRESSES[chain?.network][sourceData.sourceToken]
+        //                 .decimals
+        //             )
+        //           : "0"
+        //       ),
+        //   ],
+        //   ratio ? parseUnits(ratio, 18) : 0,
+        //   [
+        //     ...dataRows.slice(0, -1).map((e) => ({
+        //       _fromToken:
+        //         chain?.testnet && sourceData.sourceToken
+        //           ? TOKEN_ADDRESSES[chain?.network][sourceData.sourceToken]
+        //               .address
+        //           : ZERO_ADDRESS,
+        //       _toToken:
+        //         chain?.testnet && sourceData.sourceToken && e.destinationChain
+        //           ? TOKEN_ADDRESSES[e.destinationChain][sourceData.sourceToken]
+        //               .address
+        //           : ZERO_ADDRESS,
+        //       _tokenA: token1
+        //         ? TOKEN_ADDRESSES_PRICE_FEEDS[token1]
+        //         : ZERO_ADDRESS,
+        //       _tokenB: token2
+        //         ? TOKEN_ADDRESSES_PRICE_FEEDS[token2]
+        //         : ZERO_ADDRESS,
+        //     })),
+        //   ],
+        //   [
+        //     ...dataRows.slice(0, -1).map((e) => ({
+        //       _toChain: e.destinationChain
+        //         ? chainList[e.destinationChain].id
+        //         : ZERO_ADDRESS,
+        //       _destinationDomain: e.destinationChain
+        //         ? CONNEXT_DOMAINS[e.destinationChain]
+        //         : ZERO_ADDRESS,
+        //       _destinationContract: e.destinationChain
+        //         ? CONDITIONAL_CONTRACT_ADDRESSES[
+        //             chain?.testnet ? "testnets" : "mainnets"
+        //           ][e.destinationChain]
+        //         : ZERO_ADDRESS,
+        //     })),
+        //   ],
+        //   {
+        //     _cycles: cycles ? cycles : 1,
+        //     _startTime: startTime
+        //       ? startTime
+        //       : Math.trunc(Date.now() / 1000) + 3600,
+        //     _interval:
+        //       Number(intervalCount) *
+        //       (intervalType.value === "days"
+        //         ? 86400
+        //         : intervalType.value === "months"
+        //         ? 2629800
+        //         : intervalType.value === "weeks"
+        //         ? 604800
+        //         : intervalType.value === "years"
+        //         ? 31536000
+        //         : 1),
+        //     _web3FunctionHash: "QmSfTUv1XZmsVVRTNWtZqVC78mMPzi5hjSJTHbFHvzrc9p",
+        //   },
+        // ]);
         setCallDataPriceFeedTxn(
           ConditionalContract.interface.encodeFunctionData(
             "_createMultiplePriceFeedAutomate",
@@ -905,13 +871,12 @@ const PriceFeedPanel = forwardRef(
                   "QmbN96rTEy8EYxPNVqCUmZgTZzufvCbNhmsVzM2rephoLa",
               },
             ]
-          )
+          ) as `0x${string}`
         );
       } catch {}
     };
 
     useEffect(() => {
-      fetchAllowance();
       updateCallDataApproval();
       updateCallDataPriceFeedTxn();
     }, [
@@ -933,16 +898,6 @@ const PriceFeedPanel = forwardRef(
       setRatio(Number(token1Price) / Number(token2Price));
     }, [token1Price, token2Price]);
 
-    useEffect(() => {
-      interval.current = setInterval(() => {
-        fetchAllowance();
-      }, 2000);
-
-      return () => {
-        clearTimeout(interval.current);
-      };
-    }, []);
-
     useImperativeHandle(ref, () => ({
       executeTxn() {
         try {
@@ -954,6 +909,12 @@ const PriceFeedPanel = forwardRef(
             sendCreatePriceFeedAsyncTxn?.();
           else sendApproveTokenAsyncTxn?.();
         } catch {}
+      },
+
+      hasEnoughAllowance() {
+        return BigNumber.from(allowance ? allowance : 0).eq(
+          ethers.constants.MaxUint256
+        );
       },
     }));
 
@@ -1078,7 +1039,7 @@ const PriceFeedPanel = forwardRef(
                 disabled
                 id="c-1"
                 className="rounded bg-[#262229] text-white"
-                onChange={(e) => setRatio(e.target.value)}
+                onChange={(e) => setRatio(Number(e.target.value))}
               />
             </div>
             <div>
@@ -1184,76 +1145,8 @@ const PriceFeedPanel = forwardRef(
                           )}
                         </Dropdown>
                       </div>
-                      {/* <div className="px-6 py-4">
-                          <span className="col-span-2 block text-[#AFAEAE]">
-                            Ends
-                          </span>
-                          <Radio
-                            value={value}
-                            onChange={setValue}
-                            name="Form Item"
-                            className="mt-4 space-y-6"
-                          >
-                            <Radio.Option value="option1">
-                              <Radio.Indicator />
-                              Never
-                            </Radio.Option>
-                            <Radio.Option
-                              value="option2"
-                              className="grid grid-cols-3 items-center"
-                            >
-                              <div className="col-span-1 flex gap-2">
-                                <Radio.Indicator />
-                                <span>On</span>
-                              </div>
-                              <div className="relative col-span-2 ml-5 max-w-sm">
-                                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                                  <svg
-                                    aria-hidden="true"
-                                    className="h-5 w-5 text-gray-500 dark:text-gray-400"
-                                    fill="currentColor"
-                                    viewBox="0 0 20 20"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                  >
-                                    <path
-                                      fill-rule="evenodd"
-                                      d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z"
-                                      clip-rule="evenodd"
-                                    ></path>
-                                  </svg>
-                                </div>
-                                <input
-                                  type="date"
-                                  className="block w-full rounded-lg bg-[#262229] p-2.5 pl-10 text-sm "
-                                  placeholder="Select date"
-                                />
-                              </div>
-                            </Radio.Option>
-                            <Radio.Option
-                              value="option2"
-                              className="grid grid-cols-3 items-center"
-                            >
-                              <div className="col-span-1 flex gap-2">
-                                <Radio.Indicator />
-                                <span>After</span>
-                              </div>
-                              <div className="relative col-span-2 ml-5 max-w-sm">
-                                <Input
-                                  type="text"
-                                  value={timesValue}
-                                  onChange={handleChange}
-                                  pattern="[0-9]*"
-                                  inputMode="numeric"
-                                  className="col-span-1 rounded bg-[#262229] text-white"
-                                />
-                              </div>
-                            </Radio.Option>
-                          </Radio>
-                        </div> */}
+
                       <div className="flex justify-end gap-2 p-4 pt-2">
-                        {/* <Button variant="secondary" onClick={closeModal}>
-                            Cancel
-                          </Button> */}
                         <Button
                           className="rounded-md bg-[#262229]"
                           onClick={closeModal}
@@ -1319,14 +1212,14 @@ const PriceFeedPanel = forwardRef(
   }
 );
 
-const GasPricePanel = forwardRef(
+const GasPricePanel = forwardRef<any, propType>(
   (
     { selectedCategory, showThisSection, setShowThisSection, dataRows },
     ref
   ) => {
     const { chain } = useNetwork();
-    const { address } = getAccount();
-    const provider = getProvider();
+    const { address } = useAccount();
+    const provider = ethers.getDefaultProvider();
 
     const { sourceData, setSourceData } = useContext(SourceContext);
     const [isOpen, setIsOpen] = useState(false);
@@ -1334,70 +1227,73 @@ const GasPricePanel = forwardRef(
       value: "days",
       label: "days",
     });
-    const [allowance, setAllowance] = useState("");
     const [gasPrice, setGasPrice] = useState(0);
     const [startTime, setStartTime] = useState<string | null>("");
     const [cycles, setCycles] = useState<string | null>("");
     const [intervalCount, setIntervalCount] = useState("1");
-    const [callDataApproval, setCallDataApproval] = useState("");
-    const [callDataPriceFeedTxn, setCallDataPriceFeedTxn] = useState("");
+    const [callDataApproval, setCallDataApproval] =
+      useState<`0x${string}`>("0x");
+    const [callDataPriceFeedTxn, setCallDataPriceFeedTxn] =
+      useState<`0x${string}`>("0x");
     const interval = useRef<NodeJS.Timer>();
 
     const closeModal = () => setIsOpen(false);
     const openModal = () => setIsOpen(true);
 
-    const { config: configApprove } = usePrepareSendTransaction({
-      request: {
-        to:
-          chain && sourceData.sourceToken
-            ? TOKEN_ADDRESSES[chain?.network][sourceData.sourceToken].address
-            : ZERO_ADDRESS,
-        data: callDataApproval,
-      },
-    });
-
-    const { sendTransactionAsync: sendApproveTokenAsyncTxn } =
-      useSendTransaction(configApprove);
-
-    const { config: configGasPriceTimeTxn } = usePrepareSendTransaction({
-      request: {
-        to: chain
+    const {
+      data: allowance,
+      isError,
+      isLoading,
+    } = useContractRead({
+      address:
+        chain && sourceData.sourceToken
+          ? TOKEN_ADDRESSES[chain?.network][sourceData.sourceToken].address
+          : ZERO_ADDRESS,
+      abi: erc20ABI,
+      functionName: "allowance",
+      args: [
+        address ? address : ZERO_ADDRESS,
+        chain
           ? CONDITIONAL_CONTRACT_ADDRESSES[
               chain?.testnet ? "testnets" : "mainnets"
             ][chain?.network]
           : ZERO_ADDRESS,
-        data: callDataPriceFeedTxn,
-      },
+      ],
+      watch: true,
     });
 
-    const { sendTransactionAsync: sendCreateGasPriceAsyncTxn } =
-      useSendTransaction(configGasPriceTimeTxn);
+    const {
+      // data,
+      // error,
+      // isLoading,
+      // isError,
+      sendTransactionAsync: sendApproveTokenAsyncTxn,
+    } = useSendTransaction({
+      to:
+        chain && sourceData.sourceToken
+          ? TOKEN_ADDRESSES[chain?.network][sourceData.sourceToken].address
+          : ZERO_ADDRESS,
+      data: callDataApproval,
+      account: address,
+      value: BigInt(0),
+    });
 
-    const fetchAllowance = async () => {
-      let contract;
-
-      try {
-        contract = new ethers.Contract(
-          chain?.testnet && sourceData.sourceToken
-            ? TOKEN_ADDRESSES[chain?.network][sourceData.sourceToken].address
-            : ZERO_ADDRESS,
-          erc20ABI,
-          provider
-        );
-
-        let checkAllowance = await contract.allowance(
-          address ? address : ZERO_ADDRESS,
-          chain
-            ? CONDITIONAL_CONTRACT_ADDRESSES[
-                chain?.testnet ? "testnets" : "mainnets"
-              ][chain?.network]
-            : ZERO_ADDRESS
-        );
-        let allowance = checkAllowance.toString();
-
-        setAllowance(allowance);
-      } catch {}
-    };
+    const {
+      // data,
+      // error,
+      // isLoading,
+      // isError,
+      sendTransactionAsync: sendCreateGasPriceAsyncTxn,
+    } = useSendTransaction({
+      to: chain
+        ? CONDITIONAL_CONTRACT_ADDRESSES[
+            chain?.testnet ? "testnets" : "mainnets"
+          ][chain?.network]
+        : ZERO_ADDRESS,
+      data: callDataPriceFeedTxn,
+      account: address,
+      value: BigInt(0),
+    });
 
     const updateCallDataApproval = () => {
       const ERC20Contract = ERC20_CONTRACT(
@@ -1415,7 +1311,7 @@ const GasPricePanel = forwardRef(
               ][chain?.network]
             : ZERO_ADDRESS,
           ethers.constants.MaxUint256,
-        ])
+        ]) as `0x${string}`
       );
     };
 
@@ -1572,13 +1468,12 @@ const GasPricePanel = forwardRef(
                   "QmaR3iZVSzJJ43uWRbrbUvs2CUheHVXCTiU6hJ85asD2RW",
               },
             ]
-          )
+          ) as `0x${string}`
         );
       } catch {}
     };
 
     useEffect(() => {
-      fetchAllowance();
       updateCallDataApproval();
       updateCallDataGasPriceTxn();
     }, [
@@ -1604,17 +1499,13 @@ const GasPricePanel = forwardRef(
           else sendApproveTokenAsyncTxn?.();
         } catch {}
       },
+
+      hasEnoughAllowance() {
+        return BigNumber.from(allowance ? allowance : 0).eq(
+          ethers.constants.MaxUint256
+        );
+      },
     }));
-
-    useEffect(() => {
-      interval.current = setInterval(() => {
-        fetchAllowance();
-      }, 2000);
-
-      return () => {
-        clearTimeout(interval.current);
-      };
-    }, []);
 
     return (
       <>
@@ -1631,7 +1522,7 @@ const GasPricePanel = forwardRef(
                   id="c-1"
                   className="rounded bg-[#262229] text-white"
                   onChange={(e) => {
-                    setGasPrice(e.target.value);
+                    setGasPrice(Number(e.target.value));
                     setShowThisSection({
                       ...showThisSection,
                       2: true,
@@ -1783,76 +1674,8 @@ const GasPricePanel = forwardRef(
                           )}
                         </Dropdown>
                       </div>
-                      {/* <div className="px-6 py-4">
-                          <span className="col-span-2 block text-[#AFAEAE]">
-                            Ends
-                          </span>
-                          <Radio
-                            value={value}
-                            onChange={setValue}
-                            name="Form Item"
-                            className="mt-4 space-y-6"
-                          >
-                            <Radio.Option value="option1">
-                              <Radio.Indicator />
-                              Never
-                            </Radio.Option>
-                            <Radio.Option
-                              value="option2"
-                              className="grid grid-cols-3 items-center"
-                            >
-                              <div className="col-span-1 flex gap-2">
-                                <Radio.Indicator />
-                                <span>On</span>
-                              </div>
-                              <div className="relative col-span-2 ml-5 max-w-sm">
-                                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                                  <svg
-                                    aria-hidden="true"
-                                    className="h-5 w-5 text-gray-500 dark:text-gray-400"
-                                    fill="currentColor"
-                                    viewBox="0 0 20 20"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                  >
-                                    <path
-                                      fill-rule="evenodd"
-                                      d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z"
-                                      clip-rule="evenodd"
-                                    ></path>
-                                  </svg>
-                                </div>
-                                <input
-                                  type="date"
-                                  className="block w-full rounded-lg bg-[#262229] p-2.5 pl-10 text-sm "
-                                  placeholder="Select date"
-                                />
-                              </div>
-                            </Radio.Option>
-                            <Radio.Option
-                              value="option2"
-                              className="grid grid-cols-3 items-center"
-                            >
-                              <div className="col-span-1 flex gap-2">
-                                <Radio.Indicator />
-                                <span>After</span>
-                              </div>
-                              <div className="relative col-span-2 ml-5 max-w-sm">
-                                <Input
-                                  type="text"
-                                  value={timesValue}
-                                  onChange={handleChange}
-                                  pattern="[0-9]*"
-                                  inputMode="numeric"
-                                  className="col-span-1 rounded bg-[#262229] text-white"
-                                />
-                              </div>
-                            </Radio.Option>
-                          </Radio>
-                        </div> */}
+
                       <div className="flex justify-end gap-2 p-4 pt-2">
-                        {/* <Button variant="secondary" onClick={closeModal}>
-                            Cancel
-                          </Button> */}
                         <Button
                           className="rounded-md bg-[#262229]"
                           onClick={closeModal}
@@ -1872,7 +1695,7 @@ const GasPricePanel = forwardRef(
   }
 );
 
-const ABIPanel = forwardRef(
+const ABIPanel = forwardRef<any, propType>(
   ({ selectedCategory, showThisSection, setShowThisSection }, ref) => {
     const [fromToken, setFromToken] = useState<Tokens | null>(null);
     const [isOpen, setIsOpen] = useState(false);
@@ -1882,15 +1705,15 @@ const ABIPanel = forwardRef(
     });
     const [value, setValue] = useState("");
 
-    const handleChange = (e) => {
-      const inputValue = e.target.value;
+    // const handleChange = (e) => {
+    //   const inputValue = e.target.value;
 
-      if (!isNaN(inputValue) && inputValue !== "") {
-        setTimesValue(inputValue + " times");
-      } else {
-        setTimesValue("");
-      }
-    };
+    //   if (!isNaN(inputValue) && inputValue !== "") {
+    //     setTimesValue(inputValue + " times");
+    //   } else {
+    //     setTimesValue("");
+    //   }
+    // };
 
     const closeModal = () => setIsOpen(false);
     const openModal = () => setIsOpen(true);
@@ -2033,8 +1856,8 @@ const ABIPanel = forwardRef(
                           <div className="relative col-span-2 ml-5 max-w-sm">
                             <Input
                               type="text"
-                              value={timesValue}
-                              onChange={handleChange}
+                              // value={timesValue}
+                              // onChange={handleChange}
                               pattern="[0-9]*"
                               inputMode="numeric"
                               className="col-span-1 rounded bg-[#262229] text-white"
