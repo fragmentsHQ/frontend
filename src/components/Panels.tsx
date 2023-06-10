@@ -23,7 +23,6 @@ import {
   useAccount,
   useContractRead,
   useNetwork,
-  usePrepareSendTransaction,
   useSendTransaction,
 } from "wagmi";
 import * as chainList from "wagmi/chains";
@@ -193,7 +192,7 @@ const TimePanel = forwardRef<any, propType>(
     } = useContractRead({
       address:
         chain && sourceData.sourceToken
-          ? TOKEN_ADDRESSES[chain?.network][sourceData.sourceToken].address
+          ? TOKEN_ADDRESSES[chain?.id][sourceData.sourceToken].address
           : ZERO_ADDRESS,
       abi: erc20ABI,
       functionName: "allowance",
@@ -202,7 +201,7 @@ const TimePanel = forwardRef<any, propType>(
         chain
           ? AUTOPAY_CONTRACT_ADDRESSES[
               chain?.testnet ? "testnets" : "mainnets"
-            ][chain?.network]
+            ][chain?.id]
           : ZERO_ADDRESS,
       ],
       watch: true,
@@ -217,7 +216,7 @@ const TimePanel = forwardRef<any, propType>(
     } = useSendTransaction({
       to:
         chain && sourceData.sourceToken
-          ? TOKEN_ADDRESSES[chain?.network][sourceData.sourceToken].address
+          ? TOKEN_ADDRESSES[chain?.id][sourceData.sourceToken].address
           : ZERO_ADDRESS,
       data: callDataApproval,
       account: address,
@@ -233,7 +232,7 @@ const TimePanel = forwardRef<any, propType>(
     } = useSendTransaction({
       to: chain
         ? AUTOPAY_CONTRACT_ADDRESSES[chain?.testnet ? "testnets" : "mainnets"][
-            chain?.network
+            chain?.id
           ]
         : ZERO_ADDRESS,
       data: callDataCreateTimeTxn,
@@ -244,7 +243,7 @@ const TimePanel = forwardRef<any, propType>(
     const updateCallDataApproval = () => {
       const ERC20Contract = ERC20_CONTRACT(
         chain && sourceData.sourceToken
-          ? TOKEN_ADDRESSES[chain?.network][sourceData.sourceToken].address
+          ? TOKEN_ADDRESSES[chain?.id][sourceData.sourceToken].address
           : ZERO_ADDRESS,
         provider
       );
@@ -254,7 +253,7 @@ const TimePanel = forwardRef<any, propType>(
           chain
             ? AUTOPAY_CONTRACT_ADDRESSES[
                 chain?.testnet ? "testnets" : "mainnets"
-              ][chain?.network]
+              ][chain?.id]
             : ZERO_ADDRESS,
           ethers.constants.MaxUint256,
         ]) as `0x${string}`
@@ -264,73 +263,6 @@ const TimePanel = forwardRef<any, propType>(
     const updateCallDataCreateTimeTxn = () => {
       const AutoPayContract = AUTOPAY_CONTRACT(chain, provider);
 
-      console.log("hereNow: ", [
-        [
-          ...dataRows
-            .slice(0, -1)
-            .map((e) => (e.toAddress ? e.toAddress : ZERO_ADDRESS)),
-        ],
-        [
-          ...dataRows
-            .slice(0, -1)
-            .map((e) =>
-              e.amountOfSourceToken
-                ? parseUnits(
-                    e.amountOfSourceToken,
-                    TOKEN_ADDRESSES[chain?.network][sourceData.sourceToken]
-                      .decimals
-                  )
-                : "0"
-            ),
-        ],
-        [
-          ...dataRows.slice(0, -1).map((e) => ({
-            _fromToken:
-              chain?.testnet && sourceData.sourceToken
-                ? TOKEN_ADDRESSES[chain?.network][sourceData.sourceToken]
-                    .address
-                : ZERO_ADDRESS,
-            _toToken:
-              chain?.testnet && sourceData.sourceToken && e.destinationChain
-                ? TOKEN_ADDRESSES[e.destinationChain][sourceData.sourceToken]
-                    .address
-                : ZERO_ADDRESS,
-          })),
-        ],
-        [
-          ...dataRows.slice(0, -1).map((e) => ({
-            _toChain: e.destinationChain
-              ? chainList[e.destinationChain].id
-              : ZERO_ADDRESS,
-            _destinationDomain: e.destinationChain
-              ? CONNEXT_DOMAINS[e.destinationChain]
-              : ZERO_ADDRESS,
-            _destinationContract: e.destinationChain
-              ? AUTOPAY_CONTRACT_ADDRESSES[
-                  chain?.testnet ? "testnets" : "mainnets"
-                ][e.destinationChain]
-              : ZERO_ADDRESS,
-          })),
-        ],
-        {
-          _cycles: cycles ? cycles : 1,
-          _startTime: startTime
-            ? startTime
-            : Math.trunc(Date.now() / 1000) + 3600,
-          _interval:
-            Number(intervalCount) *
-            (intervalType.value === "days"
-              ? 86400
-              : intervalType.value === "months"
-              ? 2629800
-              : intervalType.value === "weeks"
-              ? 604800
-              : intervalType.value === "years"
-              ? 31536000
-              : 1),
-          _web3FunctionHash: "QmbN96rTEy8EYxPNVqCUmZgTZzufvCbNhmsVzM2rephoLa",
-        },
-      ]);
       try {
         setCallDataCreateTimeTxn(
           AutoPayContract.interface.encodeFunctionData(
@@ -360,7 +292,7 @@ const TimePanel = forwardRef<any, propType>(
                   .slice(0, -1)
                   .map((e) =>
                     chain?.testnet && sourceData.sourceToken
-                      ? TOKEN_ADDRESSES[chain?.network][sourceData.sourceToken]
+                      ? TOKEN_ADDRESSES[chain?.id][sourceData.sourceToken]
                           .address
                       : ZERO_ADDRESS
                   ),
@@ -382,9 +314,7 @@ const TimePanel = forwardRef<any, propType>(
                 ...dataRows
                   .slice(0, -1)
                   .map((e) =>
-                    e.destinationChain
-                      ? chainList[e.destinationChain].id
-                      : ZERO_ADDRESS
+                    e.destinationChain ? e.destinationChain : ZERO_ADDRESS
                   ),
               ],
               [
@@ -643,7 +573,7 @@ const PriceFeedPanel = forwardRef<any, propType>(
     } = useContractRead({
       address:
         chain && sourceData.sourceToken
-          ? TOKEN_ADDRESSES[chain?.network][sourceData.sourceToken].address
+          ? TOKEN_ADDRESSES[chain?.id][sourceData.sourceToken].address
           : ZERO_ADDRESS,
       abi: erc20ABI,
       functionName: "allowance",
@@ -652,7 +582,7 @@ const PriceFeedPanel = forwardRef<any, propType>(
         chain
           ? CONDITIONAL_CONTRACT_ADDRESSES[
               chain?.testnet ? "testnets" : "mainnets"
-            ][chain?.network]
+            ][chain?.id]
           : ZERO_ADDRESS,
       ],
       watch: true,
@@ -667,7 +597,7 @@ const PriceFeedPanel = forwardRef<any, propType>(
     } = useSendTransaction({
       to:
         chain && sourceData.sourceToken
-          ? TOKEN_ADDRESSES[chain?.network][sourceData.sourceToken].address
+          ? TOKEN_ADDRESSES[chain?.id][sourceData.sourceToken].address
           : ZERO_ADDRESS,
       data: callDataApproval,
       account: address,
@@ -684,7 +614,7 @@ const PriceFeedPanel = forwardRef<any, propType>(
       to: chain
         ? CONDITIONAL_CONTRACT_ADDRESSES[
             chain?.testnet ? "testnets" : "mainnets"
-          ][chain?.network]
+          ][chain?.id]
         : ZERO_ADDRESS,
       data: callDataPriceFeedTxn,
       account: address,
@@ -694,7 +624,7 @@ const PriceFeedPanel = forwardRef<any, propType>(
     const updateCallDataApproval = () => {
       const ERC20Contract = ERC20_CONTRACT(
         chain && sourceData.sourceToken
-          ? TOKEN_ADDRESSES[chain?.network][sourceData.sourceToken].address
+          ? TOKEN_ADDRESSES[chain?.id][sourceData.sourceToken].address
           : ZERO_ADDRESS,
         provider
       );
@@ -704,7 +634,7 @@ const PriceFeedPanel = forwardRef<any, propType>(
           chain
             ? CONDITIONAL_CONTRACT_ADDRESSES[
                 chain?.testnet ? "testnets" : "mainnets"
-              ][chain?.network]
+              ][chain?.id]
             : ZERO_ADDRESS,
           ethers.constants.MaxUint256,
         ]) as `0x${string}`
@@ -728,7 +658,7 @@ const PriceFeedPanel = forwardRef<any, propType>(
         //         e.amountOfSourceToken
         //           ? parseUnits(
         //               e.amountOfSourceToken,
-        //               TOKEN_ADDRESSES[chain?.network][sourceData.sourceToken]
+        //               TOKEN_ADDRESSES[chain?.id][sourceData.sourceToken]
         //                 .decimals
         //             )
         //           : "0"
@@ -739,7 +669,7 @@ const PriceFeedPanel = forwardRef<any, propType>(
         //     ...dataRows.slice(0, -1).map((e) => ({
         //       _fromToken:
         //         chain?.testnet && sourceData.sourceToken
-        //           ? TOKEN_ADDRESSES[chain?.network][sourceData.sourceToken]
+        //           ? TOKEN_ADDRESSES[chain?.id][sourceData.sourceToken]
         //               .address
         //           : ZERO_ADDRESS,
         //       _toToken:
@@ -805,9 +735,8 @@ const PriceFeedPanel = forwardRef<any, propType>(
                     e.amountOfSourceToken
                       ? parseUnits(
                           e.amountOfSourceToken,
-                          TOKEN_ADDRESSES[chain?.network][
-                            sourceData.sourceToken
-                          ].decimals
+                          TOKEN_ADDRESSES[chain?.id][sourceData.sourceToken]
+                            .decimals
                         )
                       : "0"
                   ),
@@ -817,7 +746,7 @@ const PriceFeedPanel = forwardRef<any, propType>(
                 ...dataRows.slice(0, -1).map((e) => ({
                   _fromToken:
                     chain?.testnet && sourceData.sourceToken
-                      ? TOKEN_ADDRESSES[chain?.network][sourceData.sourceToken]
+                      ? TOKEN_ADDRESSES[chain?.id][sourceData.sourceToken]
                           .address
                       : ZERO_ADDRESS,
                   _toToken:
@@ -1247,7 +1176,7 @@ const GasPricePanel = forwardRef<any, propType>(
     } = useContractRead({
       address:
         chain && sourceData.sourceToken
-          ? TOKEN_ADDRESSES[chain?.network][sourceData.sourceToken].address
+          ? TOKEN_ADDRESSES[chain?.id][sourceData.sourceToken].address
           : ZERO_ADDRESS,
       abi: erc20ABI,
       functionName: "allowance",
@@ -1256,7 +1185,7 @@ const GasPricePanel = forwardRef<any, propType>(
         chain
           ? CONDITIONAL_CONTRACT_ADDRESSES[
               chain?.testnet ? "testnets" : "mainnets"
-            ][chain?.network]
+            ][chain?.id]
           : ZERO_ADDRESS,
       ],
       watch: true,
@@ -1271,7 +1200,7 @@ const GasPricePanel = forwardRef<any, propType>(
     } = useSendTransaction({
       to:
         chain && sourceData.sourceToken
-          ? TOKEN_ADDRESSES[chain?.network][sourceData.sourceToken].address
+          ? TOKEN_ADDRESSES[chain?.id][sourceData.sourceToken].address
           : ZERO_ADDRESS,
       data: callDataApproval,
       account: address,
@@ -1288,7 +1217,7 @@ const GasPricePanel = forwardRef<any, propType>(
       to: chain
         ? CONDITIONAL_CONTRACT_ADDRESSES[
             chain?.testnet ? "testnets" : "mainnets"
-          ][chain?.network]
+          ][chain?.id]
         : ZERO_ADDRESS,
       data: callDataPriceFeedTxn,
       account: address,
@@ -1298,7 +1227,7 @@ const GasPricePanel = forwardRef<any, propType>(
     const updateCallDataApproval = () => {
       const ERC20Contract = ERC20_CONTRACT(
         chain && sourceData.sourceToken
-          ? TOKEN_ADDRESSES[chain?.network][sourceData.sourceToken].address
+          ? TOKEN_ADDRESSES[chain?.id][sourceData.sourceToken].address
           : ZERO_ADDRESS,
         provider
       );
@@ -1308,7 +1237,7 @@ const GasPricePanel = forwardRef<any, propType>(
           chain
             ? CONDITIONAL_CONTRACT_ADDRESSES[
                 chain?.testnet ? "testnets" : "mainnets"
-              ][chain?.network]
+              ][chain?.id]
             : ZERO_ADDRESS,
           ethers.constants.MaxUint256,
         ]) as `0x${string}`
@@ -1332,7 +1261,7 @@ const GasPricePanel = forwardRef<any, propType>(
                 e.amountOfSourceToken
                   ? parseUnits(
                       e.amountOfSourceToken,
-                      TOKEN_ADDRESSES[chain?.network][sourceData.sourceToken]
+                      TOKEN_ADDRESSES[chain?.id][sourceData.sourceToken]
                         .decimals
                     )
                   : "0"
@@ -1343,8 +1272,7 @@ const GasPricePanel = forwardRef<any, propType>(
             ...dataRows.slice(0, -1).map((e) => ({
               _fromToken:
                 chain?.testnet && sourceData.sourceToken
-                  ? TOKEN_ADDRESSES[chain?.network][sourceData.sourceToken]
-                      .address
+                  ? TOKEN_ADDRESSES[chain?.id][sourceData.sourceToken].address
                   : ZERO_ADDRESS,
               _toToken:
                 chain?.testnet && sourceData.sourceToken && e.destinationChain
@@ -1406,9 +1334,8 @@ const GasPricePanel = forwardRef<any, propType>(
                     e.amountOfSourceToken
                       ? parseUnits(
                           e.amountOfSourceToken,
-                          TOKEN_ADDRESSES[chain?.network][
-                            sourceData.sourceToken
-                          ].decimals
+                          TOKEN_ADDRESSES[chain?.id][sourceData.sourceToken]
+                            .decimals
                         )
                       : "0"
                   ),
@@ -1418,7 +1345,7 @@ const GasPricePanel = forwardRef<any, propType>(
                 ...dataRows.slice(0, -1).map((e) => ({
                   _fromToken:
                     chain?.testnet && sourceData.sourceToken
-                      ? TOKEN_ADDRESSES[chain?.network][sourceData.sourceToken]
+                      ? TOKEN_ADDRESSES[chain?.id][sourceData.sourceToken]
                           .address
                       : ZERO_ADDRESS,
                   _toToken:

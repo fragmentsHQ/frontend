@@ -4,6 +4,7 @@ import React, { useContext, useEffect, useRef, useState } from "react";
 import { useNetwork } from "wagmi";
 import {
   AUTOPAY_CONTRACT_ADDRESSES,
+  CONDITIONAL_CONTRACT_ADDRESSES,
   TOKEN_ADDRESSES,
 } from "../constants/constants";
 import { SourceContext } from "../hooks/context";
@@ -21,6 +22,7 @@ import { Pagination } from "carbon-components-react";
 import { useCSVReader } from "react-papaparse";
 import panels from "../components/Panels";
 import { ArrowUpCircleIcon, CheckIcon } from "@heroicons/react/20/solid";
+import { getChainNameFromID } from "../utils";
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(" ");
@@ -57,6 +59,7 @@ const Main = () => {
   const { sourceData, setSourceData } = useContext(SourceContext);
   const { CSVReader } = useCSVReader();
   const panelRef = useRef(null);
+  const currPanel = useRef(0);
   const [dataRows, setDataRows] = useState<
     {
       id: string;
@@ -146,7 +149,7 @@ const Main = () => {
                   </Dropdown.Select>
                   <Dropdown.Options className="z-[10] rounded-lg bg-[#262229]">
                     {chain?.network
-                      ? Object.keys(TOKEN_ADDRESSES[chain?.network]).map(
+                      ? Object.keys(TOKEN_ADDRESSES[chain?.id]).map(
                           (token, index) => (
                             <Dropdown.Option value={token} key={index}>
                               {({ selected, active }) => {
@@ -197,7 +200,7 @@ const Main = () => {
                   </Dropdown.Select>
                   <Dropdown.Options className="z-[10] rounded-lg bg-[#262229]">
                     {chain?.network
-                      ? Object.keys(TOKEN_ADDRESSES[chain?.network]).map(
+                      ? Object.keys(TOKEN_ADDRESSES[chain?.id]).map(
                           (token, index) => (
                             <Dropdown.Option value={token} key={index}>
                               {({ selected, active }) => {
@@ -294,7 +297,11 @@ const Main = () => {
           showThisSection[1] ? "opacity-100" : " opacity-0"
         )}
       >
-        <Tab.Group>
+        <Tab.Group
+          onChange={(idx) => {
+            currPanel.current = idx;
+          }}
+        >
           <div className="rounded-xl bg-[#282828] p-5">
             <Tab.List className="grid grid-cols-4 gap-[1px] space-x-1 rounded-xl bg-[#464646] p-[5px]">
               {Object.keys(panels).map((panel) => {
@@ -561,20 +568,28 @@ const Main = () => {
                                           <div className="flex items-center gap-2">
                                             <img
                                               className="h-[1.2rem] w-[1.2rem] rounded-full"
-                                              src={`/logo/chains/${cell.value}.png`}
+                                              src={`/logo/chains/${getChainNameFromID(
+                                                cell.value
+                                              )}.png`}
                                             />
-                                            {cell.value}
+                                            {getChainNameFromID(cell.value)}
                                           </div>
                                         )}
                                       </Dropdown.Select>
                                       <Dropdown.Options className="z-10 min-w-[106%] bg-[#262229]">
                                         {chain
                                           ? Object.keys(
-                                              AUTOPAY_CONTRACT_ADDRESSES[
-                                                chain?.testnet
-                                                  ? "testnets"
-                                                  : "mainnets"
-                                              ]
+                                              currPanel.current === 0
+                                                ? AUTOPAY_CONTRACT_ADDRESSES[
+                                                    chain?.testnet
+                                                      ? "testnets"
+                                                      : "mainnets"
+                                                  ]
+                                                : CONDITIONAL_CONTRACT_ADDRESSES[
+                                                    chain?.testnet
+                                                      ? "testnets"
+                                                      : "mainnets"
+                                                  ]
                                             ).map((chain, index) => (
                                               <Dropdown.Option
                                                 value={chain}
@@ -588,10 +603,14 @@ const Main = () => {
                                                     >
                                                       <img
                                                         className="h-[1.2rem] w-[1.2rem] rounded-full"
-                                                        src={`/logo/chains/${chain}.png`}
+                                                        src={`/logo/chains/${getChainNameFromID(
+                                                          chain
+                                                        )}.png`}
                                                       />
                                                       <MenuItem.Title>
-                                                        {chain}
+                                                        {getChainNameFromID(
+                                                          chain
+                                                        )}
                                                       </MenuItem.Title>
                                                     </MenuItem>
                                                   );
