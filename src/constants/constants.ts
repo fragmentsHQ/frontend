@@ -6,52 +6,52 @@ import Treasury from "./treasury_abi.json";
 
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 
-const ETH = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
+const ETH = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE";
 
 const AUTOPAY_CONTRACT_ADDRESSES = {
   mainnets: {
-    polygon: "0x",
-    ethereum: "0x",
-    optimism: "0x",
-    arbitrum: "0x",
-    bsc: "0x",
+    137: "0x",
+    1: "0x",
+    10: "0x",
+    42161: "0x",
+    56: "0x",
   },
   testnets: {
-    polygonMumbai: "0x7f464d4f3D46552F936cb68c21a0A2dB3E32919F",
-    goerli: "0xa8e3315ce15caddb4616aefd073e4cbf002c5d73",
+    80001: "0x7f464d4f3D46552F936cb68c21a0A2dB3E32919F",
+    5: "0xa8e3315ce15caddb4616aefd073e4cbf002c5d73",
   },
 };
 
 const CONDITIONAL_CONTRACT_ADDRESSES = {
   mainnets: {
-    polygon: "0x",
-    ethereum: "0x",
-    optimism: "0x",
-    arbitrum: "0x",
-    bsc: "0x",
+    137: "0x",
+    1: "0x",
+    10: "0x",
+    42164: "0x",
+    56: "0x",
   },
   testnets: {
-    polygonMumbai: "0x927CFeBA7c83f2626ca09A815Bce899190Cb5800",
-    goerli: "0xDc7EcF12CFf43ea2d40Ad475b6BB0C5Fe6dD368A",
+    80001: "0x927CFeBA7c83f2626ca09A815Bce899190Cb5800",
+    5: "0xDc7EcF12CFf43ea2d40Ad475b6BB0C5Fe6dD368A",
   },
 };
 
 const TREASURY_CONTRACT_ADDRESSES = {
   mainnets: {
-    polygon: "0x",
-    ethereum: "0x",
-    optimism: "0x",
-    arbitrum: "0x",
-    bsc: "0x",
+    137: "0x",
+    1: "0x",
+    10: "0x",
+    42164: "0x",
+    56: "0x",
   },
   testnets: {
-    polygonMumbai: "0x1Ff5C1D4713772C5AA17d551039d9599Bc65C31C",
-    goerli: "0x6e2b6959c81183dCe1EB5819E573092bee28511b",
+    80001: "0x1Ff5C1D4713772C5AA17d551039d9599Bc65C31C",
+    5: "0x6e2b6959c81183dCe1EB5819E573092bee28511b",
   },
 };
 
 const TOKEN_ADDRESSES = {
-  polygon: {
+  137: {
     USDC: {
       address: "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174",
       decimals: 6,
@@ -65,7 +65,7 @@ const TOKEN_ADDRESSES = {
       decimals: 18,
     },
   },
-  mainnet: {
+  1: {
     USDC: {
       address: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
       decimals: 6,
@@ -79,31 +79,31 @@ const TOKEN_ADDRESSES = {
       decimals: 18,
     },
   },
-  goerli: {
+  5: {
     TEST: {
       address: "0x7ea6eA49B0b0Ae9c5db7907d139D9Cd3439862a1",
       decimals: 18,
     },
   },
-  optimismGoerli: {
+  420: {
     TEST: {
       address: "0x68Db1c8d85C09d546097C65ec7DCBFF4D6497CbF",
       decimals: 18,
     },
   },
-  polygonMumbai: {
+  80001: {
     TEST: {
       address: "0xeDb95D8037f769B72AAab41deeC92903A98C9E16",
       decimals: 18,
     },
   },
-  arbitrumGoerli: {
+  421613: {
     TEST: {
       address: "0xDC805eAaaBd6F68904cA706C221c72F8a8a68F9f",
       decimals: 18,
     },
   },
-  "polygon-zkevm": {
+  1101: {
     TEST: {
       address: "0x5f921E4DE609472632CEFc72a3846eCcfbed4ed8",
       decimals: 18,
@@ -123,20 +123,20 @@ const TOKEN_ADDRESSES_PRICE_FEEDS = {
 };
 
 const CONNEXT_DOMAINS = {
-  goerli: "1735353714",
-  optimismGoerli: "1735356532",
-  polygonMumbai: "9991",
-  arbitrumGoerli: "1734439522",
-  polygonZkevmTestnet: "1887071092",
+  5: "1735353714",
+  420: "1735356532",
+  80001: "9991",
+  421613: "1734439522",
+  1442: "1887071092",
 };
 
 const AUTOPAY_CONTRACT = (chain: Chain, provider) =>
   new ethers.Contract(
     chain
       ? AUTOPAY_CONTRACT_ADDRESSES[chain?.testnet ? "testnets" : "mainnets"][
-      chain?.network
-      ]
-      : AUTOPAY_CONTRACT_ADDRESSES["testnets"]["goerli"],
+          chain?.id
+        ]
+      : AUTOPAY_CONTRACT_ADDRESSES["testnets"][5],
     Autopay.abi,
     provider
   );
@@ -145,9 +145,9 @@ const CONDITIONAL_CONTRACT = (chain: Chain, provider) =>
   new ethers.Contract(
     chain
       ? CONDITIONAL_CONTRACT_ADDRESSES[
-      chain?.testnet ? "testnets" : "mainnets"
-      ][chain?.network]
-      : CONDITIONAL_CONTRACT_ADDRESSES["testnets"]["goerli"],
+          chain?.testnet ? "testnets" : "mainnets"
+        ][chain?.id]
+      : CONDITIONAL_CONTRACT_ADDRESSES["testnets"][5],
     Conditional.abi,
     provider
   );
@@ -155,10 +155,10 @@ const CONDITIONAL_CONTRACT = (chain: Chain, provider) =>
 const TREASURY_CONTRACT = (chain: Chain, provider) =>
   new ethers.Contract(
     chain
-      ? TREASURY_CONTRACT_ADDRESSES[
-      chain?.testnet ? "testnets" : "mainnets"
-      ][chain?.network]
-      : TREASURY_CONTRACT_ADDRESSES["testnets"]["goerli"],
+      ? TREASURY_CONTRACT_ADDRESSES[chain?.testnet ? "testnets" : "mainnets"][
+          chain?.id
+        ]
+      : TREASURY_CONTRACT_ADDRESSES["testnets"][5],
     Treasury.abi,
     provider
   );
@@ -178,5 +178,5 @@ export {
   ZERO_ADDRESS,
   CONNEXT_DOMAINS,
   TOKEN_ADDRESSES_PRICE_FEEDS,
-  ETH
+  ETH,
 };

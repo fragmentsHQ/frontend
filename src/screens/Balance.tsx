@@ -2,7 +2,7 @@ import { Tab } from "@headlessui/react";
 import { Button, Dropdown, MenuItem, Input } from "@heathmont/moon-core-tw";
 import { ArrowLeftIcon } from "@heroicons/react/20/solid";
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom"
+import { useNavigate } from "react-router-dom";
 import {
   DataTable,
   Table,
@@ -18,11 +18,11 @@ import { parseEther } from "ethers/lib/utils";
 
 import {
   erc20ABI,
+  useAccount,
   useNetwork,
   usePrepareSendTransaction,
-  useSendTransaction
+  useSendTransaction,
 } from "wagmi";
-import { getProvider, getAccount } from "@wagmi/core";
 import * as chainList from "wagmi/chains";
 import {
   CONNEXT_DOMAINS,
@@ -36,9 +36,8 @@ import {
   TOKEN_ADDRESSES_PRICE_FEEDS,
   TREASURY_CONTRACT_ADDRESSES,
   TREASURY_CONTRACT,
-  ETH
+  ETH,
 } from "../constants/constants";
-
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(" ");
@@ -68,24 +67,21 @@ const headers = [
 ];
 
 const getEclipsedText = (text) => {
-  return text.slice(0, 6) + "....." + text.slice(text.length-6, text.length);
-}
+  return text.slice(0, 6) + "....." + text.slice(text.length - 6, text.length);
+};
 
 const Balance = () => {
-
   const navigate = useNavigate();
-
   const { chain } = useNetwork();
-  const { address } = getAccount();
-  const provider = getProvider();
+  const { address } = useAccount();
+  const provider = ethers.getDefaultProvider();
   const [selectedCategory, setSelectedCategory] = useState("Deposit");
   const [selectedTableCategory, setSelectedTableCategory] = useState("All");
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [inputAmount, setInputAmount] = useState(0);
   const [balanceEth, setBalanceEth] = useState(0);
-  const [balanceDollar, setBalanceDollar] = useState(0)
-
+  const [balanceDollar, setBalanceDollar] = useState(0);
 
   const [dataRows, setDataRows] = useState([
     {
@@ -109,7 +105,7 @@ const Balance = () => {
 
       const events = await contract.queryFilter(filter);
 
-      console.log("*** DEBUG",events);
+      console.log("*** DEBUG", events);
 
       const rows = events.map((event) => {
         const { token, amount } = event.args;
@@ -120,33 +116,31 @@ const Balance = () => {
           txnHash: event.transactionHash,
           status: "Success",
           txnAmount: `${amount.toString()} ETH`,
-          gasPaid: "0.00005 ETH "
+          gasPaid: "0.00005 ETH ",
         };
-      })
+      });
 
-      setDataRows(rows)
-    }
-    catch (err) {
+      setDataRows(rows);
+    } catch (err) {
       console.error(err);
     }
-  }
+  };
 
   const convertDollar = async (priceInETH: number) => {
     try {
-
-      const amount = await fetch("https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd");
+      const amount = await fetch(
+        "https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd"
+      );
       const amountJson = await amount.json();
       const amountInDollar = amountJson.ethereum.usd;
 
       console.log(convertDollar);
 
       setBalanceDollar(priceInETH * amountInDollar);
-
-
     } catch (error) {
       console.error(error);
     }
-  }
+  };
 
   const fetchBalance = async () => {
     try {
@@ -163,45 +157,51 @@ const Balance = () => {
     }
   };
 
-  const { config: configWithdraw } = usePrepareSendTransaction({
-    request: {
-      to: chain
-        ? TREASURY_CONTRACT_ADDRESSES[
-        chain?.testnet ? "testnets" : "mainnets"
-        ][chain?.network]
-        : ZERO_ADDRESS,
-      data: callDataDeposit,
-    },
+  const {
+    // data,
+    // error,
+    // isLoading,
+    // isError,
+    sendTransactionAsync: sendWithdrawTokenAsyncTxn,
+  } = useSendTransaction({
+    to: chain
+      ? TREASURY_CONTRACT_ADDRESSES[chain?.testnet ? "testnets" : "mainnets"][
+          chain?.id
+        ]
+      : ZERO_ADDRESS,
+    data: callDataDeposit as `0x${string}`,
+    account: address,
+    value: BigInt(0),
   });
 
-  const { sendTransactionAsync: sendWithdrawTokenAsyncTxn } = useSendTransaction(configWithdraw);
-
-  const { config: configDeposit } = usePrepareSendTransaction({
-    request: {
-      to: chain
-        ? TREASURY_CONTRACT_ADDRESSES[
-        chain?.testnet ? "testnets" : "mainnets"
-        ][chain?.network]
-        : ZERO_ADDRESS,
-      data: callDataDeposit,
-    },
+  const {
+    // data,
+    // error,
+    // isLoading,
+    // isError,
+    sendTransactionAsync: sendDepositTokenAsyncTxn,
+  } = useSendTransaction({
+    to: chain
+      ? TREASURY_CONTRACT_ADDRESSES[chain?.testnet ? "testnets" : "mainnets"][
+          chain?.id
+        ]
+      : ZERO_ADDRESS,
+    data: callDataDeposit as `0x${string}`,
+    account: address,
+    value: BigInt(0),
   });
-
-  const { sendTransactionAsync: sendDepositTokenAsyncTxn } = useSendTransaction(configDeposit);
 
   const handleUpdateDeposit = async () => {
-
     const TreasuryContract = TREASURY_CONTRACT(chain, provider);
 
     setCallDataDeposit(
       TreasuryContract.interface.encodeFunctionData("depositFunds", [
         address,
         ETH,
-        parseEther(inputAmount.toString())
+        parseEther(inputAmount.toString()),
       ])
     );
-
-  }
+  };
 
   const handleUpdateWithdraw = async () => {
     const TreasuryContract = TREASURY_CONTRACT(chain, provider);
@@ -210,23 +210,23 @@ const Balance = () => {
       TreasuryContract.interface.encodeFunctionData("withdrawFunds", [
         address,
         ETH,
-        parseEther(inputAmount.toString())
+        parseEther(inputAmount.toString()),
       ])
     );
-  }
+  };
 
   useEffect(() => {
     if (address) {
       handleUpdateDeposit();
       handleUpdateWithdraw();
     }
-  }, [inputAmount])
+  }, [inputAmount]);
   useEffect(() => {
     if (address) {
       fetchBalance();
       fetchPrevTransactions();
     }
-  }, [address])
+  }, [address]);
 
   const panels = {
     Deposit: (
@@ -240,7 +240,10 @@ const Balance = () => {
           }}
           value={inputAmount}
         />
-        <Button onClick={() => sendDepositTokenAsyncTxn?.()} className="col-span-1 h-12 rounded-xl bg-[#00A16B] font-semibold text-black">
+        <Button
+          onClick={() => sendDepositTokenAsyncTxn?.()}
+          className="col-span-1 h-12 rounded-xl bg-[#00A16B] font-semibold text-black"
+        >
           Deposit
         </Button>
       </div>
@@ -250,7 +253,10 @@ const Balance = () => {
         <div className="col-span-3 flex h-12 items-center justify-center rounded-xl bg-[#464646]">
           Your Balance to Withdraw is: $69.420
         </div>
-        <Button onClick={() => sendWithdrawTokenAsyncTxn?.()} className="col-span-1 h-12 rounded-xl bg-[#00A16B] font-semibold text-black">
+        <Button
+          onClick={() => sendWithdrawTokenAsyncTxn?.()}
+          className="col-span-1 h-12 rounded-xl bg-[#00A16B] font-semibold text-black"
+        >
           Withdraw
         </Button>
       </div>
@@ -259,7 +265,10 @@ const Balance = () => {
 
   return (
     <div className="m-auto max-w-[67rem] px-10 py-8">
-      <button onClick={() => navigate("/")} className="flex items-center gap-2 text-sm text-[#AFAEAE]">
+      <button
+        onClick={() => navigate("/")}
+        className="flex items-center gap-2 text-sm text-[#AFAEAE]"
+      >
         <ArrowLeftIcon className="w-4" />
         Back
       </button>
@@ -310,7 +319,7 @@ const Balance = () => {
             {Object.values(panels).map((panel, idx) => (
               <Tab.Panel
                 key={idx}
-              // className={classNames("rounded-xl  bg-[#282828] p-5")}
+                // className={classNames("rounded-xl  bg-[#282828] p-5")}
               >
                 {panel}
               </Tab.Panel>
@@ -381,7 +390,7 @@ const Balance = () => {
                                   {getEclipsedText(cell.value)}
                                 </div>
                               ) : cell.id.includes("txnHash") ? (
-                                  <div>{getEclipsedText(cell.value)}</div>
+                                <div>{getEclipsedText(cell.value)}</div>
                               ) : cell.id.includes("status") ? (
                                 <div className="text-[#00FFA9]">
                                   {cell.value}
@@ -413,7 +422,7 @@ const Balance = () => {
             pageSize={pageSize}
             pageSizes={[10, 20, 30, 40, 50]}
             totalItems={dataRows.length}
-          // className="w-full"
+            // className="w-full"
           />
         </div>
       </div>
