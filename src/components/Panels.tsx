@@ -868,7 +868,7 @@ const PriceFeedPanel = forwardRef<any, propType>(
                     ? 31536000
                     : 1),
                 _web3FunctionHash:
-                  "QmbN96rTEy8EYxPNVqCUmZgTZzufvCbNhmsVzM2rephoLa",
+                  "QmaYK9kW85VsZUusYHGqzJQizu3Kifs73Np217LfLLhQDH",
               },
             ]
           ) as `0x${string}`
