@@ -1,3 +1,5 @@
+"use client"; // This is a client component 👈🏽
+
 import { Tab } from "@headlessui/react";
 import { Button, Dropdown, MenuItem } from "@heathmont/moon-core-tw";
 import React, { useContext, useEffect, useRef, useState } from "react";
@@ -133,22 +135,22 @@ const Main = () => {
                   </Dropdown.Select>
                   <Dropdown.Options className="z-[10] rounded-lg bg-[#262229]">
                     {chain?.network
-                      ? Object.keys(TOKEN_ADDRESSES[chain?.network]).map(
-                          (token, index) => (
-                            <Dropdown.Option value={token}>
-                              {({ selected, active }) => {
-                                return (
-                                  <MenuItem
-                                    isActive={active}
-                                    isSelected={selected}
-                                  >
-                                    <MenuItem.Title>{token}</MenuItem.Title>
-                                  </MenuItem>
-                                );
-                              }}
-                            </Dropdown.Option>
-                          )
+                      ? Object?.keys(TOKEN_ADDRESSES[chain?.network]).map(
+                        (token, index) => (
+                          <Dropdown.Option value={token}>
+                            {({ selected, active }) => {
+                              return (
+                                <MenuItem
+                                  isActive={active}
+                                  isSelected={selected}
+                                >
+                                  <MenuItem.Title>{token}</MenuItem.Title>
+                                </MenuItem>
+                              );
+                            }}
+                          </Dropdown.Option>
                         )
+                      )
                       : null}
                   </Dropdown.Options>
                 </>
@@ -185,25 +187,25 @@ const Main = () => {
                   <Dropdown.Options className="z-[10] rounded-lg bg-[#262229]">
                     {chain?.network
                       ? Object.keys(TOKEN_ADDRESSES[chain?.network]).map(
-                          (token, index) => (
-                            <Dropdown.Option value={token} key={index}>
-                              {({ selected, active }) => {
-                                return (
-                                  <MenuItem
-                                    isActive={active}
-                                    isSelected={selected}
-                                  >
-                                    <img
-                                      className="h-[1.2rem] w-[1.2rem]"
-                                      src={`/logo/tokens/${token}.png`}
-                                    />
-                                    <MenuItem.Title>{token}</MenuItem.Title>
-                                  </MenuItem>
-                                );
-                              }}
-                            </Dropdown.Option>
-                          )
+                        (token, index) => (
+                          <Dropdown.Option value={token} key={index}>
+                            {({ selected, active }) => {
+                              return (
+                                <MenuItem
+                                  isActive={active}
+                                  isSelected={selected}
+                                >
+                                  <img
+                                    className="h-[1.2rem] w-[1.2rem]"
+                                    src={`/logo/tokens/${token}.png`}
+                                  />
+                                  <MenuItem.Title>{token}</MenuItem.Title>
+                                </MenuItem>
+                              );
+                            }}
+                          </Dropdown.Option>
                         )
+                      )
                       : null}
                   </Dropdown.Options>
                 </>
@@ -357,9 +359,9 @@ const Main = () => {
                             <CheckIcon width={"1.2rem"} color="#00FFA9" />
                             {acceptedFile?.name?.length > 10
                               ? acceptedFile.name
-                                  .slice(0, 10)
-                                  .concat("....")
-                                  .concat(acceptedFile.name.slice(-7))
+                                .slice(0, 10)
+                                .concat("....")
+                                .concat(acceptedFile.name.slice(-7))
                               : acceptedFile.name}
                           </>
                         );
@@ -479,37 +481,37 @@ const Main = () => {
                                         {chain?.network
                                           ? dataRows[rowIdx].destinationChain
                                             ? TOKEN_ADDRESSES[
+                                              dataRows[rowIdx]
+                                                .destinationChain
+                                            ]
+                                              ? Object.keys(
+                                                TOKEN_ADDRESSES[
                                                 dataRows[rowIdx]
                                                   .destinationChain
-                                              ]
-                                              ? Object.keys(
-                                                  TOKEN_ADDRESSES[
-                                                    dataRows[rowIdx]
-                                                      .destinationChain
-                                                  ]
-                                                ).map((token, index) => (
-                                                  <Dropdown.Option
-                                                    value={token}
-                                                    key={index}
-                                                  >
-                                                    {({ selected, active }) => {
-                                                      return (
-                                                        <MenuItem
-                                                          isActive={active}
-                                                          isSelected={selected}
-                                                        >
-                                                          <img
-                                                            className="h-[1.2rem] w-[1.2rem] rounded-full"
-                                                            src={`/logo/tokens/${token}.png`}
-                                                          />
-                                                          <MenuItem.Title>
-                                                            {token}
-                                                          </MenuItem.Title>
-                                                        </MenuItem>
-                                                      );
-                                                    }}
-                                                  </Dropdown.Option>
-                                                ))
+                                                ]
+                                              ).map((token, index) => (
+                                                <Dropdown.Option
+                                                  value={token}
+                                                  key={index}
+                                                >
+                                                  {({ selected, active }) => {
+                                                    return (
+                                                      <MenuItem
+                                                        isActive={active}
+                                                        isSelected={selected}
+                                                      >
+                                                        <img
+                                                          className="h-[1.2rem] w-[1.2rem] rounded-full"
+                                                          src={`/logo/tokens/${token}.png`}
+                                                        />
+                                                        <MenuItem.Title>
+                                                          {token}
+                                                        </MenuItem.Title>
+                                                      </MenuItem>
+                                                    );
+                                                  }}
+                                                </Dropdown.Option>
+                                              ))
                                               : null
                                             : null
                                           : null}
@@ -557,34 +559,34 @@ const Main = () => {
                                       <Dropdown.Options className="z-10 min-w-[106%] bg-[#262229]">
                                         {chain
                                           ? Object.keys(
-                                              AUTOPAY_CONTRACT_ADDRESSES[
-                                                chain?.testnet
-                                                  ? "testnets"
-                                                  : "mainnets"
-                                              ]
-                                            ).map((chain, index) => (
-                                              <Dropdown.Option
-                                                value={chain}
-                                                // key={index}
-                                              >
-                                                {({ selected, active }) => {
-                                                  return (
-                                                    <MenuItem
-                                                      isActive={active}
-                                                      isSelected={selected}
-                                                    >
-                                                      <img
-                                                        className="h-[1.2rem] w-[1.2rem] rounded-full"
-                                                        src={`/logo/chains/${chain}.png`}
-                                                      />
-                                                      <MenuItem.Title>
-                                                        {chain}
-                                                      </MenuItem.Title>
-                                                    </MenuItem>
-                                                  );
-                                                }}
-                                              </Dropdown.Option>
-                                            ))
+                                            AUTOPAY_CONTRACT_ADDRESSES[
+                                            chain?.testnet
+                                              ? "testnets"
+                                              : "mainnets"
+                                            ]
+                                          ).map((chain, index) => (
+                                            <Dropdown.Option
+                                              value={chain}
+                                            // key={index}
+                                            >
+                                              {({ selected, active }) => {
+                                                return (
+                                                  <MenuItem
+                                                    isActive={active}
+                                                    isSelected={selected}
+                                                  >
+                                                    <img
+                                                      className="h-[1.2rem] w-[1.2rem] rounded-full"
+                                                      src={`/logo/chains/${chain}.png`}
+                                                    />
+                                                    <MenuItem.Title>
+                                                      {chain}
+                                                    </MenuItem.Title>
+                                                  </MenuItem>
+                                                );
+                                              }}
+                                            </Dropdown.Option>
+                                          ))
                                           : null}
                                       </Dropdown.Options>
                                     </>
@@ -634,7 +636,7 @@ const Main = () => {
             pageSize={pageSize}
             pageSizes={[10, 20, 30, 40, 50]}
             totalItems={dataRows.length}
-            // className="w-full"
+          // className="w-full"
           />
         </div>
       </div>

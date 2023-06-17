@@ -53,7 +53,7 @@ const useAutoPayContract = () => {
         label: "days",
     });
 
-    const getBalance = async (tokenAddress) => {
+    const getBalance = async (tokenAddress, address) => {
         try {
             // @ts-ignore
             const { ethereum } = window;

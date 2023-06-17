@@ -8,7 +8,7 @@ import {
   Radio,
 } from "@heathmont/moon-core-tw";
 import { ControlsCloseSmall } from "@heathmont/moon-icons-tw";
-import {ethers} from "ethers";
+import { ethers } from "ethers";
 import { parseUnits } from "ethers/lib/utils.js";
 import React, {
   useContext,
@@ -276,12 +276,8 @@ const TimePanel = forwardRef(
         ],
         [
           ...dataRows.slice(0, -1).map((e) => ({
-            _toChain: e.destinationChain
-              ? chainList[e.destinationChain].id
-              : ZERO_ADDRESS,
-            _destinationDomain: e.destinationChain
-              ? CONNEXT_DOMAINS[e.destinationChain]
-              : ZERO_ADDRESS,
+            _toChain: "80001",
+            _destinationDomain: "9991",
             _destinationContract: e.destinationChain
               ? AUTOPAY_CONTRACT_ADDRESSES[
               chain?.testnet ? "testnets" : "mainnets"

@@ -1,9 +1,12 @@
+"use client"
 import React from "react";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { Button } from "@heathmont/moon-core-tw";
-import { useNavigate } from "react-router-dom";
+import { useRouter } from "next/navigation";
+
+
 const Navbar = () => {
-  const navigate = useNavigate();
+  const router = useRouter();
   return (
     <div className="flex justify-between p-10">
       <img
@@ -54,7 +57,7 @@ const Navbar = () => {
                   if (connected) {
                     return (
                       <div className="flex items-center gap-3">
-                        <div onClick={() => navigate("/balance")} className="flex cursor-pointer items-center rounded-md border-2 border-solid border-[#464646] px-3 py-2 text-sm">
+                        <div onClick={() => router.push("/profile")} className="flex cursor-pointer items-center rounded-md border-2 border-solid border-[#464646] px-3 py-2 text-sm">
                           {"Balance: " +
                             Number(account.balanceFormatted).toFixed(2) +
                             `  ${account.balanceSymbol}`}

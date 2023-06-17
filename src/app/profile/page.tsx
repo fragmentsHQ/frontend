@@ -1,8 +1,10 @@
+"use client"; // This is a client component 👈🏽
+
 import { Tab } from "@headlessui/react";
 import { Button, Dropdown, MenuItem, Input } from "@heathmont/moon-core-tw";
 import { ArrowLeftIcon } from "@heroicons/react/20/solid";
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom"
+import { useRouter } from "next/navigation";
 import {
   DataTable,
   Table,
@@ -38,7 +40,7 @@ import {
   TREASURY_CONTRACT_ADDRESSES,
   TREASURY_CONTRACT,
   ETH
-} from "../constants/constants";
+} from "../../constants/constants";
 
 
 function classNames(...classes) {
@@ -69,12 +71,12 @@ const headers = [
 ];
 
 const getEclipsedText = (text) => {
-  return text.slice(0, 6) + "....." + text.slice(text.length-6, text.length);
+  return text.slice(0, 6) + "....." + text.slice(text.length - 6, text.length);
 }
 
-const Balance = () => {
+const Profile = () => {
 
-  const navigate = useNavigate();
+  const router = useRouter();
 
   const { chain } = useNetwork();
   // const { address } = getAccount();
@@ -112,7 +114,7 @@ const Balance = () => {
 
       const events = await contract.queryFilter(filter);
 
-      console.log("*** DEBUG",events);
+      console.log("*** DEBUG", events);
 
       const rows = events.map((event) => {
         const { token, amount } = event.args;
@@ -262,7 +264,7 @@ const Balance = () => {
 
   return (
     <div className="m-auto max-w-[67rem] px-10 py-8">
-      <button onClick={() => navigate("/")} className="flex items-center gap-2 text-sm text-[#AFAEAE]">
+      <button onClick={() => router.push("/")} className="flex items-center gap-2 text-sm text-[#AFAEAE]">
         <ArrowLeftIcon className="w-4" />
         Back
       </button>
@@ -384,7 +386,7 @@ const Balance = () => {
                                   {getEclipsedText(cell.value)}
                                 </div>
                               ) : cell.id.includes("txnHash") ? (
-                                  <div>{getEclipsedText(cell.value)}</div>
+                                <div>{getEclipsedText(cell.value)}</div>
                               ) : cell.id.includes("status") ? (
                                 <div className="text-[#00FFA9]">
                                   {cell.value}
@@ -424,4 +426,4 @@ const Balance = () => {
   );
 };
 
-export default Balance;
+export default Profile;

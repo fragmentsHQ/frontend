@@ -1,3 +1,7 @@
+"use client"; // This is a client component 👈🏽
+
+import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { Tab } from "@headlessui/react";
 import { Button, Dropdown, MenuItem, Input } from "@heathmont/moon-core-tw";
 import {
@@ -5,8 +9,7 @@ import {
   ArrowRightIcon,
   ArrowUpRightIcon,
 } from "@heroicons/react/20/solid";
-import React, { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+
 import {
   DataTable,
   Table,
@@ -16,8 +19,8 @@ import {
   TableBody,
   TableCell,
 } from "@carbon/react";
+
 import { Pagination } from "carbon-components-react";
-import { useNavigate } from "react-router-dom"
 import { ethers } from "ethers";
 import { parseEther } from "ethers/lib/utils";
 
@@ -43,7 +46,7 @@ import {
   TREASURY_CONTRACT_ADDRESSES,
   TREASURY_CONTRACT,
   ETH
-} from "../constants/constants";
+} from "../../../constants/constants";
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(" ");
@@ -68,12 +71,12 @@ const headers = [
   },
 ];
 
-const Task = () => {
+const Task = ({ params }: { params: { jobId: string } }) => {
 
 
-  const { jobId } = useParams();
+  const jobId = params.jobId;
 
-  const navigate = useNavigate();
+  const router = useRouter();
 
   const { chain } = useNetwork();
   // const { address } = getAccount();
