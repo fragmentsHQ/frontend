@@ -29,11 +29,9 @@ if (!window.Buffer) {
 
 const { chains, publicClient, webSocketPublicClient } = configureChains(
   // @ts-ignore
-  ISPRODUCTION ? [mainnet, polygon] : [polygonMumbai, goerli],
+  [polygonMumbai, goerli],
+  // ISPRODUCTION ? [mainnet, polygon] : [polygonMumbai, goerli],
   [
-    alchemyProvider({
-      apiKey: "q-gyDMWPExy6buiSYXupWffZ5fnn5fSp",
-    }),
     publicProvider(),
   ]
 )
