@@ -188,6 +188,8 @@ const TimePanel = forwardRef<any, propType>(
     const closeModal = () => setIsOpen(false);
     const openModal = () => setIsOpen(true);
 
+    startTime && console.log("startTime: ", startTime);
+
     const {
       data: allowance,
       isError,

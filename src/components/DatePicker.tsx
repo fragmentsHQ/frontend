@@ -7,8 +7,11 @@ import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
 
 export default function MaterialUIPickers({ selected, setSelected, setShowThisSection, showThisSection }) {
 
+    
     const handleChange = (newValue) => {
-        setSelected(newValue);
+        const endD = new Date(newValue);
+        
+        setSelected(endD.getTime()/ 1000);
         setShowThisSection({
             ...showThisSection,
             2: true,
@@ -22,7 +25,7 @@ export default function MaterialUIPickers({ selected, setSelected, setShowThisSe
                     // label="Select End Date"
                     value={selected}
                     onChange={handleChange}
-                    inputProps={{ style: { padding: "25px" , color : "white"} }}
+                    inputProps={{ style: { padding: "25px", color: "white" } }}
                     disablePast={true}
                     renderInput={(params) => <TextField {...params} />}
                 />
