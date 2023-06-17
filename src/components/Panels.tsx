@@ -26,6 +26,9 @@ import {
   useSendTransaction,
 } from "wagmi";
 import * as chainList from "wagmi/chains";
+
+import DatePicker from "../components/DatePicker";
+
 import {
   CONNEXT_DOMAINS,
   AUTOPAY_CONTRACT_ADDRESSES,
@@ -200,8 +203,8 @@ const TimePanel = forwardRef<any, propType>(
         address ? address : ZERO_ADDRESS,
         chain
           ? AUTOPAY_CONTRACT_ADDRESSES[
-              chain?.testnet ? "testnets" : "mainnets"
-            ][chain?.id]
+          chain?.testnet ? "testnets" : "mainnets"
+          ][chain?.id]
           : ZERO_ADDRESS,
       ],
       watch: true,
@@ -232,8 +235,8 @@ const TimePanel = forwardRef<any, propType>(
     } = useSendTransaction({
       to: chain
         ? AUTOPAY_CONTRACT_ADDRESSES[chain?.testnet ? "testnets" : "mainnets"][
-            chain?.id
-          ]
+        chain?.id
+        ]
         : ZERO_ADDRESS,
       data: callDataCreateTimeTxn,
       account: address,
@@ -252,8 +255,8 @@ const TimePanel = forwardRef<any, propType>(
         ERC20Contract.interface.encodeFunctionData("approve", [
           chain
             ? AUTOPAY_CONTRACT_ADDRESSES[
-                chain?.testnet ? "testnets" : "mainnets"
-              ][chain?.id]
+            chain?.testnet ? "testnets" : "mainnets"
+            ][chain?.id]
             : ZERO_ADDRESS,
           ethers.constants.MaxUint256,
         ]) as `0x${string}`
@@ -275,9 +278,9 @@ const TimePanel = forwardRef<any, propType>(
             .map((e) =>
               e.amountOfSourceToken
                 ? parseUnits(
-                    e.amountOfSourceToken,
-                    TOKEN_ADDRESSES[chain?.id][sourceData.sourceToken].decimals
-                  )
+                  e.amountOfSourceToken,
+                  TOKEN_ADDRESSES[chain?.id][sourceData.sourceToken].decimals
+                )
                 : "0"
             ),
         ],
@@ -296,7 +299,7 @@ const TimePanel = forwardRef<any, propType>(
             .map((e) =>
               chain?.testnet && sourceData.sourceToken && e.destinationChain
                 ? TOKEN_ADDRESSES[e.destinationChain][sourceData.sourceToken]
-                    .address
+                  .address
                 : ZERO_ADDRESS
             ),
         ],
@@ -322,8 +325,8 @@ const TimePanel = forwardRef<any, propType>(
             .map((e) =>
               e.destinationChain
                 ? AUTOPAY_CONTRACT_ADDRESSES[
-                    chain?.testnet ? "testnets" : "mainnets"
-                  ][e.destinationChain]
+                chain?.testnet ? "testnets" : "mainnets"
+                ][e.destinationChain]
                 : ZERO_ADDRESS
             ),
         ],
@@ -344,12 +347,12 @@ const TimePanel = forwardRef<any, propType>(
                 (intervalType.value === "days"
                   ? 86400
                   : intervalType.value === "months"
-                  ? 2629800
-                  : intervalType.value === "weeks"
-                  ? 604800
-                  : intervalType.value === "years"
-                  ? 31536000
-                  : 1)
+                    ? 2629800
+                    : intervalType.value === "weeks"
+                      ? 604800
+                      : intervalType.value === "years"
+                        ? 31536000
+                        : 1)
             ),
         ],
         "QmRdcGs5h8UP8ETFdS7Yj7iahDTjfQNHMsJp3dYRec5Gf2",
@@ -370,10 +373,10 @@ const TimePanel = forwardRef<any, propType>(
                   .map((e) =>
                     e.amountOfSourceToken
                       ? parseUnits(
-                          e.amountOfSourceToken,
-                          TOKEN_ADDRESSES[chain?.id][sourceData.sourceToken]
-                            .decimals
-                        )
+                        e.amountOfSourceToken,
+                        TOKEN_ADDRESSES[chain?.id][sourceData.sourceToken]
+                          .decimals
+                      )
                       : "0"
                   ),
               ],
@@ -383,7 +386,7 @@ const TimePanel = forwardRef<any, propType>(
                   .map((e) =>
                     chain?.testnet && sourceData.sourceToken
                       ? TOKEN_ADDRESSES[chain?.id][sourceData.sourceToken]
-                          .address
+                        .address
                       : ZERO_ADDRESS
                   ),
               ],
@@ -392,11 +395,11 @@ const TimePanel = forwardRef<any, propType>(
                   .slice(0, -1)
                   .map((e) =>
                     chain?.testnet &&
-                    sourceData.sourceToken &&
-                    e.destinationChain
+                      sourceData.sourceToken &&
+                      e.destinationChain
                       ? TOKEN_ADDRESSES[e.destinationChain][
-                          sourceData.sourceToken
-                        ].address
+                        sourceData.sourceToken
+                      ].address
                       : ZERO_ADDRESS
                   ),
               ],
@@ -422,8 +425,8 @@ const TimePanel = forwardRef<any, propType>(
                   .map((e) =>
                     e.destinationChain
                       ? AUTOPAY_CONTRACT_ADDRESSES[
-                          chain?.testnet ? "testnets" : "mainnets"
-                        ][e.destinationChain]
+                      chain?.testnet ? "testnets" : "mainnets"
+                      ][e.destinationChain]
                       : ZERO_ADDRESS
                   ),
               ],
@@ -444,19 +447,19 @@ const TimePanel = forwardRef<any, propType>(
                       (intervalType.value === "days"
                         ? 86400
                         : intervalType.value === "months"
-                        ? 2629800
-                        : intervalType.value === "weeks"
-                        ? 604800
-                        : intervalType.value === "years"
-                        ? 31536000
-                        : 1)
+                          ? 2629800
+                          : intervalType.value === "weeks"
+                            ? 604800
+                            : intervalType.value === "years"
+                              ? 31536000
+                              : 1)
                   ),
               ],
               "QmRdcGs5h8UP8ETFdS7Yj7iahDTjfQNHMsJp3dYRec5Gf2",
             ]
           ) as `0x${string}`
         );
-      } catch {}
+      } catch { }
     };
 
     useEffect(() => {
@@ -482,7 +485,7 @@ const TimePanel = forwardRef<any, propType>(
           )
             sendCreateTimeAsyncTxn?.();
           else sendApproveTokenAsyncTxn?.();
-        } catch {}
+        } catch { }
       },
 
       hasEnoughAllowance() {
@@ -500,7 +503,7 @@ const TimePanel = forwardRef<any, propType>(
               <Label htmlFor="c-1" className="text-piccolo">
                 Start Time
               </Label>
-              <Input
+              {/* <p
                 type="number"
                 placeholder="E.g. 9234324712"
                 id="c-1"
@@ -513,6 +516,13 @@ const TimePanel = forwardRef<any, propType>(
                     2: true,
                   });
                 }}
+              />
+              <p className="rounded bg-[#262229] text-white">{startTime ? startTime : "E.g. 9234324712"}</p> */}
+              <DatePicker
+                selected={startTime}
+                setSelected={setStartTime}
+                setShowThisSection={setShowThisSection}
+                showThisSection={showThisSection}
               />
             </div>
 
@@ -671,8 +681,8 @@ const PriceFeedPanel = forwardRef<any, propType>(
         address ? address : ZERO_ADDRESS,
         chain
           ? CONDITIONAL_CONTRACT_ADDRESSES[
-              chain?.testnet ? "testnets" : "mainnets"
-            ][chain?.id]
+          chain?.testnet ? "testnets" : "mainnets"
+          ][chain?.id]
           : ZERO_ADDRESS,
       ],
       watch: true,
@@ -703,8 +713,8 @@ const PriceFeedPanel = forwardRef<any, propType>(
     } = useSendTransaction({
       to: chain
         ? CONDITIONAL_CONTRACT_ADDRESSES[
-            chain?.testnet ? "testnets" : "mainnets"
-          ][chain?.id]
+        chain?.testnet ? "testnets" : "mainnets"
+        ][chain?.id]
         : ZERO_ADDRESS,
       data: callDataPriceFeedTxn,
       account: address,
@@ -723,8 +733,8 @@ const PriceFeedPanel = forwardRef<any, propType>(
         ERC20Contract.interface.encodeFunctionData("approve", [
           chain
             ? CONDITIONAL_CONTRACT_ADDRESSES[
-                chain?.testnet ? "testnets" : "mainnets"
-              ][chain?.id]
+            chain?.testnet ? "testnets" : "mainnets"
+            ][chain?.id]
             : ZERO_ADDRESS,
           ethers.constants.MaxUint256,
         ]) as `0x${string}`
@@ -824,10 +834,10 @@ const PriceFeedPanel = forwardRef<any, propType>(
                   .map((e) =>
                     e.amountOfSourceToken
                       ? parseUnits(
-                          e.amountOfSourceToken,
-                          TOKEN_ADDRESSES[chain?.id][sourceData.sourceToken]
-                            .decimals
-                        )
+                        e.amountOfSourceToken,
+                        TOKEN_ADDRESSES[chain?.id][sourceData.sourceToken]
+                          .decimals
+                      )
                       : "0"
                   ),
               ],
@@ -837,15 +847,15 @@ const PriceFeedPanel = forwardRef<any, propType>(
                   _fromToken:
                     chain?.testnet && sourceData.sourceToken
                       ? TOKEN_ADDRESSES[chain?.id][sourceData.sourceToken]
-                          .address
+                        .address
                       : ZERO_ADDRESS,
                   _toToken:
                     chain?.testnet &&
-                    sourceData.sourceToken &&
-                    e.destinationChain
+                      sourceData.sourceToken &&
+                      e.destinationChain
                       ? TOKEN_ADDRESSES[e.destinationChain][
-                          sourceData.sourceToken
-                        ].address
+                        sourceData.sourceToken
+                      ].address
                       : ZERO_ADDRESS,
                   _tokenA: token1
                     ? TOKEN_ADDRESSES_PRICE_FEEDS[token1]
@@ -865,8 +875,8 @@ const PriceFeedPanel = forwardRef<any, propType>(
                     : ZERO_ADDRESS,
                   _destinationContract: e.destinationChain
                     ? CONDITIONAL_CONTRACT_ADDRESSES[
-                        chain?.testnet ? "testnets" : "mainnets"
-                      ][e.destinationChain]
+                    chain?.testnet ? "testnets" : "mainnets"
+                    ][e.destinationChain]
                     : ZERO_ADDRESS,
                 })),
               ],
@@ -880,19 +890,19 @@ const PriceFeedPanel = forwardRef<any, propType>(
                   (intervalType.value === "days"
                     ? 86400
                     : intervalType.value === "months"
-                    ? 2629800
-                    : intervalType.value === "weeks"
-                    ? 604800
-                    : intervalType.value === "years"
-                    ? 31536000
-                    : 1),
+                      ? 2629800
+                      : intervalType.value === "weeks"
+                        ? 604800
+                        : intervalType.value === "years"
+                          ? 31536000
+                          : 1),
                 _web3FunctionHash:
                   "QmaYK9kW85VsZUusYHGqzJQizu3Kifs73Np217LfLLhQDH",
               },
             ]
           ) as `0x${string}`
         );
-      } catch {}
+      } catch { }
     };
 
     useEffect(() => {
@@ -927,7 +937,7 @@ const PriceFeedPanel = forwardRef<any, propType>(
           )
             sendCreatePriceFeedAsyncTxn?.();
           else sendApproveTokenAsyncTxn?.();
-        } catch {}
+        } catch { }
       },
 
       hasEnoughAllowance() {
@@ -1274,8 +1284,8 @@ const GasPricePanel = forwardRef<any, propType>(
         address ? address : ZERO_ADDRESS,
         chain
           ? CONDITIONAL_CONTRACT_ADDRESSES[
-              chain?.testnet ? "testnets" : "mainnets"
-            ][chain?.id]
+          chain?.testnet ? "testnets" : "mainnets"
+          ][chain?.id]
           : ZERO_ADDRESS,
       ],
       watch: true,
@@ -1306,8 +1316,8 @@ const GasPricePanel = forwardRef<any, propType>(
     } = useSendTransaction({
       to: chain
         ? CONDITIONAL_CONTRACT_ADDRESSES[
-            chain?.testnet ? "testnets" : "mainnets"
-          ][chain?.id]
+        chain?.testnet ? "testnets" : "mainnets"
+        ][chain?.id]
         : ZERO_ADDRESS,
       data: callDataPriceFeedTxn,
       account: address,
@@ -1326,8 +1336,8 @@ const GasPricePanel = forwardRef<any, propType>(
         ERC20Contract.interface.encodeFunctionData("approve", [
           chain
             ? CONDITIONAL_CONTRACT_ADDRESSES[
-                chain?.testnet ? "testnets" : "mainnets"
-              ][chain?.id]
+            chain?.testnet ? "testnets" : "mainnets"
+            ][chain?.id]
             : ZERO_ADDRESS,
           ethers.constants.MaxUint256,
         ]) as `0x${string}`
@@ -1350,10 +1360,10 @@ const GasPricePanel = forwardRef<any, propType>(
               .map((e) =>
                 e.amountOfSourceToken
                   ? parseUnits(
-                      e.amountOfSourceToken,
-                      TOKEN_ADDRESSES[chain?.id][sourceData.sourceToken]
-                        .decimals
-                    )
+                    e.amountOfSourceToken,
+                    TOKEN_ADDRESSES[chain?.id][sourceData.sourceToken]
+                      .decimals
+                  )
                   : "0"
               ),
           ],
@@ -1367,7 +1377,7 @@ const GasPricePanel = forwardRef<any, propType>(
               _toToken:
                 chain?.testnet && sourceData.sourceToken && e.destinationChain
                   ? TOKEN_ADDRESSES[e.destinationChain][sourceData.sourceToken]
-                      .address
+                    .address
                   : ZERO_ADDRESS,
               _tokenA: ZERO_ADDRESS,
               _tokenB: ZERO_ADDRESS,
@@ -1383,8 +1393,8 @@ const GasPricePanel = forwardRef<any, propType>(
                 : ZERO_ADDRESS,
               _destinationContract: e.destinationChain
                 ? CONDITIONAL_CONTRACT_ADDRESSES[
-                    chain?.testnet ? "testnets" : "mainnets"
-                  ][e.destinationChain]
+                chain?.testnet ? "testnets" : "mainnets"
+                ][e.destinationChain]
                 : ZERO_ADDRESS,
             })),
           ],
@@ -1398,12 +1408,12 @@ const GasPricePanel = forwardRef<any, propType>(
               (intervalType.value === "days"
                 ? 86400
                 : intervalType.value === "months"
-                ? 2629800
-                : intervalType.value === "weeks"
-                ? 604800
-                : intervalType.value === "years"
-                ? 31536000
-                : 1),
+                  ? 2629800
+                  : intervalType.value === "weeks"
+                    ? 604800
+                    : intervalType.value === "years"
+                      ? 31536000
+                      : 1),
             _web3FunctionHash: "QmaR3iZVSzJJ43uWRbrbUvs2CUheHVXCTiU6hJ85asD2RW",
           },
         ]);
@@ -1423,10 +1433,10 @@ const GasPricePanel = forwardRef<any, propType>(
                   .map((e) =>
                     e.amountOfSourceToken
                       ? parseUnits(
-                          e.amountOfSourceToken,
-                          TOKEN_ADDRESSES[chain?.id][sourceData.sourceToken]
-                            .decimals
-                        )
+                        e.amountOfSourceToken,
+                        TOKEN_ADDRESSES[chain?.id][sourceData.sourceToken]
+                          .decimals
+                      )
                       : "0"
                   ),
               ],
@@ -1436,15 +1446,15 @@ const GasPricePanel = forwardRef<any, propType>(
                   _fromToken:
                     chain?.testnet && sourceData.sourceToken
                       ? TOKEN_ADDRESSES[chain?.id][sourceData.sourceToken]
-                          .address
+                        .address
                       : ZERO_ADDRESS,
                   _toToken:
                     chain?.testnet &&
-                    sourceData.sourceToken &&
-                    e.destinationChain
+                      sourceData.sourceToken &&
+                      e.destinationChain
                       ? TOKEN_ADDRESSES[e.destinationChain][
-                          sourceData.sourceToken
-                        ].address
+                        sourceData.sourceToken
+                      ].address
                       : ZERO_ADDRESS,
                   _tokenA: ZERO_ADDRESS,
                   _tokenB: ZERO_ADDRESS,
@@ -1460,8 +1470,8 @@ const GasPricePanel = forwardRef<any, propType>(
                     : ZERO_ADDRESS,
                   _destinationContract: e.destinationChain
                     ? CONDITIONAL_CONTRACT_ADDRESSES[
-                        chain?.testnet ? "testnets" : "mainnets"
-                      ][e.destinationChain]
+                    chain?.testnet ? "testnets" : "mainnets"
+                    ][e.destinationChain]
                     : ZERO_ADDRESS,
                 })),
               ],
@@ -1475,19 +1485,19 @@ const GasPricePanel = forwardRef<any, propType>(
                   (intervalType.value === "days"
                     ? 86400
                     : intervalType.value === "months"
-                    ? 2629800
-                    : intervalType.value === "weeks"
-                    ? 604800
-                    : intervalType.value === "years"
-                    ? 31536000
-                    : 1),
+                      ? 2629800
+                      : intervalType.value === "weeks"
+                        ? 604800
+                        : intervalType.value === "years"
+                          ? 31536000
+                          : 1),
                 _web3FunctionHash:
                   "QmaR3iZVSzJJ43uWRbrbUvs2CUheHVXCTiU6hJ85asD2RW",
               },
             ]
           ) as `0x${string}`
         );
-      } catch {}
+      } catch { }
     };
 
     useEffect(() => {
@@ -1514,7 +1524,7 @@ const GasPricePanel = forwardRef<any, propType>(
           )
             sendCreateGasPriceAsyncTxn?.();
           else sendApproveTokenAsyncTxn?.();
-        } catch {}
+        } catch { }
       },
 
       hasEnoughAllowance() {

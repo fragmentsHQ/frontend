@@ -12,19 +12,13 @@ import { ISPRODUCTION } from "../constants/constants";
 import "react-csv-importer/dist/index.css";
 import Navbar from "./Navbar";
 import BgImages from "./BgImages";
-import {
-  braveWallet,
-  coinbaseWallet,
-  injectedWallet,
-  metaMaskWallet,
-  trustWallet,
-  walletConnectWallet,
-} from "@rainbow-me/rainbowkit/wallets";
+
 import {
   connectorsForWallets,
   darkTheme,
   lightTheme,
   RainbowKitProvider,
+  getDefaultWallets
 } from "@rainbow-me/rainbowkit";
 import "@rainbow-me/rainbowkit/styles.css";
 
@@ -33,41 +27,31 @@ if (!window.Buffer) {
   window.Buffer = Buffer;
 }
 
-const defaultChains = ISPRODUCTION
-  ? [mainnet, polygon]
-  : [goerli, polygonMumbai];
-const alchemyId =
-  process.env.REACT_APP_ALCHEMY_ID || "UuUIg4H93f-Bz5qs91SuBrro7TW3UShO";
-
 const { chains, publicClient, webSocketPublicClient } = configureChains(
-  defaultChains,
-  [alchemyProvider({ apiKey: alchemyId })]
-);
+  // @ts-ignore
+  ISPRODUCTION ? [mainnet, polygon] : [polygonMumbai, goerli],
+  [
+    alchemyProvider({
+      apiKey: "q-gyDMWPExy6buiSYXupWffZ5fnn5fSp",
+    }),
+    publicProvider(),
+  ]
+)
 
-const otherWallets = [
-  walletConnectWallet({ chains }),
-  trustWallet({ chains }),
-  coinbaseWallet({ chains, appName: "Fragments" }),
-  braveWallet({ chains }),
-];
+const { connectors } = getDefaultWallets({
+  appName: 'Fragments',
+  projectId: 'YOUR_PROJECT_ID',
+  chains
+});
 
-const connectors = connectorsForWallets([
-  {
-    groupName: "Recommended",
-    wallets: [injectedWallet({ chains }), metaMaskWallet({ chains })],
-  },
-  {
-    groupName: "Other Wallets",
-    wallets: otherWallets,
-  },
-]);
 
+// Set up wagmi config
 const config = createConfig({
   autoConnect: true,
+  connectors,
   publicClient,
   webSocketPublicClient,
-  connectors,
-});
+})
 
 const Layout = ({ children }) => {
   return (

@@ -27,7 +27,7 @@ import {
   usePrepareSendTransaction,
   useSendTransaction
 } from "wagmi";
-import { getProvider, getAccount } from "@wagmi/core";
+import { getAccount } from "@wagmi/core";
 import * as chainList from "wagmi/chains";
 import {
   CONNEXT_DOMAINS,
@@ -76,7 +76,7 @@ const Task = () => {
 
   const { chain } = useNetwork();
   const { address } = getAccount();
-  const provider = getProvider();
+  const provider = ethers.getDefaultProvider();
 
   const [selectedTableCategory, setSelectedTableCategory] =
     useState("Executions");
