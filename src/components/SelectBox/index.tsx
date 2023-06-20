@@ -26,7 +26,7 @@ export type SelectProps = Omit<Props, "getOptionLabel"> &
     size: keyof typeof sizes;
   }>;
 
-const SelectBox = React.forwardRef<any, SelectProps>(
+const SelectBox = <any, SelectProps>(
   (
     {
       children,
@@ -44,8 +44,7 @@ const SelectBox = React.forwardRef<any, SelectProps>(
       variant = "",
       size = "",
       ...restProps
-    },
-    ref
+    }
   ) => {
     const [selectedVal, setSelectedVal] = React.useState(value);
 
@@ -61,7 +60,6 @@ const SelectBox = React.forwardRef<any, SelectProps>(
     return (
       <>
         <Select
-          ref={ref}
           options={options}
           className={`${className} ${(shape && shapes[shape]) || ""} ${
             (size && sizes[size]) || ""
