@@ -138,10 +138,9 @@ const panels = {
 
 export default panels;
 
-const TimePanel = forwardRef(
+const TimePanel = (
   (
-    { selectedCategory, showThisSection, setShowThisSection, dataRows },
-    ref
+    { selectedCategory, showThisSection, setShowThisSection, dataRows }
   ) => {
     const { chain } = useNetwork();
     const { address } = useAccount();
@@ -399,19 +398,19 @@ const TimePanel = forwardRef(
       startTime,
     ]);
 
-    useImperativeHandle(ref, () => ({
-      executeTxn() {
-        try {
-          if (
-            BigNumber.from(allowance ? allowance : 0).eq(
-              ethers.constants.MaxUint256
-            )
-          )
-            sendCreateTimeAsyncTxn?.();
-          else sendApproveTokenAsyncTxn?.();
-        } catch { }
-      },
-    }));
+    // useImperativeHandle(ref, () => ({
+    //   executeTxn() {
+    //     try {
+    //       if (
+    //         BigNumber.from(allowance ? allowance : 0).eq(
+    //           ethers.constants.MaxUint256
+    //         )
+    //       )
+    //         sendCreateTimeAsyncTxn?.();
+    //       else sendApproveTokenAsyncTxn?.();
+    //     } catch { }
+    //   },
+    // }));
 
     return (
       <>
@@ -637,10 +636,9 @@ const TimePanel = forwardRef(
   }
 );
 
-const PriceFeedPanel = forwardRef(
+const PriceFeedPanel = (
   (
-    { selectedCategory, showThisSection, setShowThisSection, dataRows },
-    ref
+    { selectedCategory, showThisSection, setShowThisSection, dataRows }
   ) => {
     const { chain } = useNetwork();
     const { address } = useAccount();
@@ -939,19 +937,19 @@ const PriceFeedPanel = forwardRef(
       };
     }, []);
 
-    useImperativeHandle(ref, () => ({
-      executeTxn() {
-        try {
-          if (
-            BigNumber.from(allowance ? allowance : 0).eq(
-              ethers.constants.MaxUint256
-            )
-          )
-            sendCreatePriceFeedAsyncTxn?.();
-          else sendApproveTokenAsyncTxn?.();
-        } catch { }
-      },
-    }));
+    // useImperativeHandle(ref, () => ({
+    //   executeTxn() {
+    //     try {
+    //       if (
+    //         BigNumber.from(allowance ? allowance : 0).eq(
+    //           ethers.constants.MaxUint256
+    //         )
+    //       )
+    //         sendCreatePriceFeedAsyncTxn?.();
+    //       else sendApproveTokenAsyncTxn?.();
+    //     } catch { }
+    //   },
+    // }));
 
     return (
       <>
@@ -1315,10 +1313,9 @@ const PriceFeedPanel = forwardRef(
   }
 );
 
-const GasPricePanel = forwardRef(
+const GasPricePanel = (
   (
-    { selectedCategory, showThisSection, setShowThisSection, dataRows },
-    ref
+    { selectedCategory, showThisSection, setShowThisSection, dataRows }
   ) => {
     const { chain } = useNetwork();
     const { address } = useAccount();
@@ -1588,19 +1585,19 @@ const GasPricePanel = forwardRef(
       gasPrice,
     ]);
 
-    useImperativeHandle(ref, () => ({
-      executeTxn() {
-        try {
-          if (
-            BigNumber.from(allowance ? allowance : 0).eq(
-              ethers.constants.MaxUint256
-            )
-          )
-            sendCreateGasPriceAsyncTxn?.();
-          else sendApproveTokenAsyncTxn?.();
-        } catch { }
-      },
-    }));
+    // useImperativeHandle(ref, () => ({
+    //   executeTxn() {
+    //     try {
+    //       if (
+    //         BigNumber.from(allowance ? allowance : 0).eq(
+    //           ethers.constants.MaxUint256
+    //         )
+    //       )
+    //         sendCreateGasPriceAsyncTxn?.();
+    //       else sendApproveTokenAsyncTxn?.();
+    //     } catch { }
+    //   },
+    // }));
 
     useEffect(() => {
       interval.current = setInterval(() => {
@@ -1868,8 +1865,8 @@ const GasPricePanel = forwardRef(
   }
 );
 
-const ABIPanel = forwardRef(
-  ({ selectedCategory, showThisSection, setShowThisSection }, ref) => {
+const ABIPanel = (
+  ({ selectedCategory, showThisSection, setShowThisSection }) => {
     const [fromToken, setFromToken] = useState<Tokens | null>(null);
     const [isOpen, setIsOpen] = useState(false);
     const [intervalType, setIntervalType] = useState<Options | null>({
