@@ -68,11 +68,16 @@ const Main = () => {
       amountOfSourceToken: "",
     },
   ]);
-  const [showThisSection, setShowThisSection] = useState({
-    0: true,
-    1: true,
-    2: true,
-    3: true,
+  const [showThisSection, setShowThisSection] = useState<{
+    0: boolean;
+    1: boolean;
+    2: boolean;
+    3: boolean;
+  }>({
+    0: false,
+    1: false,
+    2: false,
+    3: false,
   });
 
   useEffect(() => {
@@ -137,7 +142,7 @@ const Main = () => {
                     {chain?.network
                       ? Object?.keys(TOKEN_ADDRESSES[chain?.network]).map(
                         (token, index) => (
-                          <Dropdown.Option value={token}>
+                          <Dropdown.Option value={token} key={token}>
                             {({ selected, active }) => {
                               return (
                                 <MenuItem
@@ -401,8 +406,8 @@ const Main = () => {
               <Table className="overflow-visible" {...getTableProps()}>
                 <TableHead align="center">
                   <TableRow>
-                    {headers.map((header) => (
-                      <TableHeader {...getHeaderProps({ header })}>
+                    {headers.map((header: any) => (
+                      <TableHeader key={header} {...getHeaderProps({ header })}>
                         {header.header}
                       </TableHeader>
                     ))}
@@ -414,7 +419,7 @@ const Main = () => {
                       {(() => {
                         return row.cells.map((cell) => {
                           return (
-                            <TableCell>
+                            <TableCell key={cell}>
                               {cell.id.includes("toAddress") ? (
                                 <input
                                   id={`input-${cell.id}`}
@@ -567,7 +572,7 @@ const Main = () => {
                                           ).map((chain, index) => (
                                             <Dropdown.Option
                                               value={chain}
-                                            // key={index}
+                                              key={index}
                                             >
                                               {({ selected, active }) => {
                                                 return (

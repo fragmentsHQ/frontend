@@ -1,6 +1,6 @@
 "use client"
 
-import './globals.css'
+import './globals.scss'
 import { Inter } from 'next/font/google';
 import { Toaster } from 'react-hot-toast';
 import "react-csv-importer/dist/index.css";
