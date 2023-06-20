@@ -138,391 +138,120 @@ const panels = {
 
 export default panels;
 
-const TimePanel = (
-  (
-    { selectedCategory, showThisSection, setShowThisSection, dataRows }
-  ) => {
-    const { chain } = useNetwork();
-    const { address } = useAccount();
-    const provider = ethers.getDefaultProvider();
+const TimePanel = () => {
 
-    const { sourceData, setSourceData } = useContext(SourceContext);
-    const [startTime, setStartTime] = useState<string | null>("");
-    const [cycles, setCycles] = useState<string | null>("");
-    const [isOpen, setIsOpen] = useState(false);
-    const [intervalCount, setIntervalCount] = useState("1");
-    const [intervalType, setIntervalType] = useState<Options | null>({
-      value: "days",
-      label: "days",
-    });
-    const [allowance, setAllowance] = useState("");
-    const [callDataApproval, setCallDataApproval] = useState("");
-    const [callDataCreateTimeTxn, setCallDataCreateTimeTxn] = useState("");
-    const interval = useRef<NodeJS.Timer>();
 
-    const closeModal = () => setIsOpen(false);
-    const openModal = () => setIsOpen(true);
+  return (
+    <>
+      <div className="w-full flex-col">
+        <div className="grid w-full grid-cols-3 gap-3">
+          <div>
+            <Label htmlFor="c-1" className="text-piccolo">
+              Start Time
+            </Label>
+            <Input
+              type="number"
+              placeholder="E.g. 9234324712"
+              id="c-1"
+              className="rounded bg-[#262229] text-white"
+              value={startTime}
+              onChange={(e) => {
+                setStartTime(e.target.value);
+                setShowThisSection({
+                  ...showThisSection,
+                  2: true,
+                });
+              }}
+            />
+          </div>
 
-    const { config: configApprove } = usePrepareSendTransaction({
-      request: {
-        to:
-          chain && sourceData.sourceToken
-            ? TOKEN_ADDRESSES[chain?.network][sourceData.sourceToken].address
-            : ZERO_ADDRESS,
-        data: callDataApproval,
-      },
-    });
-
-    const { sendTransactionAsync: sendApproveTokenAsyncTxn } =
-      useSendTransaction(configApprove);
-
-    const { config: configCreateTimeTxn } = usePrepareSendTransaction({
-      request: {
-        to: chain
-          ? AUTOPAY_CONTRACT_ADDRESSES[
-          chain?.testnet ? "testnets" : "mainnets"
-          ][chain?.network]
-          : ZERO_ADDRESS,
-        data: callDataCreateTimeTxn,
-        // gasLimit: 3000000,
-      },
-    });
-
-    const { sendTransactionAsync: sendCreateTimeAsyncTxn } =
-      useSendTransaction(configCreateTimeTxn);
-
-    const fetchAllowance = async () => {
-      let contract;
-
-      try {
-        contract = new ethers.Contract(
-          chain?.testnet && sourceData.sourceToken
-            ? TOKEN_ADDRESSES[chain?.network][sourceData.sourceToken].address
-            : ZERO_ADDRESS,
-          erc20ABI,
-          provider
-        );
-
-        let checkAllowance = await contract.allowance(
-          address ? address : ZERO_ADDRESS,
-          chain
-            ? AUTOPAY_CONTRACT_ADDRESSES[
-            chain?.testnet ? "testnets" : "mainnets"
-            ][chain?.network]
-            : ZERO_ADDRESS
-        );
-        let allowance = checkAllowance.toString();
-
-        setAllowance(allowance);
-      } catch { }
-    };
-
-    const updateCallDataApproval = () => {
-      const ERC20Contract = ERC20_CONTRACT(
-        chain && sourceData.sourceToken
-          ? TOKEN_ADDRESSES[chain?.network][sourceData.sourceToken].address
-          : ZERO_ADDRESS,
-        provider
-      );
-
-      setCallDataApproval(
-        ERC20Contract.interface.encodeFunctionData("approve", [
-          chain
-            ? AUTOPAY_CONTRACT_ADDRESSES[
-            chain?.testnet ? "testnets" : "mainnets"
-            ][chain?.network]
-            : ZERO_ADDRESS,
-          ethers.constants.MaxUint256,
-        ])
-      );
-    };
-
-    const updateCallDataCreateTimeTxn = () => {
-      const AutoPayContract = AUTOPAY_CONTRACT(chain, provider);
-
-      console.log("hereNow: ", [
-        [
-          ...dataRows
-            .slice(0, -1)
-            .map((e) => (e.toAddress ? e.toAddress : ZERO_ADDRESS)),
-        ],
-        [
-          ...dataRows
-            .slice(0, -1)
-            .map((e) =>
-              e.amountOfSourceToken
-                ? parseUnits(
-                  e.amountOfSourceToken,
-                  TOKEN_ADDRESSES[chain?.network][sourceData.sourceToken]
-                    .decimals
-                )
-                : "0"
-            ),
-        ],
-        [
-          ...dataRows.slice(0, -1).map((e) => ({
-            _fromToken:
-              chain?.testnet && sourceData.sourceToken
-                ? TOKEN_ADDRESSES[chain?.network][sourceData.sourceToken]
-                  .address
-                : ZERO_ADDRESS,
-            _toToken:
-              chain?.testnet && sourceData.sourceToken && e.destinationChain
-                ? TOKEN_ADDRESSES[e.destinationChain][sourceData.sourceToken]
-                  .address
-                : ZERO_ADDRESS,
-          })),
-        ],
-        [
-          ...dataRows.slice(0, -1).map((e) => ({
-            _toChain: "80001",
-            _destinationDomain: "9991",
-            _destinationContract: e.destinationChain
-              ? AUTOPAY_CONTRACT_ADDRESSES[
-              chain?.testnet ? "testnets" : "mainnets"
-              ][e.destinationChain]
-              : ZERO_ADDRESS,
-          })),
-        ],
-        {
-          _cycles: cycles ? cycles : 1,
-          _startTime: startTime
-            ? startTime
-            : Math.trunc(Date.now() / 1000) + 3600,
-          _interval:
-            Number(intervalCount) *
-            (intervalType.value === "days"
-              ? 86400
-              : intervalType.value === "months"
-                ? 2629800
-                : intervalType.value === "weeks"
-                  ? 604800
-                  : intervalType.value === "years"
-                    ? 31536000
-                    : 1),
-          _web3FunctionHash: "QmbN96rTEy8EYxPNVqCUmZgTZzufvCbNhmsVzM2rephoLa",
-        },
-      ]);
-      try {
-        setCallDataCreateTimeTxn(
-          AutoPayContract.interface.encodeFunctionData(
-            "_createMultipleTimeAutomate",
-            [
-              [
-                ...dataRows
-                  .slice(0, -1)
-                  .map((e) => (e.toAddress ? e.toAddress : ZERO_ADDRESS)),
-              ],
-              [
-                ...dataRows
-                  .slice(0, -1)
-                  .map((e) =>
-                    e.amountOfSourceToken
-                      ? parseUnits(
-                        e.amountOfSourceToken,
-                        TOKEN_ADDRESSES[chain?.network][
-                          sourceData.sourceToken
-                        ].decimals
-                      )
-                      : "0"
-                  ),
-              ],
-              [
-                ...dataRows.slice(0, -1).map((e) => ({
-                  _fromToken:
-                    chain?.testnet && sourceData.sourceToken
-                      ? TOKEN_ADDRESSES[chain?.network][sourceData.sourceToken]
-                        .address
-                      : ZERO_ADDRESS,
-                  _toToken:
-                    chain?.testnet &&
-                      sourceData.sourceToken &&
-                      e.destinationChain
-                      ? TOKEN_ADDRESSES[e.destinationChain][
-                        sourceData.sourceToken
-                      ].address
-                      : ZERO_ADDRESS,
-                })),
-              ],
-              [
-                ...dataRows.slice(0, -1).map((e) => ({
-                  _toChain: e.destinationChain
-                    ? chainList[e.destinationChain].id
-                    : ZERO_ADDRESS,
-                  _destinationDomain: e.destinationChain
-                    ? CONNEXT_DOMAINS[e.destinationChain]
-                    : ZERO_ADDRESS,
-                  _destinationContract: e.destinationChain
-                    ? AUTOPAY_CONTRACT_ADDRESSES[
-                    chain?.testnet ? "testnets" : "mainnets"
-                    ][e.destinationChain]
-                    : ZERO_ADDRESS,
-                })),
-              ],
-              {
-                _cycles: cycles ? cycles : 1,
-                _startTime: startTime
-                  ? startTime
-                  : Math.trunc(Date.now() / 1000) + 3600,
-                _interval:
-                  Number(intervalCount) *
-                  (intervalType.value === "days"
-                    ? 86400
-                    : intervalType.value === "months"
-                      ? 2629800
-                      : intervalType.value === "weeks"
-                        ? 604800
-                        : intervalType.value === "years"
-                          ? 31536000
-                          : 1),
-                _web3FunctionHash:
-                  "QmbN96rTEy8EYxPNVqCUmZgTZzufvCbNhmsVzM2rephoLa",
-              },
-            ]
-          )
-        );
-      } catch { }
-    };
-
-    useEffect(() => {
-      fetchAllowance();
-      updateCallDataApproval();
-      updateCallDataCreateTimeTxn();
-    }, [
-      chain,
-      sourceData.sourceToken,
-      dataRows,
-      cycles,
-      intervalCount,
-      intervalType,
-      startTime,
-    ]);
-
-    // useImperativeHandle(ref, () => ({
-    //   executeTxn() {
-    //     try {
-    //       if (
-    //         BigNumber.from(allowance ? allowance : 0).eq(
-    //           ethers.constants.MaxUint256
-    //         )
-    //       )
-    //         sendCreateTimeAsyncTxn?.();
-    //       else sendApproveTokenAsyncTxn?.();
-    //     } catch { }
-    //   },
-    // }));
-
-    return (
-      <>
-        <div className="w-full flex-col">
-          <div className="grid w-full grid-cols-3 gap-3">
-            <div>
-              <Label htmlFor="c-1" className="text-piccolo">
-                Start Time
-              </Label>
-              <Input
-                type="number"
-                placeholder="E.g. 9234324712"
-                id="c-1"
-                className="rounded bg-[#262229] text-white"
-                value={startTime}
-                onChange={(e) => {
-                  setStartTime(e.target.value);
-                  setShowThisSection({
-                    ...showThisSection,
-                    2: true,
-                  });
-                }}
-              />
-            </div>
-
-            {selectedCategory === "Recurring" && (
-              <>
+          {selectedCategory === "Recurring" && (
+            <>
+              <div>
+                <Label htmlFor="c-1" className="text-piccolo">
+                  No. of Cycles
+                </Label>
+                <Input
+                  type="number"
+                  placeholder="1"
+                  id="c-1"
+                  className="rounded bg-[#262229] text-white"
+                  onChange={(e) => setCycles(e.target.value)}
+                />
+              </div>
+              <div className=" grid grid-cols-2 gap-x-2">
                 <div>
                   <Label htmlFor="c-1" className="text-piccolo">
-                    No. of Cycles
+                    Interval
                   </Label>
-                  <Input
-                    type="number"
-                    placeholder="1"
-                    id="c-1"
-                    className="rounded bg-[#262229] text-white"
-                    onChange={(e) => setCycles(e.target.value)}
-                  />
-                </div>
-                <div className=" grid grid-cols-2 gap-x-2">
-                  <div>
-                    <Label htmlFor="c-1" className="text-piccolo">
-                      Interval
-                    </Label>
-                    <Button
-                      onClick={openModal}
-                      className="rounded-md bg-[#262229] font-normal"
-                    >
-                      Select Interval
-                    </Button>
+                  <Button
+                    onClick={openModal}
+                    className="rounded-md bg-[#262229] font-normal"
+                  >
+                    Select Interval
+                  </Button>
 
-                    <Modal open={isOpen} onClose={closeModal}>
-                      <Modal.Backdrop className="bg-black opacity-60" />
-                      <Modal.Panel className="bg-[#282828] p-3">
-                        <div className="border-beerus relative px-6 pb-4 pt-5">
-                          <h3 className="text-moon-18 text-bulma font-medium">
-                            Select Frequency
-                          </h3>
-                          <span
-                            className="absolute right-5 top-4 inline-block h-8 w-8 cursor-pointer"
-                            onClick={closeModal}
-                          >
-                            <ControlsCloseSmall className="block h-full w-full" />
-                          </span>
-                        </div>
-                        <div className="grid grid-cols-5 items-center gap-3 px-6 py-4">
-                          <span className="col-span-2 block text-[#AFAEAE]">
-                            Repeat Every
-                          </span>
-                          <Input
-                            type="text"
-                            placeholder="1"
-                            id="c-1"
-                            className="col-span-1 rounded bg-[#262229] text-white"
-                            value={intervalCount}
-                            onChange={(e) => setIntervalCount(e.target.value)}
-                          />
-                          <Dropdown
-                            value={intervalType}
-                            onChange={setIntervalType}
-                            size="xl"
-                            className="col-span-2"
-                          >
-                            {({ open }) => (
-                              <>
-                                <Dropdown.Select
-                                  open={open}
-                                  data-test="data-test"
-                                  className="bg-[#262229]"
-                                >
-                                  {intervalType?.label}
-                                </Dropdown.Select>
+                  <Modal open={isOpen} onClose={closeModal}>
+                    <Modal.Backdrop className="bg-black opacity-60" />
+                    <Modal.Panel className="bg-[#282828] p-3">
+                      <div className="border-beerus relative px-6 pb-4 pt-5">
+                        <h3 className="text-moon-18 text-bulma font-medium">
+                          Select Frequency
+                        </h3>
+                        <span
+                          className="absolute right-5 top-4 inline-block h-8 w-8 cursor-pointer"
+                          onClick={closeModal}
+                        >
+                          <ControlsCloseSmall className="block h-full w-full" />
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-5 items-center gap-3 px-6 py-4">
+                        <span className="col-span-2 block text-[#AFAEAE]">
+                          Repeat Every
+                        </span>
+                        <Input
+                          type="text"
+                          placeholder="1"
+                          id="c-1"
+                          className="col-span-1 rounded bg-[#262229] text-white"
+                          value={intervalCount}
+                          onChange={(e) => setIntervalCount(e.target.value)}
+                        />
+                        <Dropdown
+                          value={intervalType}
+                          onChange={setIntervalType}
+                          size="xl"
+                          className="col-span-2"
+                        >
+                          {({ open }) => (
+                            <>
+                              <Dropdown.Select
+                                open={open}
+                                data-test="data-test"
+                                className="bg-[#262229]"
+                              >
+                                {intervalType?.label}
+                              </Dropdown.Select>
 
-                                <Dropdown.Options className="z-[10] w-full min-w-full bg-[#262229]">
-                                  {intervalTypes.map((size, index) => (
-                                    <Dropdown.Option value={size} key={index}>
-                                      {({ selected, active }) => (
-                                        <MenuItem
-                                          isActive={active}
-                                          isSelected={selected}
-                                        >
-                                          {size.label}
-                                        </MenuItem>
-                                      )}
-                                    </Dropdown.Option>
-                                  ))}
-                                </Dropdown.Options>
-                              </>
-                            )}
-                          </Dropdown>
-                        </div>
-                        {/* <div className="px-6 py-4">
+                              <Dropdown.Options className="z-[10] w-full min-w-full bg-[#262229]">
+                                {intervalTypes.map((size, index) => (
+                                  <Dropdown.Option value={size} key={index}>
+                                    {({ selected, active }) => (
+                                      <MenuItem
+                                        isActive={active}
+                                        isSelected={selected}
+                                      >
+                                        {size.label}
+                                      </MenuItem>
+                                    )}
+                                  </Dropdown.Option>
+                                ))}
+                              </Dropdown.Options>
+                            </>
+                          )}
+                        </Dropdown>
+                      </div>
+                      {/* <div className="px-6 py-4">
                           <span className="col-span-2 block text-[#AFAEAE]">
                             Ends
                           </span>
@@ -588,26 +317,26 @@ const TimePanel = (
                             </Radio.Option>
                           </Radio>
                         </div> */}
-                        <div className="flex justify-end gap-2 p-4 pt-2">
-                          {/* <Button variant="secondary" onClick={closeModal}>
+                      <div className="flex justify-end gap-2 p-4 pt-2">
+                        {/* <Button variant="secondary" onClick={closeModal}>
                             Cancel
                           </Button> */}
-                          <Button
-                            className="rounded-md bg-[#262229]"
-                            onClick={closeModal}
-                          >
-                            Ok
-                          </Button>
-                        </div>
-                      </Modal.Panel>
-                    </Modal>
-                  </div>
+                        <Button
+                          className="rounded-md bg-[#262229]"
+                          onClick={closeModal}
+                        >
+                          Ok
+                        </Button>
+                      </div>
+                    </Modal.Panel>
+                  </Modal>
                 </div>
-              </>
-            )}
-          </div>
+              </div>
+            </>
+          )}
         </div>
-        {/* <Button
+      </div>
+      {/* <Button
           size="md"
           className="mt-7 min-w-[93px] rounded-lg bg-[#1ae77a] text-black"
           onClick={() => {
@@ -631,9 +360,9 @@ const TimePanel = (
             ? "Confirm"
             : "Approve"}
         </Button> */}
-      </>
-    );
-  }
+    </>
+  );
+}
 );
 
 const PriceFeedPanel = (

@@ -24,7 +24,7 @@ import { useCSVReader } from "react-papaparse";
 import panels from "../components/Panels";
 import { ArrowUpCircleIcon, CheckIcon } from "@heroicons/react/20/solid";
 
-function classNames(...classes) {
+function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(" ");
 }
 
@@ -245,7 +245,7 @@ const Main = () => {
           </div>
         </div>
       </div>
-      <div
+      {/* <div
         className={classNames(
           "py-5 transition-opacity",
           showThisSection[0] ? "opacity-100" : " opacity-0"
@@ -281,56 +281,56 @@ const Main = () => {
             </Tab.Group>
           </div>
         </div>
-      </div>
-      <div
-        className={classNames(
-          "w-11/12 rounded-md transition-opacity",
-          showThisSection[1] ? "opacity-100" : " opacity-0"
-        )}
-      >
-        <Tab.Group>
-          <div className="rounded-xl bg-[#282828] p-5">
-            <Tab.List className="grid grid-cols-4 gap-[1px] space-x-1 rounded-xl bg-[#464646] p-[5px]">
-              {Object.keys(panels).map((panel) => {
-                if (panels[panel].category.includes(selectedCategory))
-                  return (
-                    <Tab
-                      key={panel}
-                      className={({ selected }) =>
-                        classNames(
-                          "col-span-1 w-auto rounded-xl px-8 py-[0.5rem] text-sm font-medium leading-5 text-white",
-                          selected
-                            ? "bg-[#9101D4] shadow"
-                            : "bg-[#2E2E2E] hover:bg-white/[0.12] hover:text-white"
-                        )
-                      }
-                    >
-                      {panel}
-                    </Tab>
-                  );
-              })}
-            </Tab.List>
-          </div>
-          <Tab.Panels className="mt-6 ">
-            {Object.values(panels).map((type, idx) => (
-              <Tab.Panel
-                key={idx}
-                className={classNames("rounded-xl  bg-[#282828] p-5")}
-              >
-                <ul>
-                  {type.element(
-                    selectedCategory,
-                    showThisSection,
-                    setShowThisSection,
-                    dataRows,
-                    panelRef
-                  )}
-                </ul>
-              </Tab.Panel>
-            ))}
-          </Tab.Panels>
-        </Tab.Group>
-      </div>
+      </div> */}
+      {/* <div
+          className={classNames(
+            "w-11/12 rounded-md transition-opacity",
+            showThisSection[1] ? "opacity-100" : " opacity-0"
+          )}
+        >
+          <Tab.Group>
+            <div className="rounded-xl bg-[#282828] p-5">
+              <Tab.List className="grid grid-cols-4 gap-[1px] space-x-1 rounded-xl bg-[#464646] p-[5px]">
+                {Object.keys(panels).map((panel) => {
+                  if (panels[panel].category.includes(selectedCategory))
+                    return (
+                      <Tab
+                        key={panel}
+                        className={({ selected }) =>
+                          classNames(
+                            "col-span-1 w-auto rounded-xl px-8 py-[0.5rem] text-sm font-medium leading-5 text-white",
+                            selected
+                              ? "bg-[#9101D4] shadow"
+                              : "bg-[#2E2E2E] hover:bg-white/[0.12] hover:text-white"
+                          )
+                        }
+                      >
+                        {panel}
+                      </Tab>
+                    );
+                })}
+              </Tab.List>
+            </div>
+            <Tab.Panels className="mt-6 ">
+              {Object.values(panels).map((type, idx) => (
+                <Tab.Panel
+                  key={idx}
+                  className={classNames("rounded-xl  bg-[#282828] p-5")}
+                >
+                  <ul>
+                    {type.element(
+                      selectedCategory,
+                      showThisSection,
+                      setShowThisSection,
+                      dataRows,
+                      panelRef
+                    )}
+                  </ul>
+                </Tab.Panel>
+              ))}
+            </Tab.Panels>
+          </Tab.Group>
+        </div> */}
       <div
         className={classNames(
           "w-11/12 rounded-md  py-5 transition-opacity",
