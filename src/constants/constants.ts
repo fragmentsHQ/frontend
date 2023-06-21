@@ -64,112 +64,32 @@ const NETWORKS = {
     1: {
       chainId: `0x${Number(1).toString(16)}`,
       chainName: "Ethereum Mainnet",
-      rpcUrls: [
-        "https://eth-mainnet.public.blastapi.io",
-        "https://cloudflare-eth.com",
-        "https://ethereumnodelight.app.runonflux.io",
-        "https://main-light.eth.linkpool.io",
-      ],
-      nativeCurrency: {
-        name: "Ether",
-        symbol: "ETH",
-        decimals: 18
-      },
-      blockExplorerUrls: [
-        "https://etherscan.io",
-      ]
+      logo: "https://etherscan.io/images/brand-assets/etherscan-logo-circle.png",
     },
     10: {
       chainId: `0x${Number(10).toString(16)}`,
       chainName: "Optimism",
-      rpcUrls: [
-        "https://mainnet.optimism.io/"
-      ],
-      nativeCurrency: {
-        name: "Ether",
-        symbol: "ETH",
-        decimals: 18
-      },
-      blockExplorerUrls: [
-        "https://optimistic.etherscan.io",
-      ]
+      logo: "https://optimism.io/images/optimism-logo.png",
     },
     56: {
       chainId: `0x${Number(56).toString(16)}`,
       chainName: "Binance Smart Chain Mainnet",
-      nativeCurrency: {
-        name: "Binance Chain Native Token",
-        symbol: "BNB",
-        decimals: 18
-      },
-      rpcUrls: [
-        "https://bsc-dataseed1.binance.org",
-        "https://bsc-dataseed2.binance.org",
-        "https://bsc-dataseed3.binance.org",
-        "https://bsc-dataseed4.binance.org",
-        "https://bsc-dataseed1.defibit.io",
-        "https://bsc-dataseed2.defibit.io",
-        "https://bsc-dataseed3.defibit.io",
-        "https://bsc-dataseed4.defibit.io",
-        "https://bsc-dataseed1.ninicoin.io",
-        "https://bsc-dataseed2.ninicoin.io",
-        "https://bsc-dataseed3.ninicoin.io",
-        "https://bsc-dataseed4.ninicoin.io",
-        "wss://bsc-ws-node.nariox.org"
-      ],
-      blockExplorerUrls: ["https://bscscan.com"]
+      logo: "https://bscscan.com/images/brand-assets/bscscan-logo-circle.png",
     },
     100: {
       chainId: `0x${Number(100).toString(16)}`,
       chainName: "Gnosis Chain (formerly xDai)",
-      rpcUrls: [
-        "https://rpc.gnosischain.com",
-        "https://xdai.poanetwork.dev",
-        "wss://rpc.gnosischain.com/wss",
-        "wss://xdai.poanetwork.dev/wss",
-        "http://xdai.poanetwork.dev",
-        "https://dai.poa.network",
-        "ws://xdai.poanetwork.dev:8546"
-      ],
-      nativeCurrency: {
-        name: "xDAI",
-        symbol: "xDAI",
-        decimals: 18
-      },
-      blockExplorerUrls: [
-        "https://blockscout.com/xdai/mainnet",
-      ]
+      logo: "https://gnosis-safe.io/images/xdai-logo.svg",
     },
     137: {
       chainId: `0x${Number(137).toString(16)}`,
       chainName: "Polygon Mainnet",
-      rpcUrls: ["https://polygon-rpc.com/"],
-      nativeCurrency: {
-        name: "MATIC",
-        symbol: "MATIC",
-        decimals: 18
-      },
-      blockExplorerUrls: ["https://polygonscan.com/"]
+      logo: "https://polygon.technology/images/logo.png",
     },
     42161: {
       chainId: `0x${Number(42161).toString(16)}`,
       chainName: "Arbitrum One",
-      nativeCurrency: {
-        name: "Ether",
-        symbol: "ETH",
-        decimals: 18
-      },
-      rpcUrls: [
-        "https://arbitrum-mainnet.infura.io/v3/${INFURA_API_KEY}",
-        "https://arb-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY}",
-        "https://arb1.arbitrum.io/rpc",
-        "wss://arb1.arbitrum.io/ws"
-      ],
-      blockExplorerUrls: [
-        "https://arbiscan.io",
-        "https://explorer.arbitrum.io",
-
-      ]
+      logo: "https://arbitrum.io/wp-content/uploads/2021/08/Arbitrum-Logo-Black.svg",
     },
   },
   testnet: {

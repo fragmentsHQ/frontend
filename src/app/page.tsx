@@ -138,9 +138,9 @@ const Main = () => {
                   >
                     {chain?.name && (
                       <div className="flex items-center gap-2">
-                        {chain?.id && <Image
+                        {chain?.id && <img
                           className="h-[1.2rem] w-[1.2rem] rounded-full"
-                          src={ISPRODUCTION ? NETWORKS.mainnet[chain?.id].logo : NETWORKS.testnet[chain?.id].logo}
+                          src={ISPRODUCTION ? NETWORKS.mainnet[chain?.id]?.logo : NETWORKS.testnet[chain?.id]?.logo}
                           alt="chain logo"
                         />}
                         {chain?.name}
@@ -190,7 +190,7 @@ const Main = () => {
                   >
                     {sourceToken && (
                       <div className="flex items-center gap-2">
-                        <Image
+                        <img
                           className="h-[1.2rem] w-[1.2rem] rounded-full"
                           src={`/logo/tokens/${sourceToken}.png`}
                           alt="token logo"
@@ -210,7 +210,7 @@ const Main = () => {
                                   isActive={active}
                                   isSelected={selected}
                                 >
-                                  <Image
+                                  <img
                                     className="h-[1.2rem] w-[1.2rem]"
                                     src={`/logo/tokens/${token}.png`}
                                     alt="token logo"
