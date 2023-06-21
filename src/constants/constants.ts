@@ -17,7 +17,7 @@ const Web3FunctionHash = {
   contract: ""
 };
 
-const AUTOPAY_CONTRACT_ADDRESSES = {
+const AUTOPAY_CONTRACT_ADDRESSES: ContractAddresses = {
   mainnets: {
     polygon: "0x",
     ethereum: "0x",
@@ -31,7 +31,7 @@ const AUTOPAY_CONTRACT_ADDRESSES = {
   },
 };
 
-const CONDITIONAL_CONTRACT_ADDRESSES = {
+const CONDITIONAL_CONTRACT_ADDRESSES: ContractAddresses = {
   mainnets: {
     polygon: "0x",
     ethereum: "0x",
@@ -45,7 +45,7 @@ const CONDITIONAL_CONTRACT_ADDRESSES = {
   },
 };
 
-const TREASURY_CONTRACT_ADDRESSES = {
+const TREASURY_CONTRACT_ADDRESSES: ContractAddresses = {
   mainnets: {
     polygon: "0x",
     ethereum: "0x",
@@ -59,110 +59,120 @@ const TREASURY_CONTRACT_ADDRESSES = {
   },
 };
 
-const NETWORKS = {
-  mainnet: {
-    1: {
-      chainId: `0x${Number(1).toString(16)}`,
-      chainName: "Ethereum Mainnet",
-      logo: "https://etherscan.io/images/brand-assets/etherscan-logo-circle.png",
-    },
-    10: {
-      chainId: `0x${Number(10).toString(16)}`,
-      chainName: "Optimism",
-      logo: "https://optimism.io/images/optimism-logo.png",
-    },
-    56: {
-      chainId: `0x${Number(56).toString(16)}`,
-      chainName: "Binance Smart Chain Mainnet",
-      logo: "https://bscscan.com/images/brand-assets/bscscan-logo-circle.png",
-    },
-    100: {
-      chainId: `0x${Number(100).toString(16)}`,
-      chainName: "Gnosis Chain (formerly xDai)",
-      logo: "https://gnosis-safe.io/images/xdai-logo.svg",
-    },
-    137: {
-      chainId: `0x${Number(137).toString(16)}`,
-      chainName: "Polygon Mainnet",
-      logo: "https://polygon.technology/images/logo.png",
-    },
-    42161: {
-      chainId: `0x${Number(42161).toString(16)}`,
-      chainName: "Arbitrum One",
-      logo: "https://arbitrum.io/wp-content/uploads/2021/08/Arbitrum-Logo-Black.svg",
-    },
+const NETWORKS: { [key: number]: { chainId: number; chainName: string; logo: string } } = {
+  1: {
+    chainId: 1,
+    chainName: "Ethereum Mainnet",
+    logo: "https://etherscan.io/images/brand-assets/etherscan-logo-circle.png",
   },
-  testnet: {
-    5: {
-      chainId: `0x${Number(5).toString(16)}`,
-      chainName: "Goerli",
-      logo: "https://goerli.etherscan.io/images/brand-assets/etherscan-logo-circle.png",
-    },
-    80001: {
-      chainId: `0x${Number(80001).toString(16)}`,
-      chainName: "Mumbai Testnet",
-      logo: "https://docs.matic.network/img/logo-matic.svg",
-    },
-  }
+  10: {
+    chainId: 10,
+    chainName: "Optimism",
+    logo: "https://optimism.io/images/optimism-logo.png",
+  },
+  56: {
+    chainId: 56,
+    chainName: "Binance Smart Chain Mainnet",
+    logo: "https://bscscan.com/images/brand-assets/bscscan-logo-circle.png",
+  },
+  100: {
+    chainId: 100,
+    chainName: "Gnosis Chain (formerly xDai)",
+    logo: "https://gnosis-safe.io/images/xdai-logo.svg",
+  },
+  137: {
+    chainId: 137,
+    chainName: "Polygon Mainnet",
+    logo: "https://polygon.technology/images/logo.png",
+  },
+  42161: {
+    chainId: 42161,
+    chainName: "Arbitrum One",
+    logo: "https://arbitrum.io/wp-content/uploads/2021/08/Arbitrum-Logo-Black.svg",
+  },
 }
 
-const TOKEN_ADDRESSES = {
+const TEST_NETWORKS: { [key: number]: { chainId: number; chainName: string; logo: string } } = {
+  5: {
+    chainId: 5,
+    chainName: "Goerli",
+    logo: "https://goerli.etherscan.io/images/brand-assets/etherscan-logo-circle.png",
+  },
+  80001: {
+    chainId: 80001,
+    chainName: "Mumbai Testnet",
+    logo: "https://docs.matic.network/img/logo-matic.svg",
+  },
+}
+
+const TOKEN_ADDRESSES: { [key: number]: { [key: string]: { address: string; decimals: number; logo: string } } } = {
   137: {
     USDC: {
       address: "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174",
       decimals: 6,
+      logo: "https://cryptologos.cc/logos/usd-coin-usdc-logo.png?v=013",
     },
     USDT: {
       address: "0xc2132D05D31c914a87C6611C10748AEb04B58e8F",
       decimals: 6,
+      logo: "https://cryptologos.cc/logos/tether-usdt-logo.png?v=013",
     },
     DAI: {
       address: "0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063",
       decimals: 18,
+      logo: "https://cryptologos.cc/logos/multi-collateral-dai-dai-logo.png?v=013",
     },
   },
   1: {
     USDC: {
       address: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
       decimals: 6,
+      logo: "https://cryptologos.cc/logos/usd-coin-usdc-logo.png?v=013",
     },
     USDT: {
       address: "0xdAC17F958D2ee523a2206206994597C13D831ec7",
       decimals: 6,
+      logo: "https://cryptologos.cc/logos/tether-usdt-logo.png?v=013",
     },
     DAI: {
       address: "0x6B175474E89094C44Da98b954EedeAC495271d0F",
       decimals: 18,
+      logo: "https://cryptologos.cc/logos/multi-collateral-dai-dai-logo.png?v=013",
     },
   },
   5: {
     TEST: {
       address: "0x7ea6eA49B0b0Ae9c5db7907d139D9Cd3439862a1",
       decimals: 18,
+      logo: "https://testnet.connextscan.io/logos/logo.png"
     },
   },
   420: {
     TEST: {
       address: "0x68Db1c8d85C09d546097C65ec7DCBFF4D6497CbF",
       decimals: 18,
+      logo: "https://testnet.connextscan.io/logos/logo.png"
     },
   },
-  9991: {
+  80001: {
     TEST: {
       address: "0xeDb95D8037f769B72AAab41deeC92903A98C9E16",
       decimals: 18,
+      logo: "https://testnet.connextscan.io/logos/logo.png"
     },
   },
   421613: {
     TEST: {
       address: "0xDC805eAaaBd6F68904cA706C221c72F8a8a68F9f",
       decimals: 18,
+      logo: "https://testnet.connextscan.io/logos/logo.png"
     },
   },
   1442: {
     TEST: {
       address: "0x5f921E4DE609472632CEFc72a3846eCcfbed4ed8",
       decimals: 18,
+      logo: "https://testnet.connextscan.io/logos/logo.png"
     },
   },
 };
@@ -186,7 +196,7 @@ const CONNEXT_DOMAINS = {
   polygonZkevmTestnet: "1887071092",
 };
 
-const AUTOPAY_CONTRACT = (chain: Chain, provider) =>
+const AUTOPAY_CONTRACT = (chain: Chain, provider: any) =>
   new ethers.Contract(
     chain
       ? AUTOPAY_CONTRACT_ADDRESSES[chain?.testnet ? "testnets" : "mainnets"][
@@ -197,7 +207,7 @@ const AUTOPAY_CONTRACT = (chain: Chain, provider) =>
     provider
   );
 
-const CONDITIONAL_CONTRACT = (chain: Chain, provider) =>
+const CONDITIONAL_CONTRACT = (chain: Chain, provider: any) =>
   new ethers.Contract(
     chain
       ? CONDITIONAL_CONTRACT_ADDRESSES[
@@ -208,7 +218,7 @@ const CONDITIONAL_CONTRACT = (chain: Chain, provider) =>
     provider
   );
 
-const TREASURY_CONTRACT = (chain: Chain, provider) =>
+const TREASURY_CONTRACT = (chain: Chain, provider: any) =>
   new ethers.Contract(
     chain
       ? TREASURY_CONTRACT_ADDRESSES[chain?.testnet ? "testnets" : "mainnets"][
@@ -219,7 +229,7 @@ const TREASURY_CONTRACT = (chain: Chain, provider) =>
     provider
   );
 
-const ERC20_CONTRACT = (tokenAddress, provider) =>
+const ERC20_CONTRACT = (tokenAddress: string, provider: any) =>
   new ethers.Contract(tokenAddress, erc20ABI, provider);
 
 export {
@@ -237,5 +247,12 @@ export {
   ISPRODUCTION,
   ETH,
   Web3FunctionHash,
-  NETWORKS
+  NETWORKS,
+  TEST_NETWORKS
 };
+
+interface ContractAddresses {
+  [key: string]: {
+    [key: string]: string;
+  };
+}

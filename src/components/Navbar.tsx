@@ -77,7 +77,7 @@ const Navbar = () => {
                           onClick={openChainModal}
                           className="flex gap-2 rounded-lg bg-[#464646] text-sm text-white"
                         >
-                          <Image
+                          <img
                             className="h-[1.2rem] w-[1.2rem] rounded-full"
                             // @ts-ignore
                             src={chain?.iconUrl}

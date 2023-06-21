@@ -8,15 +8,21 @@ type Props = {
     children: ReactNode;
 };
 
+interface token {
+    address: string;
+    decimals: string;
+    logo: string;
+}
+
 interface AuthData {
     userAddress: `0x${string}` | undefined;
     isConnected: boolean | null;
     viewChain: { name: string, id: number } | null;
     setViewChain: (chain: { name: string, id: number }) => void;
     sourceChain: (Chain & { unsupported?: boolean | undefined; }) | undefined;
-    sourceToken: string | null;
+    sourceToken: token | null;
     appMode: "Auto Pay" | "xStream";
-    setSourceToken: (token: string) => void;
+    setSourceToken: (token: token) => void;
     setAppMode: (mode: "Auto Pay" | "xStream") => void;
 }
 
@@ -40,8 +46,10 @@ const AuthProvider = ({ children }: Props) => {
         name: "goerli",
         id: 5
     });
-    const [sourceToken, setSourceToken] = useState("");
+    const [sourceToken, setSourceToken] = useState<token | null>(null);
     const [appMode, setAppMode] = useState<"Auto Pay" | "xStream">("Auto Pay");
+
+    console.log("AuthProvider", { address, isConnected, chain, viewChain, sourceToken, appMode });
 
     return (
         <AuthContext.Provider
