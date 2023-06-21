@@ -59,8 +59,135 @@ const TREASURY_CONTRACT_ADDRESSES = {
   },
 };
 
+const NETWORKS = {
+  mainnet: {
+    1: {
+      chainId: `0x${Number(1).toString(16)}`,
+      chainName: "Ethereum Mainnet",
+      rpcUrls: [
+        "https://eth-mainnet.public.blastapi.io",
+        "https://cloudflare-eth.com",
+        "https://ethereumnodelight.app.runonflux.io",
+        "https://main-light.eth.linkpool.io",
+      ],
+      nativeCurrency: {
+        name: "Ether",
+        symbol: "ETH",
+        decimals: 18
+      },
+      blockExplorerUrls: [
+        "https://etherscan.io",
+      ]
+    },
+    10: {
+      chainId: `0x${Number(10).toString(16)}`,
+      chainName: "Optimism",
+      rpcUrls: [
+        "https://mainnet.optimism.io/"
+      ],
+      nativeCurrency: {
+        name: "Ether",
+        symbol: "ETH",
+        decimals: 18
+      },
+      blockExplorerUrls: [
+        "https://optimistic.etherscan.io",
+      ]
+    },
+    56: {
+      chainId: `0x${Number(56).toString(16)}`,
+      chainName: "Binance Smart Chain Mainnet",
+      nativeCurrency: {
+        name: "Binance Chain Native Token",
+        symbol: "BNB",
+        decimals: 18
+      },
+      rpcUrls: [
+        "https://bsc-dataseed1.binance.org",
+        "https://bsc-dataseed2.binance.org",
+        "https://bsc-dataseed3.binance.org",
+        "https://bsc-dataseed4.binance.org",
+        "https://bsc-dataseed1.defibit.io",
+        "https://bsc-dataseed2.defibit.io",
+        "https://bsc-dataseed3.defibit.io",
+        "https://bsc-dataseed4.defibit.io",
+        "https://bsc-dataseed1.ninicoin.io",
+        "https://bsc-dataseed2.ninicoin.io",
+        "https://bsc-dataseed3.ninicoin.io",
+        "https://bsc-dataseed4.ninicoin.io",
+        "wss://bsc-ws-node.nariox.org"
+      ],
+      blockExplorerUrls: ["https://bscscan.com"]
+    },
+    100: {
+      chainId: `0x${Number(100).toString(16)}`,
+      chainName: "Gnosis Chain (formerly xDai)",
+      rpcUrls: [
+        "https://rpc.gnosischain.com",
+        "https://xdai.poanetwork.dev",
+        "wss://rpc.gnosischain.com/wss",
+        "wss://xdai.poanetwork.dev/wss",
+        "http://xdai.poanetwork.dev",
+        "https://dai.poa.network",
+        "ws://xdai.poanetwork.dev:8546"
+      ],
+      nativeCurrency: {
+        name: "xDAI",
+        symbol: "xDAI",
+        decimals: 18
+      },
+      blockExplorerUrls: [
+        "https://blockscout.com/xdai/mainnet",
+      ]
+    },
+    137: {
+      chainId: `0x${Number(137).toString(16)}`,
+      chainName: "Polygon Mainnet",
+      rpcUrls: ["https://polygon-rpc.com/"],
+      nativeCurrency: {
+        name: "MATIC",
+        symbol: "MATIC",
+        decimals: 18
+      },
+      blockExplorerUrls: ["https://polygonscan.com/"]
+    },
+    42161: {
+      chainId: `0x${Number(42161).toString(16)}`,
+      chainName: "Arbitrum One",
+      nativeCurrency: {
+        name: "Ether",
+        symbol: "ETH",
+        decimals: 18
+      },
+      rpcUrls: [
+        "https://arbitrum-mainnet.infura.io/v3/${INFURA_API_KEY}",
+        "https://arb-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY}",
+        "https://arb1.arbitrum.io/rpc",
+        "wss://arb1.arbitrum.io/ws"
+      ],
+      blockExplorerUrls: [
+        "https://arbiscan.io",
+        "https://explorer.arbitrum.io",
+
+      ]
+    },
+  },
+  testnet: {
+    5: {
+      chainId: `0x${Number(5).toString(16)}`,
+      chainName: "Goerli",
+      logo: "https://goerli.etherscan.io/images/brand-assets/etherscan-logo-circle.png",
+    },
+    80001: {
+      chainId: `0x${Number(80001).toString(16)}`,
+      chainName: "Mumbai Testnet",
+      logo: "https://docs.matic.network/img/logo-matic.svg",
+    },
+  }
+}
+
 const TOKEN_ADDRESSES = {
-  polygon: {
+  137: {
     USDC: {
       address: "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174",
       decimals: 6,
@@ -74,7 +201,7 @@ const TOKEN_ADDRESSES = {
       decimals: 18,
     },
   },
-  mainnet: {
+  1: {
     USDC: {
       address: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
       decimals: 6,
@@ -88,31 +215,31 @@ const TOKEN_ADDRESSES = {
       decimals: 18,
     },
   },
-  goerli: {
+  5: {
     TEST: {
       address: "0x7ea6eA49B0b0Ae9c5db7907d139D9Cd3439862a1",
       decimals: 18,
     },
   },
-  optimismGoerli: {
+  420: {
     TEST: {
       address: "0x68Db1c8d85C09d546097C65ec7DCBFF4D6497CbF",
       decimals: 18,
     },
   },
-  maticmum: {
+  9991: {
     TEST: {
       address: "0xeDb95D8037f769B72AAab41deeC92903A98C9E16",
       decimals: 18,
     },
   },
-  arbitrumGoerli: {
+  421613: {
     TEST: {
       address: "0xDC805eAaaBd6F68904cA706C221c72F8a8a68F9f",
       decimals: 18,
     },
   },
-  "polygon-zkevm": {
+  1442: {
     TEST: {
       address: "0x5f921E4DE609472632CEFc72a3846eCcfbed4ed8",
       decimals: 18,
@@ -189,5 +316,6 @@ export {
   TOKEN_ADDRESSES_PRICE_FEEDS,
   ISPRODUCTION,
   ETH,
-  Web3FunctionHash
+  Web3FunctionHash,
+  NETWORKS
 };

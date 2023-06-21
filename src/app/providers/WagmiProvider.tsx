@@ -7,7 +7,7 @@ import {
     connectorsForWallets,
     darkTheme
 } from '@rainbow-me/rainbowkit';
-import { ISPRODUCTION } from "../constants/constants";
+import { ISPRODUCTION } from "../../constants/constants";
 import {
     argentWallet,
     trustWallet,

@@ -4,12 +4,9 @@ import { Tab } from "@headlessui/react";
 import { Button, Dropdown, MenuItem } from "@heathmont/moon-core-tw";
 import React, { useContext, useEffect, useRef, useState } from "react";
 import { useNetwork } from "wagmi";
-import {
-  AUTOPAY_CONTRACT_ADDRESSES,
-  TOKEN_ADDRESSES,
-} from "../constants/constants";
-import { SourceContext } from "../hooks/context";
-import { AppModes, Category, GasModes } from "../types/types";
+import Image from "next/image";
+
+
 import {
   DataTable,
   Table,
@@ -21,8 +18,19 @@ import {
 } from "@carbon/react";
 import { Pagination } from "carbon-components-react";
 import { useCSVReader } from "react-papaparse";
-import panels from "../components/Panels";
 import { ArrowUpCircleIcon, CheckIcon } from "@heroicons/react/20/solid";
+
+
+import {
+  AUTOPAY_CONTRACT_ADDRESSES,
+  TOKEN_ADDRESSES,
+  NETWORKS,
+  ISPRODUCTION
+} from "../constants/constants";
+import { AuthContext } from "./providers/AuthProvider";
+import { AppModes, Category, GasModes } from "../types/types";
+import panels from "../components/Panels";
+
 
 function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(" ");
@@ -56,7 +64,7 @@ const Main = () => {
   const [selectedCategory, setSelectedCategory] = useState<Category | null>();
   const [pageSize, setPageSize] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
-  const { sourceData, setSourceData } = useContext(SourceContext);
+  const { sourceChain, sourceToken, setSourceToken, appMode, setAppMode } = useContext(AuthContext);
   const { CSVReader } = useCSVReader();
   const panelRef = useRef(null);
   const [dataRows, setDataRows] = useState([
@@ -115,9 +123,9 @@ const Main = () => {
           <div className="grid grid-cols-2 gap-x-2">
             <Dropdown
               disabled={true}
-              value={sourceData.sourceChain}
+              value={sourceChain}
               onChange={(e) => {
-                setSourceData({ ...sourceData, sourceChain: e });
+                alert(e);
               }}
             >
               {({ open }) => (
@@ -130,26 +138,27 @@ const Main = () => {
                   >
                     {chain?.name && (
                       <div className="flex items-center gap-2">
-                        <img
+                        {chain?.id && <Image
                           className="h-[1.2rem] w-[1.2rem] rounded-full"
-                          src={`/logo/chains/${chain?.name}.png`}
-                        />
+                          src={ISPRODUCTION ? NETWORKS.mainnet[chain?.id].logo : NETWORKS.testnet[chain?.id].logo}
+                          alt="chain logo"
+                        />}
                         {chain?.name}
                       </div>
                     )}
                   </Dropdown.Select>
                   <Dropdown.Options className="z-[10] rounded-lg bg-[#262229]">
-                    {chain?.network
-                      ? Object?.keys(TOKEN_ADDRESSES[chain?.network]).map(
-                        (token, index) => (
-                          <Dropdown.Option value={token} key={token}>
+                    {chain?.id
+                      ? Object?.keys(ISPRODUCTION ? NETWORKS.mainnet : NETWORKS.testnet).map(
+                        (network, index) => (
+                          <Dropdown.Option value={network} key={network}>
                             {({ selected, active }) => {
                               return (
                                 <MenuItem
                                   isActive={active}
                                   isSelected={selected}
                                 >
-                                  <MenuItem.Title>{token}</MenuItem.Title>
+                                  <MenuItem.Title>{network?.chainName}</MenuItem.Title>
                                 </MenuItem>
                               );
                             }}
@@ -162,13 +171,13 @@ const Main = () => {
               )}
             </Dropdown>
             <Dropdown
-              value={sourceData.sourceToken}
-              onChange={(e) => {
+              value={sourceToken}
+              onChange={(e: string) => {
                 setShowThisSection({
                   ...showThisSection,
                   0: true,
                 });
-                setSourceData({ ...sourceData, sourceToken: e });
+                setSourceToken(e);
               }}
             >
               {({ open }) => (
@@ -179,19 +188,20 @@ const Main = () => {
                     placeholder="Choose a token"
                     className=" bg-[#262229]"
                   >
-                    {sourceData.sourceToken && (
+                    {sourceToken && (
                       <div className="flex items-center gap-2">
-                        <img
+                        <Image
                           className="h-[1.2rem] w-[1.2rem] rounded-full"
-                          src={`/logo/tokens/${sourceData.sourceToken}.png`}
+                          src={`/logo/tokens/${sourceToken}.png`}
+                          alt="token logo"
                         />
-                        {sourceData.sourceToken}
+                        {sourceToken}
                       </div>
                     )}
                   </Dropdown.Select>
                   <Dropdown.Options className="z-[10] rounded-lg bg-[#262229]">
-                    {chain?.network
-                      ? Object.keys(TOKEN_ADDRESSES[chain?.network]).map(
+                    {chain?.id
+                      ? Object?.keys(TOKEN_ADDRESSES[chain?.id]).map(
                         (token, index) => (
                           <Dropdown.Option value={token} key={index}>
                             {({ selected, active }) => {
@@ -200,9 +210,10 @@ const Main = () => {
                                   isActive={active}
                                   isSelected={selected}
                                 >
-                                  <img
+                                  <Image
                                     className="h-[1.2rem] w-[1.2rem]"
                                     src={`/logo/tokens/${token}.png`}
+                                    alt="token logo"
                                   />
                                   <MenuItem.Title>{token}</MenuItem.Title>
                                 </MenuItem>
@@ -220,7 +231,7 @@ const Main = () => {
           <div className="grid grid-cols-1 gap-x-2 pt-8">
             <Tab.Group
               onChange={(idx) => {
-                setSourceData({ ...sourceData, appMode: appModes[idx] });
+                setAppMode(idx === 0 ? "Auto Pay" : "xStream");
               }}
             >
               <Tab.List className="flex gap-[1px] space-x-1 rounded-xl bg-[#464646] p-[5px]">

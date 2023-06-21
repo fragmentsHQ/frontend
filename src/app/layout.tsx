@@ -6,11 +6,11 @@ import { Toaster } from 'react-hot-toast';
 import "react-csv-importer/dist/index.css";
 
 import SourceContextWrapper from "../hooks/context";
-import { ISPRODUCTION } from "../constants/constants";
 import Navbar from "../components/Navbar";
 import BgImages from "../components/BgImages";
 
-import { Providers } from './providers';
+import { Providers } from './providers/WagmiProvider';
+import AuthProvider from "../app/providers/AuthProvider";
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -25,7 +25,7 @@ export default function RootLayout({
       <body className={inter.className}>
         <Providers>
 
-          <SourceContextWrapper>
+          <AuthProvider>
             <Navbar />
             {children}
             <BgImages />
@@ -55,7 +55,7 @@ export default function RootLayout({
                 },
               }}
             />
-          </SourceContextWrapper>
+          </AuthProvider>
 
         </Providers>
       </body>

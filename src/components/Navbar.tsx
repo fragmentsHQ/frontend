@@ -3,15 +3,16 @@ import React from "react";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { Button } from "@heathmont/moon-core-tw";
 import { useRouter } from "next/navigation";
-
+import Image from "next/image";
+import FragmentsLogo from "../assets/FragmentsLogo.png"
 
 const Navbar = () => {
   const router = useRouter();
   return (
     <div className="flex justify-between p-10">
-      <img
+      <Image
         className="my-auto aspect-[183/24] h-fit w-[12rem]"
-        src="/logo/FragmentsLogo.png"
+        src={FragmentsLogo}
         alt="Fragments Logo"
       />
       <div className="flex gap-8">
@@ -76,9 +77,12 @@ const Navbar = () => {
                           onClick={openChainModal}
                           className="flex gap-2 rounded-lg bg-[#464646] text-sm text-white"
                         >
-                          <img
+                          <Image
                             className="h-[1.2rem] w-[1.2rem] rounded-full"
+                            // @ts-ignore
                             src={chain?.iconUrl}
+                            alt="chain logo"
+                            width={19.2}
                           />
                           {chain?.name}
                         </Button>
