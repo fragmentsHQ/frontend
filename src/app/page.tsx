@@ -31,7 +31,7 @@ import {
 } from "../constants/constants";
 import { AuthContext } from "./providers/AuthProvider";
 import { AppModes, Category, GasModes } from "../types/types";
-// import panels from "../components/Panels";
+import Panels from "../components/Panels";
 import Image from "next/image";
 import CsvReader from "@/components/CsvReader";
 
@@ -52,8 +52,7 @@ const Main = () => {
   const [pageSize, setPageSize] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
   const { sourceChain, sourceToken, setSourceToken, appMode, setAppMode } = useContext(AuthContext);
-  const { CSVReader } = useCSVReader();
-  const panelRef = useRef(null);
+
   const [dataRows, setDataRows] = useState([
     {
       id: "0",
@@ -97,7 +96,7 @@ const Main = () => {
         3: true,
       });
     }
-  }, [dataRows]);
+  }, [dataRows, showThisSection]);
 
   console.log("here: ", chain);
   return (
@@ -105,6 +104,10 @@ const Main = () => {
       <h3 className="text-[1.45rem] font-bold tracking-[0.5px]">
         The Fragments way of automating smart contracts
       </h3>
+
+
+
+      {/* ----------------------------------SOURCE CHAIN , TOKEN SELECTION ------------------- */}
       <div className="w-11/12  px-2 pt-8 sm:px-0">
         <div className="rounded-md bg-[#282828] p-5">
           <div className="grid grid-cols-2 gap-x-2">
@@ -203,6 +206,7 @@ const Main = () => {
                                 >
                                   <img
                                     className="h-[1.2rem] w-[1.2rem]"
+                                    // @ts-ignore
                                     src={token?.logo}
                                     alt="token logo"
                                   />
@@ -247,6 +251,10 @@ const Main = () => {
           </div>
         </div>
       </div>
+
+
+
+      {/* ------------------------------CATEGORY MAPPING ------------------------------------ */}
       <div
         className={classNames(
           "py-5 transition-opacity",
@@ -284,55 +292,21 @@ const Main = () => {
           </div>
         </div>
       </div>
-      {/* <div
+      
+      
+      {/* --------------------------------PANELS --------------------------------------------- */}
+      
+      <div
         className={classNames(
           "w-11/12 rounded-md transition-opacity",
           showThisSection[1] ? "opacity-100" : " opacity-0"
         )}
       >
-        <Tab.Group>
-          <div className="rounded-xl bg-[#282828] p-5">
-            <Tab.List className="grid grid-cols-4 gap-[1px] space-x-1 rounded-xl bg-[#464646] p-[5px]">
-              {Object.keys(panels).map((panel) => {
-                if (panels[panel].category.includes(selectedCategory))
-                  return (
-                    <Tab
-                      key={panel}
-                      className={({ selected }) =>
-                        classNames(
-                          "col-span-1 w-auto rounded-xl px-8 py-[0.5rem] text-sm font-medium leading-5 text-white",
-                          selected
-                            ? "bg-[#9101D4] shadow"
-                            : "bg-[#2E2E2E] hover:bg-white/[0.12] hover:text-white"
-                        )
-                      }
-                    >
-                      {panel}
-                    </Tab>
-                  );
-              })}
-            </Tab.List>
-          </div>
-          <Tab.Panels className="mt-6 ">
-            {Object.values(panels).map((type, idx) => (
-              <Tab.Panel
-                key={idx}
-                className={classNames("rounded-xl  bg-[#282828] p-5")}
-              >
-                <ul>
-                  {type.element(
-                    selectedCategory,
-                    showThisSection,
-                    setShowThisSection,
-                    dataRows,
-                    panelRef
-                  )}
-                </ul>
-              </Tab.Panel>
-            ))}
-          </Tab.Panels>
-        </Tab.Group>
-      </div> */}
+        <Panels selectedCategory={selectedCategory} showThisSection={showThisSection} setShowThisSection={setShowThisSection} dataRows={dataRows} />
+      </div>
+      
+      
+      {/* ------------------------------------------CSV READER ------------------------------- */}
       <div
         className={classNames(
           "w-11/12 rounded-md  py-5 transition-opacity",
@@ -341,6 +315,10 @@ const Main = () => {
       >
         <CsvReader dataRows={dataRows} setDataRows={setDataRows} currentPage={currentPage} setCurrentPage={setCurrentPage} pageSize={pageSize} setPageSize={setPageSize} />
       </div>
+
+
+
+      {/* ------------------------------------ GAS MODES ------------------------------------- */}
       <div
         className={classNames(
           "w-11/12  px-2 transition-opacity sm:px-0",
@@ -354,9 +332,9 @@ const Main = () => {
           </div>
           <div className="grid grid-cols-1 gap-x-2 pt-8">
             <Tab.Group
-              onChange={(idx) => {
-                setSourceData({ ...sourceData, gasMode: gasModes[idx] });
-              }}
+              // onChange={(idx) => {
+              //   setSourceData({ ...sourceData, gasMode: gasModes[idx] });
+              // }}
             >
               <Tab.List className="flex gap-[1px] space-x-1 rounded-xl bg-[#464646] p-[5px]">
                 {gasModes.map((mode) => (
@@ -370,7 +348,7 @@ const Main = () => {
                           : "bg-[#464646] text-[#6B6B6B]"
                       )
                     }
-                    disabled={mode === "xStream"}
+                    // disabled={mode === "xStream"}
                   >
                     {mode === "Forward"
                       ? "Forward Paying Gas"
@@ -384,7 +362,7 @@ const Main = () => {
             size="sm"
             className="m-auto mt-16 h-12 w-[10rem] rounded-lg bg-[#2BFFB1] text-lg font-bold text-black"
             onClick={() => {
-              panelRef.current.executeTxn();
+              // panelRef.current.executeTxn();
             }}
           >
             {/* {panelRef?.current?.hasEnoughAllowance() ? "Confirm" : "Approve"} */}

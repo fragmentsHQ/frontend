@@ -1,13 +1,19 @@
+"use client"; // This is a client component 👈🏽
+
 import { ethers } from "ethers";
-import { parseEther } from "ethers/lib/utils.js";
 import { useState, useEffect, useContext } from "react";
 
-import { fetchBalance, getNetwork } from "@wagmi/core"
-import { useAccount, useNetwork, usePublicClient } from "wagmi";
-import { SourceContext } from "./context";
+import { parseEther } from 'viem'
+import {
+    fetchBalance, getNetwork, sendTransaction, readContract, writeContract, prepareWriteContract,
+} from "@wagmi/core"
+import { useAccount, useNetwork, usePublicClient, erc20ABI } from "wagmi";
 import { parseUnits } from "ethers/lib/utils";
 import * as chainList from "wagmi/chains";
 
+import toast from 'react-hot-toast';
+
+import { AuthContext } from "../app/providers/AuthProvider";
 import {
     CONNEXT_DOMAINS,
     AUTOPAY_CONTRACT_ADDRESSES,
@@ -33,7 +39,8 @@ const useAutoPayContract = () => {
     const { address } = useAccount();
     const provider = ethers.getDefaultProvider();
 
-    const { sourceData, setSourceData } = useContext(SourceContext);
+    const { sourceChain, sourceToken, setSourceToken, appMode, setAppMode } = useContext(AuthContext);
+
     const [startTime, setStartTime] = useState<string | null>("");
     const [cycles, setCycles] = useState<string | null>("");
     const [isOpen, setIsOpen] = useState(false);
@@ -52,27 +59,54 @@ const useAutoPayContract = () => {
 
     startTime && console.log("startTime: ", startTime);
 
-    const {
-        data: allowance,
-        isError,
-        isLoading,
-    } = useContractRead({
-        address:
-            chain && sourceData.sourceToken
-                ? TOKEN_ADDRESSES[chain?.id][sourceData.sourceToken].address
-                : ZERO_ADDRESS,
-        abi: erc20ABI,
-        functionName: "allowance",
-        args: [
-            address ? address : ZERO_ADDRESS,
-            chain
-                ? AUTOPAY_CONTRACT_ADDRESSES[
-                chain?.testnet ? "testnets" : "mainnets"
-                ][chain?.id]
-                : ZERO_ADDRESS,
-        ],
-        watch: true,
-    });
+    const fetchAllowance = async () => {
+        try {
+
+            const allowance = readContract({
+                address: chain && sourceToken
+                    ? TOKEN_ADDRESSES[chain?.id][sourceToken].address
+                    : ZERO_ADDRESS,
+                abi: erc20ABI,
+                functionName: 'allowance',
+                args: [
+                    address ? address : ZERO_ADDRESS,
+                    chain
+                        ? AUTOPAY_CONTRACT_ADDRESSES[
+                        chain?.testnet ? "testnets" : "mainnets"
+                        ][chain?.id]
+                        : ZERO_ADDRESS,
+                ],
+            })
+
+            toast.promise(allowance, {
+                loading: 'Loading',
+                success: (data) => `Successfully saved ${data}`,
+                error: (err) => `This just happened: ${err.toString()}`,
+            },);
+
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
+    const handleApprove = async () => {
+        try {
+            const config = await prepareWriteContract({
+                address: chain && sourceToken
+                    ? TOKEN_ADDRESSES[chain?.id][sourceToken].address
+                    : ZERO_ADDRESS,
+                abi: erc20ABI,
+                functionName: 'claim',
+                args: [69],
+            })
+
+
+            const { hash } = await writeContract(config)
+
+        } catch (error) {
+            console.error(error)
+        }
+    }
 
     const {
         // data,
@@ -82,8 +116,8 @@ const useAutoPayContract = () => {
         sendTransactionAsync: sendApproveTokenAsyncTxn,
     } = useSendTransaction({
         to:
-            chain && sourceData.sourceToken
-                ? TOKEN_ADDRESSES[chain?.id][sourceData.sourceToken].address
+            chain && sourceToken
+                ? TOKEN_ADDRESSES[chain?.id][sourceToken].address
                 : ZERO_ADDRESS,
         data: callDataApproval,
         account: address,
@@ -109,8 +143,8 @@ const useAutoPayContract = () => {
 
     const updateCallDataApproval = () => {
         const ERC20Contract = ERC20_CONTRACT(
-            chain && sourceData.sourceToken
-                ? TOKEN_ADDRESSES[chain?.id][sourceData.sourceToken].address
+            chain && sourceToken
+                ? TOKEN_ADDRESSES[chain?.id][sourceToken].address
                 : ZERO_ADDRESS,
             provider
         );
@@ -143,7 +177,7 @@ const useAutoPayContract = () => {
                         e.amountOfSourceToken
                             ? parseUnits(
                                 e.amountOfSourceToken,
-                                TOKEN_ADDRESSES[chain?.id][sourceData.sourceToken].decimals
+                                TOKEN_ADDRESSES[chain?.id][sourceToken].decimals
                             )
                             : "0"
                     ),
@@ -152,8 +186,8 @@ const useAutoPayContract = () => {
                 ...dataRows
                     .slice(0, -1)
                     .map((e) =>
-                        chain?.testnet && sourceData.sourceToken
-                            ? TOKEN_ADDRESSES[chain?.id][sourceData.sourceToken].address
+                        chain?.testnet && sourceToken
+                            ? TOKEN_ADDRESSES[chain?.id][sourceToken].address
                             : ZERO_ADDRESS
                     ),
             ],
@@ -161,8 +195,8 @@ const useAutoPayContract = () => {
                 ...dataRows
                     .slice(0, -1)
                     .map((e) =>
-                        chain?.testnet && sourceData.sourceToken && e.destinationChain
-                            ? TOKEN_ADDRESSES[e.destinationChain][sourceData.sourceToken]
+                        chain?.testnet && sourceToken && e.destinationChain
+                            ? TOKEN_ADDRESSES[e.destinationChain][sourceToken]
                                 .address
                             : ZERO_ADDRESS
                     ),
@@ -238,7 +272,7 @@ const useAutoPayContract = () => {
                                     e.amountOfSourceToken
                                         ? parseUnits(
                                             e.amountOfSourceToken,
-                                            TOKEN_ADDRESSES[chain?.id][sourceData.sourceToken]
+                                            TOKEN_ADDRESSES[chain?.id][sourceToken]
                                                 .decimals
                                         )
                                         : "0"
@@ -248,8 +282,8 @@ const useAutoPayContract = () => {
                             ...dataRows
                                 .slice(0, -1)
                                 .map((e) =>
-                                    chain?.testnet && sourceData.sourceToken
-                                        ? TOKEN_ADDRESSES[chain?.id][sourceData.sourceToken]
+                                    chain?.testnet && sourceToken
+                                        ? TOKEN_ADDRESSES[chain?.id][sourceToken]
                                             .address
                                         : ZERO_ADDRESS
                                 ),
@@ -259,10 +293,10 @@ const useAutoPayContract = () => {
                                 .slice(0, -1)
                                 .map((e) =>
                                     chain?.testnet &&
-                                        sourceData.sourceToken &&
+                                        sourceToken &&
                                         e.destinationChain
                                         ? TOKEN_ADDRESSES[e.destinationChain][
-                                            sourceData.sourceToken
+                                            sourceToken
                                         ].address
                                         : ZERO_ADDRESS
                                 ),
@@ -331,13 +365,33 @@ const useAutoPayContract = () => {
         updateCallDataCreateTimeTxn();
     }, [
         chain,
-        sourceData.sourceToken,
+        sourceToken,
         dataRows,
         cycles,
         intervalCount,
         intervalType,
         startTime,
     ]);
+
+    // useImperativeHandle(ref, () => ({
+    //     executeTxn() {
+    //         try {
+    //             if (
+    //                 BigNumber.from(allowance ? allowance : 0).eq(
+    //                     ethers.constants.MaxUint256
+    //                 )
+    //             )
+    //                 sendCreateTimeAsyncTxn?.();
+    //             else sendApproveTokenAsyncTxn?.();
+    //         } catch { }
+    //     },
+
+    //     hasEnoughAllowance() {
+    //         return BigNumber.from(allowance ? allowance : 0).eq(
+    //             ethers.constants.MaxUint256
+    //         );
+    //     },
+    // }));
 
     return {
         dataRows,

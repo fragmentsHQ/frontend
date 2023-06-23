@@ -31,7 +31,7 @@ import {
   usePrepareSendTransaction,
   useSendTransaction
 } from "wagmi";
-import { getProvider, getAccount } from "@wagmi/core";
+import { getPublicClient, getAccount } from "@wagmi/core";
 import * as chainList from "wagmi/chains";
 import {
   CONNEXT_DOMAINS,
