@@ -463,7 +463,7 @@ const TimePanel = ({
                               </Dropdown.Select>
 
                               <Dropdown.Options className='z-[10] w-full min-w-full bg-[#262229]'>
-                                {intervalTypes.map((size, index) => (
+                                {intervalType.map((size, index) => (
                                   <Dropdown.Option value={size} key={index}>
                                     {({ selected, active }) => (
                                       <MenuItem
