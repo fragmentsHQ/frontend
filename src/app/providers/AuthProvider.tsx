@@ -4,6 +4,8 @@ import { Chain, useAccount } from "wagmi";
 import { getNetwork } from "@wagmi/core";
 import { createContext, useState } from "react";
 
+import { AppModes, Category, GasModes } from "../../types/types";
+
 type Props = {
     children: ReactNode;
 };
@@ -24,6 +26,22 @@ interface AuthData {
     appMode: "Auto Pay" | "xStream";
     setSourceToken: (token: token) => void;
     setAppMode: (mode: "Auto Pay" | "xStream") => void;
+    selectedCategory: Category | null;
+    setSelectedCategory: React.Dispatch<React.SetStateAction<Category | null>>;
+    dataRows: {
+        id: string;
+        toAddress: string;
+        destinationToken: string;   
+        destinationChain: string;
+        amountOfSourceToken: string;
+    }[];
+    setDataRows: React.Dispatch<React.SetStateAction<{
+        id: string;
+        toAddress: string;
+        destinationToken: string;
+        destinationChain: string;
+        amountOfSourceToken: string;
+    }[]>>;
 }
 
 export const AuthContext = createContext<AuthData>({
@@ -36,6 +54,16 @@ export const AuthContext = createContext<AuthData>({
     appMode: "Auto Pay",
     setSourceToken: () => { },
     setAppMode: () => { },
+    selectedCategory: null,
+    setSelectedCategory: () => { },
+    dataRows: [{
+        id: "0",
+        toAddress: "",
+        destinationToken: "",
+        destinationChain: "",
+        amountOfSourceToken: "",
+    }],
+    setDataRows: () => { },
     // gasMode: "Forward",
 })
 
@@ -48,6 +76,16 @@ const AuthProvider = ({ children }: Props) => {
     });
     const [sourceToken, setSourceToken] = useState<token | null>(null);
     const [appMode, setAppMode] = useState<"Auto Pay" | "xStream">("Auto Pay");
+    const [selectedCategory, setSelectedCategory] = useState<Category | null>();
+    const [dataRows, setDataRows] = useState([
+        {
+            id: "0",
+            toAddress: "",
+            destinationToken: "",
+            destinationChain: "",
+            amountOfSourceToken: "",
+        },
+    ]);
 
     console.log("AuthProvider", { address, isConnected, chain, viewChain, sourceToken, appMode });
 
@@ -62,7 +100,11 @@ const AuthProvider = ({ children }: Props) => {
                 sourceToken: sourceToken,
                 appMode: appMode,
                 setSourceToken: setSourceToken,
-                setAppMode: setAppMode
+                setAppMode: setAppMode,
+                selectedCategory: selectedCategory,
+                setSelectedCategory: setSelectedCategory,
+                dataRows: dataRows,
+                setDataRows: setDataRows,
             }}
         >
             {children}

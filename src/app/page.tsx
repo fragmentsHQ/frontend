@@ -48,20 +48,10 @@ const gasModes: Array<GasModes> = ["Forward", "Gas Account"];
 
 const Main = () => {
   const { chain } = useNetwork();
-  const [selectedCategory, setSelectedCategory] = useState<Category | null>();
   const [pageSize, setPageSize] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
-  const { sourceChain, sourceToken, setSourceToken, appMode, setAppMode } = useContext(AuthContext);
+  const { sourceChain, sourceToken, setSourceToken, appMode, setAppMode, selectedCategory, setSelectedCategory, dataRows, setDataRows } = useContext(AuthContext);
 
-  const [dataRows, setDataRows] = useState([
-    {
-      id: "0",
-      toAddress: "",
-      destinationToken: "",
-      destinationChain: "",
-      amountOfSourceToken: "",
-    },
-  ]);
   const [showThisSection, setShowThisSection] = useState<{
     0: boolean;
     1: boolean;
@@ -292,20 +282,20 @@ const Main = () => {
           </div>
         </div>
       </div>
-      
-      
+
+
       {/* --------------------------------PANELS --------------------------------------------- */}
-      
+
       <div
         className={classNames(
           "w-11/12 rounded-md transition-opacity",
           showThisSection[1] ? "opacity-100" : " opacity-0"
         )}
       >
-        <Panels selectedCategory={selectedCategory} showThisSection={showThisSection} setShowThisSection={setShowThisSection} dataRows={dataRows} />
+        <Panels selectedCategory={selectedCategory} showThisSection={showThisSection} setShowThisSection={setShowThisSection} />
       </div>
-      
-      
+
+
       {/* ------------------------------------------CSV READER ------------------------------- */}
       <div
         className={classNames(
@@ -332,9 +322,9 @@ const Main = () => {
           </div>
           <div className="grid grid-cols-1 gap-x-2 pt-8">
             <Tab.Group
-              // onChange={(idx) => {
-              //   setSourceData({ ...sourceData, gasMode: gasModes[idx] });
-              // }}
+            // onChange={(idx) => {
+            //   setSourceData({ ...sourceData, gasMode: gasModes[idx] });
+            // }}
             >
               <Tab.List className="flex gap-[1px] space-x-1 rounded-xl bg-[#464646] p-[5px]">
                 {gasModes.map((mode) => (
@@ -348,7 +338,7 @@ const Main = () => {
                           : "bg-[#464646] text-[#6B6B6B]"
                       )
                     }
-                    // disabled={mode === "xStream"}
+                  // disabled={mode === "xStream"}
                   >
                     {mode === "Forward"
                       ? "Forward Paying Gas"

@@ -21,7 +21,7 @@ const intervalTypes = [
 
 const tokens = [{ name: "USDC" }, { name: "USDT" }, { name: "DAI" }];
 
-interface ShowThisSection {
+interface xaShowThisSection {
     0: boolean;
     1: boolean;
     2: boolean;
@@ -84,7 +84,6 @@ const Panels = ({ selectedCategory, showThisSection, setShowThisSection, dataRow
                                 selectedCategory ?? "One Time",
                                 showThisSection,
                                 setShowThisSection,
-                                dataRows
                             )}
                         </ul>
                     </Tab.Panel>
@@ -102,15 +101,12 @@ const OPTIONS: Options = {
             selectedCategory: Category | null,
             showThisSection: ShowThisSection,
             setShowThisSection: React.Dispatch<React.SetStateAction<ShowThisSection>>,
-            dataRows: DataRows[],
-
         ) => {
             return (
                 <TimePanel
                     selectedCategory={selectedCategory}
                     showThisSection={showThisSection}
                     setShowThisSection={setShowThisSection}
-                    dataRows={dataRows}
 
                 />
             );
@@ -123,7 +119,6 @@ const OPTIONS: Options = {
     //         selectedCategory: Category | null,
     //         showThisSection: ShowThisSection,
     //         setShowThisSection: React.Dispatch<React.SetStateAction<ShowThisSection>>,
-    //         dataRows: DataRows[],
 
     //     ) => {
     //         return (
@@ -131,7 +126,6 @@ const OPTIONS: Options = {
     //                 selectedCategory={selectedCategory}
     //                 showThisSection={showThisSection}
     //                 setShowThisSection={setShowThisSection}
-    //                 dataRows={dataRows}
 
     //             />
     //         );
@@ -144,7 +138,6 @@ const OPTIONS: Options = {
     //         selectedCategory: Category,
     //         showThisSection: ShowThisSection,
     //         setShowThisSection: React.Dispatch<React.SetStateAction<ShowThisSection>>,
-    //         dataRows: DataRows[],
 
     //     ) => {
     //         return (
@@ -152,7 +145,6 @@ const OPTIONS: Options = {
     //                 selectedCategory={selectedCategory}
     //                 showThisSection={showThisSection}
     //                 setShowThisSection={setShowThisSection}
-    //                 dataRows={dataRows}
 
     //             />
     //         );
@@ -165,15 +157,12 @@ const OPTIONS: Options = {
     //         selectedCategory: Category,
     //         showThisSection: ShowThisSection,
     //         setShowThisSection: React.Dispatch<React.SetStateAction<ShowThisSection>>,
-    //         dataRows: DataRows[],
-
     //     ) => {
     //         return (
     //             <ABIPanel
     //                 selectedCategory={selectedCategory}
     //                 showThisSection={showThisSection}
     //                 setShowThisSection={setShowThisSection}
-    //                 dataRows={dataRows}
 
     //             />
     //         );
@@ -192,7 +181,6 @@ interface Options {
             selectedCategory: Category,
             showThisSection: ShowThisSection,
             setShowThisSection: React.Dispatch<React.SetStateAction<ShowThisSection>>,
-            dataRows: DataRows[]
         ) => JSX.Element;
     };
 }
