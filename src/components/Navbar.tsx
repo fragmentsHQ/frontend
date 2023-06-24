@@ -1,21 +1,27 @@
-"use client"
+"use client";
 import React from "react";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { Button } from "@heathmont/moon-core-tw";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import FragmentsLogo from "../assets/FragmentsLogo.png"
+import FragmentsLogo from "../assets/FragmentsLogo.png";
+import Link from "next/link";
 
 const Navbar = () => {
   const router = useRouter();
   return (
     <div className="flex justify-between p-10">
-      <Image
-        className="my-auto aspect-[183/24] h-fit w-[12rem]"
-        src={FragmentsLogo}
-        alt="Fragments Logo"
-      />
-      <div className="flex gap-8">
+      <Link href={"/"} title="Home">
+        <Image
+          className="my-auto aspect-[183/24] h-fit w-[12rem]"
+          src={FragmentsLogo}
+          alt="Fragments"
+        />
+      </Link>
+      <div className="flex gap-8 items-center">
+        <Link href={"/jobs"} title="All Jobs">
+          All Jobs
+        </Link>
         <ConnectButton.Custom>
           {({
             account,
@@ -58,7 +64,10 @@ const Navbar = () => {
                   if (connected) {
                     return (
                       <div className="flex items-center gap-3">
-                        <div onClick={() => router.push("/profile")} className="flex cursor-pointer items-center rounded-md border-2 border-solid border-[#464646] px-3 py-2 text-sm">
+                        <div
+                          onClick={() => router.push("/profile")}
+                          className="flex cursor-pointer items-center rounded-md border-2 border-solid border-[#464646] px-3 py-2 text-sm"
+                        >
                           {"Balance: " +
                             Number(account.balanceFormatted).toFixed(2) +
                             `  ${account.balanceSymbol}`}

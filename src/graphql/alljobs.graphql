@@ -1,0 +1,18 @@
+# Write your query or mutation here
+query getCollection($searchCollectionInput: SearchCollectionInput!) {
+  collection(searchCollectionInput: $searchCollectionInput) {
+    name
+    image
+    banner
+    volume {
+      day1
+    }
+    floorAsk {
+      price {
+        amount {
+          usd
+        }
+      }
+    }
+  }
+}
