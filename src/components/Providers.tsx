@@ -9,8 +9,10 @@ import {
 import {
   argentWallet,
   ledgerWallet,
+  safeWallet,
   trustWallet,
 } from '@rainbow-me/rainbowkit/wallets';
+import { SafeConnector } from '@wagmi/connectors/safe';
 import * as React from 'react';
 import { configureChains, createConfig, WagmiConfig } from 'wagmi';
 import {
@@ -34,7 +36,7 @@ const { chains, publicClient, webSocketPublicClient } = configureChains(
   [publicProvider()]
 );
 
-const projectId = 'YOUR_PROJECT_ID';
+const projectId = 'e79ce4839d51253e75286ac813159501';
 
 const { wallets } = getDefaultWallets({
   appName: 'Fragments',
@@ -49,6 +51,14 @@ const demoAppInfo = {
 const connectors = connectorsForWallets([
   ...wallets,
   {
+    groupName: 'Safe',
+    wallets: [
+      safeWallet({
+        chains,
+      }),
+    ],
+  },
+  {
     groupName: 'Other',
     wallets: [
       argentWallet({ projectId, chains }),
@@ -57,6 +67,14 @@ const connectors = connectorsForWallets([
     ],
   },
 ]);
+
+const safeConnector = new SafeConnector({
+  chains,
+  options: {
+    allowedDomains: [/gnosis-safe.io$/, /app.safe.global$/],
+    debug: false,
+  },
+});
 
 const wagmiConfig = createConfig({
   autoConnect: true,
