@@ -1,16 +1,13 @@
-type Tokens = {
+export type Tokens = {
   name: string;
 };
 
-type Category = "One Time" | "Recurring";
+export type Category = 'One Time' | 'Recurring';
 
-type Options = {
+export type Options = {
   value: string;
   label: string;
 };
 
-type AppModes = "Auto Pay" | "xStream";
-type GasModes = "Forward" | "Gas Account";
-
-
-export { Tokens, Category, Options, AppModes, GasModes };
+export type AppModes = 'Auto Pay' | 'xStream';
+export type GasModes = 'Forward' | 'Gas Account';

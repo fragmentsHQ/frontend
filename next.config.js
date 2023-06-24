@@ -1,26 +1,37 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-    reactStrictMode: true,
-    experimental: {
-        appDir: true,
-    },
-    webpack: config => {
-        config.resolve.fallback = { fs: false, net: false, tls: false };
-        return config;
-    },
-    images: {
-        domains: [
-            'images.unsplash.com',
-            's3.amazonaws.com',
-            'goerli.etherscan.io',
-            'docs.matic.network'
-        ],
-    },
-    eslint: {
-        // Warning: This allows production builds to successfully complete even if
-        // your project has ESLint errors.
-        ignoreDuringBuilds: true,
-    },
+  eslint: {
+    dirs: ['src'],
+  },
+
+  reactStrictMode: true,
+  swcMinify: true,
+
+  // Uncoment to add domain whitelist
+  // images: {
+  //   domains: [
+  //     'res.cloudinary.com',
+  //   ],
+  // },
+
+  // SVGR
+  webpack(config) {
+    config.module.rules.push({
+      test: /\.svg$/i,
+      issuer: /\.[jt]sx?$/,
+      use: [
+        {
+          loader: '@svgr/webpack',
+          options: {
+            typescript: true,
+            icon: true,
+          },
+        },
+      ],
+    });
+
+    return config;
+  },
 };
 
 module.exports = nextConfig;
