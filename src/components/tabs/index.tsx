@@ -1,48 +1,16 @@
 import { Tab } from '@headlessui/react';
-import { Pagination } from 'carbon-components-react';
-import Link from 'next/link';
 import { useState } from 'react';
+
+import AllJobsTable from '@/components/tables/AllJobsTable';
 
 function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(' ');
 }
 
 export default function Tabs() {
-  const [pageSize, setPageSize] = useState(1);
-  const [currentPage, setCurrentPage] = useState(1);
   const [categories] = useState({
-    Ongoing: [
-      {
-        id: 1,
-        title: 'Does drinking coffee make you smarter?',
-        date: '5h ago',
-        commentCount: 5,
-        shareCount: 2,
-      },
-      {
-        id: 2,
-        title: "So you've bought coffee... now what?",
-        date: '2h ago',
-        commentCount: 3,
-        shareCount: 2,
-      },
-    ],
-    Completed: [
-      {
-        id: 1,
-        title: 'Is tech making coffee better or worse?',
-        date: 'Jan 7',
-        commentCount: 29,
-        shareCount: 16,
-      },
-      {
-        id: 2,
-        title: 'The most innovative things happening in coffee',
-        date: 'Mar 19',
-        commentCount: 24,
-        shareCount: 12,
-      },
-    ],
+    Ongoing: {},
+    Completed: {},
   });
 
   return (
@@ -72,105 +40,7 @@ export default function Tabs() {
               key={idx}
               className={classNames('w-full rounded-xl bg-[#282828] px-6 py-6')}
             >
-              <div className='w-full overflow-x-auto'>
-                <table className='w-full min-w-max table-auto'>
-                  <thead>
-                    <tr>
-                      <th className='px-4 py-2 text-start '>
-                        <div>
-                          <span className='block text-[14px]'>
-                            Sender Address
-                          </span>
-                          <span className='block text-[14px] text-[#2E76FF]'>
-                            Destination Address
-                          </span>
-                          <span className='block text-[14px]'>Token Sent</span>
-                        </div>
-                      </th>
-                      <th className='px-4 py-2 text-start'>
-                        {' '}
-                        <div>
-                          <span className='block text-[14px]'>
-                            Receiver Address
-                          </span>
-                          <span className='block text-[14px] text-[#2E76FF]'>
-                            Destination Hash
-                          </span>
-                          <span className='block text-[14px]'>
-                            Token Received
-                          </span>
-                        </div>
-                      </th>
-                      <th className='px-4 py-2 text-start'>
-                        <span className='block text-[14px]'>
-                          Cost & Executions
-                        </span>
-                      </th>
-                      <th className='px-4 py-2 text-start'>
-                        <span className='block text-[14px]'>Status</span>
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td className='border-b border-[#393939] px-4 py-4'>
-                        <div>
-                          <span className='block text-[14px]'>
-                            0xf8c929db...04f21d9b
-                          </span>
-                          <span className='block text-[14px] text-[#2E76FF]'>
-                            0xaf6...bb3aed120b513
-                          </span>
-                          <span className='block text-[14px]'>USDC</span>
-                          <span className='text-[#AFAEAE]'>
-                            May 27, 2023, 24:12
-                          </span>
-                        </div>
-                      </td>
-                      <td className='border-b border-[#393939] px-4 py-4'>
-                        <span className='block text-[14px]'>
-                          0xf8c929db...04f21d9b
-                        </span>
-                        <span className='block text-[14px] text-[#2E76FF]'>
-                          0xaf6...bb3aed120b513
-                        </span>
-                        <span className='block text-[14px]'>USDC</span>
-                        <span className='text-[#AFAEAE]'>
-                          May 27, 2023, 24:12
-                        </span>
-                      </td>
-                      <td className='border-b  border-[#393939] px-4 py-4'>
-                        <div className='flex flex-col items-start'>
-                          <span className='block text-[14px] text-[#AFAEAE]'>
-                            Cost : <span className='text-white'>$241</span>
-                          </span>
-                          <span className='block text-[14px] text-[#AFAEAE]'>
-                            Execution : <span className='text-white'>$241</span>
-                          </span>
-                        </div>
-                      </td>
-                      <td className='border-b border-[#393939] px-4 py-2'>
-                        <Link
-                          href='/'
-                          className='block text-[14px] text-[#2E76FF]'
-                        >
-                          Ongoing
-                        </Link>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-                <Pagination
-                  backwardText='Previous page'
-                  forwardText='Next page'
-                  itemsPerPageText='Items per page:'
-                  page={1}
-                  pageNumberText='Page Number'
-                  pageSize={10}
-                  pageSizes={[10, 20, 30, 40, 50]}
-                  totalItems={103}
-                />
-              </div>
+              <AllJobsTable />
             </Tab.Panel>
           ))}
         </Tab.Panels>

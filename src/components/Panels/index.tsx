@@ -1,7 +1,7 @@
 import { Tab } from '@headlessui/react';
 import React from 'react';
 
-import StickyHeadTable from '@/components/Table';
+import TokenTable from '@/components/tables/TokenTable';
 
 import TimePanel from './TimePanel';
 import { Category } from '../../types/types';
@@ -87,7 +87,7 @@ const Panels = ({
                 dataRows
               )}
             </ul>
-            <StickyHeadTable />
+            <TokenTable />
           </Tab.Panel>
         ))}
       </Tab.Panels>

@@ -1,29 +1,26 @@
-import React from "react";
-import { Pagination } from "carbon-components-react";
-import { useCSVReader } from "react-papaparse";
-import { useNetwork } from "wagmi";
 import {
   DataTable,
   Table,
-  TableHead,
-  TableRow,
-  TableHeader,
   TableBody,
   TableCell,
-} from "@carbon/react";
-import { Button, Dropdown, MenuItem } from "@heathmont/moon-core-tw";
-import { ArrowUpCircleIcon, CheckIcon } from "@heroicons/react/20/solid";
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@carbon/react';
+import { Button, Dropdown, MenuItem } from '@heathmont/moon-core-tw';
+import { ArrowUpCircleIcon, CheckIcon } from '@heroicons/react/20/solid';
+import { Pagination } from 'carbon-components-react';
+import React from 'react';
+import { useCSVReader } from 'react-papaparse';
+import { useNetwork } from 'wagmi';
 
 import {
   AUTOPAY_CONTRACT_ADDRESSES,
   TOKEN_ADDRESSES,
-  NETWORKS,
-  TEST_NETWORKS,
-  ISPRODUCTION,
-} from "../constants/constants";
+} from '../constants/constants';
 
 function classNames(...classes: string[]) {
-  return classes.filter(Boolean).join(" ");
+  return classes.filter(Boolean).join(' ');
 }
 
 type Props = {
@@ -37,20 +34,20 @@ type Props = {
 
 const headers = [
   {
-    key: "toAddress",
-    header: "To Address",
+    key: 'toAddress',
+    header: 'To Address',
   },
   {
-    key: "destinationChain",
-    header: "Destination Chain",
+    key: 'destinationChain',
+    header: 'Destination Chain',
   },
   {
-    key: "destinationToken",
-    header: "Destination Token",
+    key: 'destinationToken',
+    header: 'Destination Token',
   },
   {
-    key: "amountOfSourceToken",
-    header: "Amount of Source Token",
+    key: 'amountOfSourceToken',
+    header: 'Amount of Source Token',
   },
 ];
 
@@ -65,7 +62,7 @@ const CsvReader = ({
   const { CSVReader } = useCSVReader();
   const { chain } = useNetwork();
   return (
-    <div className="rounded-xl bg-[#282828] p-5">
+    <div className='rounded-xl bg-[#282828] p-5'>
       <CSVReader
         onUploadAccepted={(results: any) => {
           setDataRows(
@@ -83,17 +80,17 @@ const CsvReader = ({
       >
         {({ getRootProps, acceptedFile }: any) => (
           <>
-            <div className="mb-4 flex items-center justify-end gap-4">
-              <div className="flex items-center gap-2 text-[#00FFA9]">
+            <div className='mb-4 flex items-center justify-end gap-4'>
+              <div className='flex items-center gap-2 text-[#00FFA9]'>
                 {(() => {
                   if (acceptedFile)
                     return (
                       <>
-                        <CheckIcon width={"1.2rem"} color="#00FFA9" />
+                        <CheckIcon width='1.2rem' color='#00FFA9' />
                         {acceptedFile?.name?.length > 10
                           ? acceptedFile.name
                               .slice(0, 10)
-                              .concat("....")
+                              .concat('....')
                               .concat(acceptedFile.name.slice(-7))
                           : acceptedFile.name}
                       </>
@@ -101,13 +98,13 @@ const CsvReader = ({
                 })()}
               </div>
               <Button
-                type="button"
+                type='button'
                 {...getRootProps()}
-                className="rounded-md bg-[#464646] font-normal"
-                size="sm"
+                className='rounded-md bg-[#464646] font-normal'
+                size='sm'
               >
                 <span>.csv upload</span>
-                <ArrowUpCircleIcon width={"1.2rem"} />
+                <ArrowUpCircleIcon width='1.2rem' />
               </Button>
               {/* <button {...getRemoveFileProps()} style={styles.remove}>
                     Remove
@@ -125,8 +122,8 @@ const CsvReader = ({
         headers={headers}
       >
         {({ rows, headers, getTableProps, getHeaderProps, getRowProps }) => (
-          <Table className="overflow-visible" {...getTableProps()}>
-            <TableHead align="center">
+          <Table className='overflow-visible' {...getTableProps()}>
+            <TableHead align='center'>
               <TableRow>
                 {headers.map((header: any) => (
                   <TableHeader key={header} {...getHeaderProps({ header })}>
@@ -142,13 +139,13 @@ const CsvReader = ({
                     return row.cells.map((cell) => {
                       return (
                         <TableCell key={cell}>
-                          {cell.id.includes("toAddress") ? (
+                          {cell.id.includes('toAddress') ? (
                             <input
                               id={`input-${cell.id}`}
-                              type="text"
+                              type='text'
                               value={cell.value}
-                              placeholder="0x0000.."
-                              className="h-8 w-full border-b border-solid border-gray-500 bg-transparent text-white outline-none"
+                              placeholder='0x0000..'
+                              className='h-8 w-full border-b border-solid border-gray-500 bg-transparent text-white outline-none'
                               onChange={(e) => {
                                 setDataRows(
                                   dataRows.map((_, index) => {
@@ -163,7 +160,7 @@ const CsvReader = ({
                                 );
                               }}
                             />
-                          ) : cell.id.includes("destinationToken") ? (
+                          ) : cell.id.includes('destinationToken') ? (
                             <Dropdown
                               value={cell.value}
                               onChange={(e) => {
@@ -188,23 +185,23 @@ const CsvReader = ({
                                     placeholder={
                                       chain?.network
                                         ? dataRows[rowIdx].destinationChain
-                                          ? "Choose a token"
-                                          : "Select Chain first"
+                                          ? 'Choose a token'
+                                          : 'Select Chain first'
                                         : null
                                     }
-                                    className="bg-transparent"
+                                    className='bg-transparent'
                                   >
                                     {cell.value && (
-                                      <div className="flex items-center gap-2">
+                                      <div className='flex items-center gap-2'>
                                         <img
-                                          className="h-[1.2rem] w-[1.2rem] rounded-full"
+                                          className='h-[1.2rem] w-[1.2rem] rounded-full'
                                           src={`/logo/tokens/${cell.value}.png`}
                                         />
                                         {cell.value}
                                       </div>
                                     )}
                                   </Dropdown.Select>
-                                  <Dropdown.Options className="z-[10] min-w-[106%] bg-[#262229]">
+                                  <Dropdown.Options className='z-[10] min-w-[106%] bg-[#262229]'>
                                     {chain?.network
                                       ? dataRows[rowIdx].destinationChain
                                         ? TOKEN_ADDRESSES[
@@ -227,7 +224,7 @@ const CsvReader = ({
                                                       isSelected={selected}
                                                     >
                                                       <img
-                                                        className="h-[1.2rem] w-[1.2rem] rounded-full"
+                                                        className='h-[1.2rem] w-[1.2rem] rounded-full'
                                                         src={`/logo/tokens/${token}.png`}
                                                       />
                                                       <MenuItem.Title>
@@ -245,10 +242,10 @@ const CsvReader = ({
                                 </>
                               )}
                             </Dropdown>
-                          ) : cell.id.includes("destinationChain") ? (
+                          ) : cell.id.includes('destinationChain') ? (
                             <Dropdown
                               value={cell.value}
-                              className=" bg-transparent"
+                              className=' bg-transparent'
                               onChange={(e) => {
                                 setDataRows(
                                   //@ts-ignore
@@ -269,26 +266,26 @@ const CsvReader = ({
                                   <Dropdown.Select
                                     open={open}
                                     // label="Start Time"
-                                    placeholder="Select Chain"
-                                    className=" bg-transparent"
+                                    placeholder='Select Chain'
+                                    className=' bg-transparent'
                                   >
                                     {cell.value && (
-                                      <div className="flex items-center gap-2">
+                                      <div className='flex items-center gap-2'>
                                         <img
-                                          className="h-[1.2rem] w-[1.2rem] rounded-full"
+                                          className='h-[1.2rem] w-[1.2rem] rounded-full'
                                           src={`/logo/chains/${cell.value}.png`}
                                         />
                                         {cell.value}
                                       </div>
                                     )}
                                   </Dropdown.Select>
-                                  <Dropdown.Options className="z-10 min-w-[106%] bg-[#262229]">
+                                  <Dropdown.Options className='z-10 min-w-[106%] bg-[#262229]'>
                                     {chain
                                       ? Object.keys(
                                           AUTOPAY_CONTRACT_ADDRESSES[
                                             chain?.testnet
-                                              ? "testnets"
-                                              : "mainnets"
+                                              ? 'testnets'
+                                              : 'mainnets'
                                           ]
                                         ).map((chain, index) => (
                                           <Dropdown.Option
@@ -302,7 +299,7 @@ const CsvReader = ({
                                                   isSelected={selected}
                                                 >
                                                   <img
-                                                    className="h-[1.2rem] w-[1.2rem] rounded-full"
+                                                    className='h-[1.2rem] w-[1.2rem] rounded-full'
                                                     src={`/logo/chains/${chain}.png`}
                                                   />
                                                   <MenuItem.Title>
@@ -318,13 +315,13 @@ const CsvReader = ({
                                 </>
                               )}
                             </Dropdown>
-                          ) : cell.id.includes("amountOfSourceToken") ? (
+                          ) : cell.id.includes('amountOfSourceToken') ? (
                             <input
                               id={`input-${cell.id}`}
-                              type="number"
-                              placeholder="0"
+                              type='number'
+                              placeholder='0'
                               value={cell.value}
-                              className="h-8 w-full bg-transparent text-white outline-none"
+                              className='h-8 w-full bg-transparent text-white outline-none'
                               onChange={(e) => {
                                 setDataRows(
                                   dataRows.map((_, index) => {
@@ -351,9 +348,9 @@ const CsvReader = ({
         )}
       </DataTable>
       <Pagination
-        backwardText="Previous page"
-        forwardText="Next page"
-        itemsPerPageText="Items per page:"
+        backwardText='Previous page'
+        forwardText='Next page'
+        itemsPerPageText='Items per page:'
         onChange={(e) => {
           setPageSize(e.pageSize);
           setCurrentPage(e.page);

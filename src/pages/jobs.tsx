@@ -5,18 +5,14 @@ import Layout from '@/components/layout/Layout';
 import Tabs from '@/components/tabs';
 
 const Jobs = () => {
-  // Add a back here to go back to the home page
-
   return (
     <Layout>
-      <div className='mx-auto  max-w-5xl'>
-        <div className='h-[50px]' />
+      <div className='mx-auto  my-10 max-w-5xl'>
         <GoBackLink />
         <h3 className='mb-6 mt-8 text-[1.45rem] font-bold tracking-[0.5px]'>
           All Jobs
         </h3>
         <Tabs />
-        <div className='h-[50px]' />
       </div>
     </Layout>
   );
@@ -24,7 +20,7 @@ const Jobs = () => {
 
 export default Jobs;
 
-const GoBackLink = () => {
+export const GoBackLink = () => {
   const router = useRouter();
 
   return (

@@ -1,68 +1,30 @@
-'use client'; // This is a client component 👈🏽
-
-import {
-  DataTable,
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@carbon/react';
 import { Tab } from '@headlessui/react';
-import {
-  ArrowLeftIcon,
-  ArrowRightIcon,
-  ArrowUpRightIcon,
-} from '@heroicons/react/20/solid';
-import { Pagination } from 'carbon-components-react';
+import { ArrowRightIcon, ArrowUpRightIcon } from '@heroicons/react/20/solid';
 import { ethers } from 'ethers';
-import { useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 import { useAccount, useNetwork } from 'wagmi';
 
 import Layout from '@/components/layout/Layout';
+import TransactionTable from '@/components/tables/TransactionTable';
+
+import { GoBackLink } from '@/pages/jobs';
 
 import {
   AUTOPAY_CONTRACT,
   CONDITIONAL_CONTRACT,
 } from '../../constants/constants';
 
-function classNames(...classes) {
+function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(' ');
 }
 
-const headers = [
-  {
-    key: 'sourceTxnHash',
-    header: 'Source Txn Hash',
-  },
-  {
-    key: 'sourceTxn',
-    header: 'Source Transaction',
-  },
-  {
-    key: 'destinationTxn',
-    header: 'Destination Transaction',
-  },
-  {
-    key: 'status',
-    header: 'Status',
-  },
-];
-
 const Task = () => {
-  const router = useRouter();
-  console.log(router);
   const { chain } = useNetwork();
-  // const { address } = getAccount();
   const { address } = useAccount();
   const provider = ethers.getDefaultProvider();
 
   const [selectedTableCategory, setSelectedTableCategory] =
     useState('Executions');
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
   const [dataRows, setDataRows] = useState([
     {
       id: '0',
@@ -157,11 +119,8 @@ const Task = () => {
 
   return (
     <Layout>
-      <div className='m-auto max-w-[67rem] px-10 py-8'>
-        <button className='flex items-center gap-2 text-sm text-[#AFAEAE]'>
-          <ArrowLeftIcon className='w-4' />
-          Back
-        </button>
+      <div className='mx-auto w-full max-w-5xl py-10'>
+        <GoBackLink />
         <div className='mt-8 flex flex-col'>
           <div className='flex gap-2'>
             <span>Created by: 0x0F5D2........68908cC942</span>
@@ -307,97 +266,7 @@ const Task = () => {
             </Tab.Group>
           </div>
           <div className='mt-4 bg-[#282828] p-5'>
-            <DataTable
-              rows={dataRows.slice(
-                (currentPage - 1) * pageSize,
-                (currentPage - 1) * pageSize + pageSize
-              )}
-              headers={headers}
-            >
-              {({
-                rows,
-                headers,
-                getTableProps,
-                getHeaderProps,
-                getRowProps,
-              }) => (
-                <Table className='overflow-visible' {...getTableProps()}>
-                  <TableHead align='center'>
-                    <TableRow>
-                      {headers.map((header) => (
-                        <TableHeader {...getHeaderProps({ header })}>
-                          {header.header}
-                        </TableHeader>
-                      ))}
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {rows.map((row, rowIdx) => (
-                      <TableRow {...getRowProps({ row })} key={rowIdx}>
-                        {(() => {
-                          return row.cells.map((cell) => {
-                            console.log('ceval: ', cell.value);
-                            return (
-                              <TableCell>
-                                {cell.id.includes('sourceTxnHash') ? (
-                                  <div className='flex flex-col gap-2 p-1 text-[#AFAEAE]'>
-                                    <span className='text-white'>
-                                      {cell.value.hash}
-                                    </span>
-                                    <span>{cell.value.date}</span>
-                                  </div>
-                                ) : cell.id.includes('sourceTxn') ? (
-                                  <div className='flex flex-col gap-2 p-1 text-[#AFAEAE]'>
-                                    <div>
-                                      <span>Token: </span>{' '}
-                                      <span>{cell.value.token}</span>
-                                    </div>
-                                    <div>
-                                      <span>Chain: </span>{' '}
-                                      <span>{cell.value.chain}</span>
-                                    </div>
-                                  </div>
-                                ) : cell.id.includes('destinationTxn') ? (
-                                  <div className='flex flex-col gap-2 p-1 text-[#AFAEAE]'>
-                                    <div>
-                                      <span>Token: </span>{' '}
-                                      <span>{cell.value.token}</span>
-                                    </div>
-                                    <div>
-                                      <span>Chain: </span>{' '}
-                                      <span>{cell.value.chain}</span>
-                                    </div>
-                                  </div>
-                                ) : cell.id.includes('status') ? (
-                                  <div className='flex gap-2 text-green-400'>
-                                    {cell.value}{' '}
-                                    <ArrowUpRightIcon className='w-4' />
-                                  </div>
-                                ) : null}
-                              </TableCell>
-                            );
-                          });
-                        })()}
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              )}
-            </DataTable>
-            <Pagination
-              backwardText='Previous page'
-              forwardText='Next page'
-              itemsPerPageText='Items per page:'
-              onChange={(e) => {
-                setPageSize(e.pageSize);
-                setCurrentPage(e.page);
-              }}
-              page={currentPage}
-              pageSize={pageSize}
-              pageSizes={[10, 20, 30, 40, 50]}
-              totalItems={dataRows.length}
-              // className="w-full"
-            />
+            <TransactionTable />
           </div>
         </div>
       </div>

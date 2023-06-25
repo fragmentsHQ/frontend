@@ -7,7 +7,7 @@ import Navbar from '@/components/Navbar';
 import { Providers } from '@/components/Providers';
 const darkTheme = createTheme({
   typography: {
-    fontFamily: 'Inter',
+    fontFamily: 'Inter, Roboto, sans-serif',
   },
   palette: {
     mode: 'dark',
