@@ -9,6 +9,8 @@ import TableRow from '@mui/material/TableRow';
 import { useRouter } from 'next/router';
 import * as React from 'react';
 
+import { useGetAllJobsQuery } from '@/graphql/alljobs.generated';
+
 interface Column {
   id: 'job_id' | 'owner' | 'total_fee_execution' | 'status';
   label: string;
@@ -58,6 +60,7 @@ const rows: Data[] = [
 ];
 
 export default function AllJobsTable() {
+  const { data, loading, error } = useGetAllJobsQuery();
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(10);
   const handleChangePage = (event: unknown, newPage: number) => {
@@ -72,7 +75,10 @@ export default function AllJobsTable() {
   };
 
   const router = useRouter();
-
+  console.log(data);
+  console.log('====================================');
+  console.log('ss', data, error);
+  console.log('====================================');
   return (
     <Paper
       sx={{

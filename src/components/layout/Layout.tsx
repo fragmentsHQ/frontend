@@ -13,19 +13,29 @@ const darkTheme = createTheme({
     mode: 'dark',
   },
 });
+import { ApolloClient, ApolloProvider, InMemoryCache } from '@apollo/client';
+
 import Seo from '../Seo';
 export default function Layout({ children }: { children: React.ReactNode }) {
   // Put Header or Footer Here
+
+  const apolloClient = new ApolloClient({
+    uri: process.env.NEXT_PUBLIC_GRAPH_URI,
+    cache: new InMemoryCache(),
+  });
+
   return (
-    <ThemeProvider theme={darkTheme}>
-      <Providers>
-        <AuthProvider>
-          <Navbar />
-          <Seo />
-          <BgImages />
-          {children}
-        </AuthProvider>
-      </Providers>
-    </ThemeProvider>
+    <ApolloProvider client={apolloClient}>
+      <ThemeProvider theme={darkTheme}>
+        <Providers>
+          <AuthProvider>
+            <Navbar />
+            <Seo />
+            <BgImages />
+            {children}
+          </AuthProvider>
+        </Providers>
+      </ThemeProvider>
+    </ApolloProvider>
   );
 }
