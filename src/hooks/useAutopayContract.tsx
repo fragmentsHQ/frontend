@@ -2,12 +2,12 @@
 
 import { ethers } from "ethers";
 import { useState, useEffect, useContext } from "react";
-
+import { encodeFunctionData } from 'viem'
 import { parseEther } from 'viem'
 import {
-    fetchBalance, getNetwork, prepareSendTransaction, sendTransaction, readContract,
+    getAccount, getNetwork, prepareSendTransaction, sendTransaction, readContract, erc20ABI
 } from "@wagmi/core"
-import { useAccount, useNetwork, usePublicClient, erc20ABI } from "wagmi";
+
 import { parseUnits } from "ethers/lib/utils";
 import * as chainList from "wagmi/chains";
 
@@ -36,10 +36,10 @@ const tokens = [{ name: "USDC" }, { name: "USDT" }, { name: "DAI" }];
 
 
 const useAutoPayContract = () => {
-    const { chain } = useNetwork();
-    const { address } = useAccount();
+    const { chain } = getNetwork();
+    const { address } = getAccount();
 
-    const { sourceChain, sourceToken, setSourceToken, appMode, setAppMode, dataRows, setDataRows } = useContext(AuthContext);
+    const { sourceChain, sourceToken, isLoading, setIsLoading, dataRows, setDataRows } = useContext(AuthContext);
 
     const [startTime, setStartTime] = useState<string | null>("");
     const [cycles, setCycles] = useState<string | null>("");
@@ -48,13 +48,15 @@ const useAutoPayContract = () => {
         value: "days",
         label: "days",
     });
+    const [isApproved, setIsApproved] = useState(false);
 
-    startTime && console.log("startTime: ", startTime);
 
     const fetchAllowance = async () => {
         try {
 
-            const allowance = readContract({
+            setIsLoading({ loading: true, message: "Gas fees for all transactions will be forward paid in this token when their trigger conditions are met.", instructions: "click use default and confirm allowance to setup your automation" });
+
+            const allowance = await readContract({
                 address: chain && sourceToken
                     ? TOKEN_ADDRESSES[chain?.id][sourceToken].address
                     : ZERO_ADDRESS,
@@ -68,37 +70,36 @@ const useAutoPayContract = () => {
                         ][chain?.id]
                         : ZERO_ADDRESS,
                 ],
-            })
+            });
 
-            toast.promise(allowance, {
-                loading: 'Loading',
-                success: (data) => `Successfully saved ${data}`,
-                error: (err) => `This just happened: ${err.toString()}`,
-            },);
+            setIsApproved(true);
 
         } catch (error) {
+            setIsLoading({ loading: false, message: `ERROR  ${error}`, instructions: "Approve the token" });
             console.error(error);
+        } finally {
+            setIsLoading({ loading: false, message: `Allowance Fetched ${allowance}` });
         }
     }
 
     const handleApprove = async () => {
         try {
-            const ERC20Contract = ERC20_CONTRACT(
-                chain && sourceToken
-                    ? TOKEN_ADDRESSES[chain?.id][sourceToken].address
-                    : ZERO_ADDRESS,
-            );
 
-            console.log(ERC20Contract);
+            setIsLoading({ loading: true, message: "Approving token", instructions: "click use default and confirm allowance to setup your automation" });
+            const callDataApproval = encodeFunctionData({
+                abi: erc20ABI,
+                functionName: 'approve',
+                args: [
+                    chain
+                        ? AUTOPAY_CONTRACT_ADDRESSES[
+                        chain?.testnet ? "testnets" : "mainnets"
+                        ][chain?.id]
+                        : ZERO_ADDRESS,
+                    ethers.constants.MaxUint256,
+                ]
+            });
 
-            const callDataApproval = ERC20Contract.interface.encodeFunctionData("approve", [
-                chain
-                    ? AUTOPAY_CONTRACT_ADDRESSES[
-                    chain?.testnet ? "testnets" : "mainnets"
-                    ][chain?.id]
-                    : ZERO_ADDRESS,
-                ethers.constants.MaxUint256,
-            ]) as `0x${string}`
+            console.log(callDataApproval);
 
             const request = await prepareSendTransaction({
                 to:
@@ -109,21 +110,28 @@ const useAutoPayContract = () => {
                 account: address,
                 value: BigInt(0),
             })
-            const { hash } = await sendTransaction(request)
+            const { hash } = await sendTransaction(request);
             console.log(hash);
 
+            await fetchAllowance();
+
         } catch (error) {
-            console.error(error)
+            setIsLoading({ loading: false, message: `ERROR  ${error}`, instructions: "Approve the token" });
+            console.error(error);
+        } finally {
+            setIsLoading({ loading: false, message: `Approved`, instructions: "click use default and confirm allowance to setup your automation" });
         }
     }
 
     const createTimeAutomateTxn = async () => {
         try {
+            setIsLoading({ loading: true, message: "Creating Time Automate", instructions: "click use default and confirm allowance to setup your automation" });
             const AutoPayContract = AUTOPAY_CONTRACT(chain);
 
-            const callDataCreateTimeTxn = AutoPayContract.interface.encodeFunctionData(
-                "_createMultipleTimeAutomate",
-                [
+            const callDataCreateTimeTxn = encodeFunctionData({
+                abi: AutoPayContract.abi,
+                functionName: "_createMultipleTimeAutomate",
+                args: [
                     [
                         ...dataRows
                             .slice(0, -1)
@@ -219,7 +227,9 @@ const useAutoPayContract = () => {
                     ],
                     "QmRdcGs5h8UP8ETFdS7Yj7iahDTjfQNHMsJp3dYRec5Gf2",
                 ]
-            ) as `0x${string}`
+            }
+
+            )
 
             console.log(callDataCreateTimeTxn);
 
@@ -235,12 +245,14 @@ const useAutoPayContract = () => {
             })
             const { hash } = await sendTransaction(request)
             console.log(hash);
-
-
+            toast.success("Transaction created successfully")
 
 
         } catch (error) {
+            setIsLoading({ loading: false, message: `ERROR  ${error}` });
             console.error(error);
+        } finally {
+            setIsLoading({ loading: false, message: `Time Automate created`, instructions: "click use default and confirm allowance to setup your automation" });
         }
     }
 
@@ -274,7 +286,9 @@ const useAutoPayContract = () => {
         setStartTime,
         fetchAllowance,
         handleApprove,
-        handleTimeExecution
+        handleTimeExecution,
+        isApproved,
+        setIsApproved,
     };
 }
 

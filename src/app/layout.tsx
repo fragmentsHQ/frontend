@@ -11,6 +11,7 @@ import BgImages from "../components/BgImages";
 
 import { Providers } from './providers/WagmiProvider';
 import AuthProvider from "../app/providers/AuthProvider";
+import AppLoader from '@/components/Loader';
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -55,6 +56,7 @@ export default function RootLayout({
                 },
               }}
             />
+            <AppLoader />
           </AuthProvider>
 
         </Providers>

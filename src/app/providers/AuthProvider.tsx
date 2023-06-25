@@ -31,7 +31,7 @@ interface AuthData {
     dataRows: {
         id: string;
         toAddress: string;
-        destinationToken: string;   
+        destinationToken: string;
         destinationChain: string;
         amountOfSourceToken: string;
     }[];
@@ -87,7 +87,13 @@ const AuthProvider = ({ children }: Props) => {
         },
     ]);
 
-    console.log("AuthProvider", { address, isConnected, chain, viewChain, sourceToken, appMode , dataRows, });
+    const [isLoading, setIsLoading] = useState({
+        loading: false,
+        message: "",
+        instructions: "",
+    })
+
+    console.log("AuthProvider", { address, isConnected, chain, viewChain, sourceToken, appMode, dataRows, isLoading });
 
     return (
         <AuthContext.Provider
@@ -105,6 +111,8 @@ const AuthProvider = ({ children }: Props) => {
                 setSelectedCategory: setSelectedCategory,
                 dataRows: dataRows,
                 setDataRows: setDataRows,
+                isLoading: isLoading,
+                setIsLoading: setIsLoading,
             }}
         >
             {children}
