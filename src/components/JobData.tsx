@@ -190,7 +190,7 @@ const Task = ({ jobId }: { jobId: string }) => {
         </div>
         <div className='flex items-center gap-7'>
           <span className='text-lg font-semibold text-[#AFAEAE]'>
-            Automated Contract
+            Source Contract
           </span>
           <div className='flex'>
             <span className='mr-2'>0x0F5D2........68908cC942</span>

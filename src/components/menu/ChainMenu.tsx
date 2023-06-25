@@ -23,9 +23,7 @@ export default function ChainMenu({
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
   };
-  const handleClose = (chain: Chain) => {
-    onChainChange(chain);
-    setSelectedChain(chain);
+  const handleClose = () => {
     setAnchorEl(null);
   };
 
@@ -78,7 +76,14 @@ export default function ChainMenu({
       >
         {Object.values(ISPRODUCTION ? NETWORKS : TEST_NETWORKS).map(
           (chain, index) => (
-            <MenuItem onClick={() => handleClose(chain)} key={index}>
+            <MenuItem
+              onClick={() => {
+                onChainChange(chain);
+                setSelectedChain(chain);
+                handleClose();
+              }}
+              key={index}
+            >
               {chain.chainName}
             </MenuItem>
           )
@@ -106,9 +111,7 @@ export function TokenMenu({
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
   };
-  const handleClose = (token: Token) => {
-    onTokenChange(token);
-    setSelectedToken(token);
+  const handleClose = () => {
     setAnchorEl(null);
   };
 
@@ -164,7 +167,14 @@ export function TokenMenu({
         }}
       >
         {Object.values(TOKEN_ADDRESSES[chain?.id]).map((token, index) => (
-          <MenuItem onClick={() => handleClose(token)} key={index}>
+          <MenuItem
+            onClick={() => {
+              onTokenChange(token);
+              setSelectedToken(token);
+              handleClose();
+            }}
+            key={index}
+          >
             {token.name}
           </MenuItem>
         ))}

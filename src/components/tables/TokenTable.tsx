@@ -1,3 +1,5 @@
+import { Button } from '@heathmont/moon-core-tw/lib/search/private/components/ResultItem';
+import { ArrowUpCircleIcon, CheckIcon } from '@heroicons/react/20/solid';
 import Paper from '@mui/material/Paper';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
@@ -7,6 +9,7 @@ import TableHead from '@mui/material/TableHead';
 import TablePagination from '@mui/material/TablePagination';
 import TableRow from '@mui/material/TableRow';
 import * as React from 'react';
+import { useCSVReader } from 'react-papaparse';
 
 import clsxm from '@/lib/clsxm';
 
@@ -59,6 +62,8 @@ const rows: Data[] = [
 ];
 
 export default function TokenTable() {
+  const { CSVReader } = useCSVReader();
+
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(10);
   const [enteredRows, setEnteredRows] = React.useState(rows);
@@ -74,143 +79,196 @@ export default function TokenTable() {
   };
 
   return (
-    <Paper
-      sx={{
-        width: '100%',
-        overflow: 'hidden',
-        backgroundColor: '#282828',
-        color: '#fff',
-        marginTop: '40px',
-        boxShadow: 'none',
-      }}
-    >
-      <TableContainer className='bg-transparent' sx={{ maxHeight: 440 }}>
-        <Table stickyHeader aria-label='sticky table'>
-          <TableHead>
-            <TableRow>
-              {columns.map((column) => (
-                <TableCell
-                  key={column.id}
-                  align={column.align}
-                  style={{
-                    minWidth: column.minWidth,
-                    color: '#ffff',
-                    borderColor: '#393939',
-                    backgroundColor: '#464646',
-                  }}
-                >
-                  {column.label}
-                </TableCell>
-              ))}
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {enteredRows
-              .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-              .map((row, index) => {
-                return (
-                  <TableRow hover role='checkbox' tabIndex={-1} key={index}>
-                    {columns.map((column) => {
-                      const value = row[column.id];
-                      return (
-                        <TableCell
-                          key={column.id}
-                          align={column.align}
-                          style={{
-                            color: '#fff',
-                            backgroundColor: '#282828',
-                            borderColor: '#393939',
-                          }}
-                        >
-                          {column.id === 'destination_chain' && (
-                            <ChainMenu
-                              onChainChange={(chain) => {
-                                const newdata = enteredRows.map((er) => {
-                                  return er.id === row.id
-                                    ? {
-                                        ...er,
-                                        destination_chain: chain.chainName,
-                                      }
-                                    : er;
-                                });
-                                setEnteredRows(newdata);
-                              }}
-                            />
-                          )}
-                          {column.id === 'destination_token' && (
-                            <TokenMenu
-                              onTokenChange={(token) => {
-                                const newdata = enteredRows.map((er) => {
-                                  return er.id === row.id
-                                    ? {
-                                        ...er,
-                                        destination_token: token.name,
-                                      }
-                                    : er;
-                                });
-                                setEnteredRows(newdata);
-                              }}
-                            />
-                          )}
-                          {column.id === 'to_address' && (
-                            <TokenInput
-                              value={value as string}
-                              placeholder='Enter Address'
-                              className='text-start placeholder:text-white placeholder:text-opacity-20'
-                              onChange={(e) => {
-                                const newdata = enteredRows.map((er) => {
-                                  return er.id === row.id
-                                    ? {
-                                        ...er,
-                                        to_address: e.target.value,
-                                      }
-                                    : er;
-                                });
-                                setEnteredRows(newdata);
-                              }}
-                            />
-                          )}
-                          {column.id === 'amount_of_source_token' && (
-                            <TokenInput
-                              value={value as string}
-                              placeholder='Enter amount'
-                              className='placeholder:text-white placeholder:text-opacity-20'
-                              onChange={(e) => {
-                                const newdata = enteredRows.map((er) => {
-                                  return er.id === row.id
-                                    ? {
-                                        ...er,
-                                        amount_of_source_token: e.target.value,
-                                      }
-                                    : er;
-                                });
-                                setEnteredRows(newdata);
-                              }}
-                            />
-                          )}
-                        </TableCell>
-                      );
-                    })}
-                  </TableRow>
-                );
-              })}
-          </TableBody>
-        </Table>
-      </TableContainer>
-      <TablePagination
-        rowsPerPageOptions={[2, 5, 10]}
-        component='div'
-        style={{
-          backgroundColor: '#282828',
+    <>
+      <CSVReader
+        onUploadAccepted={(results: any) => {
+          console.log(results);
+          // setDataRows(
+          //   results.data.slice(1).map((elem, idx) => {
+          //     return {
+          //       id: String(idx),
+          //       toAddress: elem[0],
+          //       destinationChain: elem[1],
+          //       destinationToken: elem[2],
+          //       amountOfSourceToken: elem[3],
+          //     };
+          //   })
+          // );
         }}
-        className='text-white'
-        count={rows.length}
-        rowsPerPage={rowsPerPage}
-        page={page}
-        onPageChange={handleChangePage}
-        onRowsPerPageChange={handleChangeRowsPerPage}
-      />
-    </Paper>
+      >
+        {({ getRootProps, acceptedFile }: any) => (
+          <>
+            <div className='mb-4 flex w-full items-center justify-end gap-4'>
+              <div className='flex items-center gap-2 text-[#00FFA9]'>
+                {(() => {
+                  if (acceptedFile)
+                    return (
+                      <>
+                        <CheckIcon width='1.2rem' color='#00FFA9' />
+                        {acceptedFile?.name?.length > 10
+                          ? acceptedFile.name
+                              .slice(0, 10)
+                              .concat('....')
+                              .concat(acceptedFile.name.slice(-7))
+                          : acceptedFile.name}
+                      </>
+                    );
+                })()}
+              </div>
+              <Button
+                type='button'
+                {...getRootProps()}
+                className='flex w-fit items-center justify-center rounded-md  bg-[#464646] p-2 font-normal'
+                size='sm'
+              >
+                <span>.csv upload</span>
+                <ArrowUpCircleIcon width='1.2rem' />
+              </Button>
+              {/* <button {...getRemoveFileProps()} style={styles.remove}>
+                Remove
+              </button> */}
+            </div>
+          </>
+        )}
+      </CSVReader>
+      <Paper
+        sx={{
+          width: '100%',
+          overflow: 'hidden',
+          backgroundColor: '#282828',
+          color: '#fff',
+          boxShadow: 'none',
+        }}
+      >
+        <TableContainer className='bg-transparent' sx={{ maxHeight: 440 }}>
+          <Table stickyHeader aria-label='sticky table'>
+            <TableHead>
+              <TableRow>
+                {columns.map((column) => (
+                  <TableCell
+                    key={column.id}
+                    align={column.align}
+                    style={{
+                      minWidth: column.minWidth,
+                      color: '#ffff',
+                      borderColor: '#393939',
+                      backgroundColor: '#464646',
+                    }}
+                  >
+                    {column.label}
+                  </TableCell>
+                ))}
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {enteredRows
+                .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                .map((row, index) => {
+                  return (
+                    <TableRow hover role='checkbox' tabIndex={-1} key={index}>
+                      {columns.map((column) => {
+                        const value = row[column.id];
+                        return (
+                          <TableCell
+                            key={column.id}
+                            align={column.align}
+                            style={{
+                              color: '#fff',
+                              backgroundColor: '#282828',
+                              borderColor: '#393939',
+                            }}
+                          >
+                            {column.id === 'destination_chain' && (
+                              <ChainMenu
+                                onChainChange={(chain) => {
+                                  const newdata = enteredRows.map((er) => {
+                                    return er.id === row.id
+                                      ? {
+                                          ...er,
+                                          destination_chain: chain.chainName,
+                                        }
+                                      : er;
+                                  });
+                                  setEnteredRows(newdata);
+                                }}
+                              />
+                            )}
+                            {column.id === 'destination_token' && (
+                              <TokenMenu
+                                onTokenChange={(token) => {
+                                  const newdata = enteredRows.map((er) => {
+                                    return er.id === row.id
+                                      ? {
+                                          ...er,
+                                          destination_token: token.name,
+                                        }
+                                      : er;
+                                  });
+                                  setEnteredRows(newdata);
+                                }}
+                              />
+                            )}
+                            {column.id === 'to_address' && (
+                              <TokenInput
+                                value={value as string}
+                                placeholder='Enter Address'
+                                className='text-start placeholder:text-white placeholder:text-opacity-20'
+                                onChange={(e) => {
+                                  const newdata = enteredRows.map((er) => {
+                                    return er.id === row.id
+                                      ? {
+                                          ...er,
+                                          to_address: e.target.value,
+                                        }
+                                      : er;
+                                  });
+                                  setEnteredRows(newdata);
+                                }}
+                              />
+                            )}
+                            {column.id === 'amount_of_source_token' && (
+                              <TokenInput
+                                value={value as string}
+                                placeholder='Enter amount'
+                                className='placeholder:text-white placeholder:text-opacity-20'
+                                onChange={(e) => {
+                                  const newdata = enteredRows.map((er) => {
+                                    return er.id === row.id
+                                      ? {
+                                          ...er,
+                                          amount_of_source_token:
+                                            e.target.value,
+                                        }
+                                      : er;
+                                  });
+                                  setEnteredRows(newdata);
+                                }}
+                              />
+                            )}
+                          </TableCell>
+                        );
+                      })}
+                    </TableRow>
+                  );
+                })}
+            </TableBody>
+          </Table>
+        </TableContainer>
+        <TablePagination
+          rowsPerPageOptions={[2, 5, 10]}
+          component='div'
+          style={{
+            backgroundColor: '#282828',
+          }}
+          className='text-white'
+          count={rows.length}
+          rowsPerPage={rowsPerPage}
+          page={page}
+          onPageChange={handleChangePage}
+          onRowsPerPageChange={handleChangeRowsPerPage}
+        />
+      </Paper>
+    </>
   );
 }
 

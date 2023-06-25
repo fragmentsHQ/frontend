@@ -1,118 +1,107 @@
-import React from 'react'
-import { Pagination } from "carbon-components-react";
-import { useCSVReader } from "react-papaparse";
-import { useNetwork } from "wagmi";
-import {
-    DataTable,
-    Table,
-    TableHead,
-    TableRow,
-    TableHeader,
-    TableBody,
-    TableCell,
-} from "@carbon/react";
-import { Button, Dropdown, MenuItem } from "@heathmont/moon-core-tw";
-import { ArrowUpCircleIcon, CheckIcon } from "@heroicons/react/20/solid";
+import { Button } from '@heathmont/moon-core-tw';
+import { ArrowUpCircleIcon, CheckIcon } from '@heroicons/react/20/solid';
+import { getNetwork } from '@wagmi/core';
+import React from 'react';
+import { useCSVReader } from 'react-papaparse';
 
-import { getNetwork } from '@wagmi/core'
-
-import {
-    AUTOPAY_CONTRACT_ADDRESSES,
-    TOKEN_ADDRESSES,
-    NETWORKS,
-    TEST_NETWORKS,
-    ISPRODUCTION
-} from "../constants/constants";
+import TokenTable from '@/components/tables/TokenTable';
 
 function classNames(...classes: string[]) {
-    return classes.filter(Boolean).join(" ");
+  return classes.filter(Boolean).join(' ');
 }
 
 type Props = {
-    dataRows: any;
-    setDataRows: any;
-    currentPage: number;
-    setCurrentPage: any;
-    pageSize: number;
-    setPageSize: any;
-}
+  dataRows: any;
+  setDataRows: any;
+  currentPage: number;
+  setCurrentPage: any;
+  pageSize: number;
+  setPageSize: any;
+};
 
 const headers = [
-    {
-        key: "toAddress",
-        header: "To Address",
-    },
-    {
-        key: "destinationChain",
-        header: "Destination Chain",
-    },
-    {
-        key: "destinationToken",
-        header: "Destination Token",
-    },
-    {
-        key: "amountOfSourceToken",
-        header: "Amount of Source Token",
-    },
+  {
+    key: 'toAddress',
+    header: 'To Address',
+  },
+  {
+    key: 'destinationChain',
+    header: 'Destination Chain',
+  },
+  {
+    key: 'destinationToken',
+    header: 'Destination Token',
+  },
+  {
+    key: 'amountOfSourceToken',
+    header: 'Amount of Source Token',
+  },
 ];
 
-const CsvReader = ({ dataRows, setDataRows, currentPage, setCurrentPage, pageSize, setPageSize }: Props) => {
-    const { CSVReader } = useCSVReader();
-    const { chain, chains } = getNetwork()
-    return (
-        <div className="rounded-xl bg-[#282828] p-5">
-            <CSVReader
-                onUploadAccepted={(results: any) => {
-                    setDataRows(
-                        results.data.slice(1).map((elem, idx) => {
-                            return {
-                                id: String(idx),
-                                toAddress: elem[0],
-                                destinationChain: elem[1],
-                                destinationToken: elem[2],
-                                amountOfSourceToken: elem[3],
-                            };
-                        })
+const CsvReader = ({
+  dataRows,
+  setDataRows,
+  currentPage,
+  setCurrentPage,
+  pageSize,
+  setPageSize,
+}: Props) => {
+  const { CSVReader } = useCSVReader();
+  const { chain, chains } = getNetwork();
+  return (
+    <div className='rounded-xl bg-[#282828] p-5'>
+      <CSVReader
+        onUploadAccepted={(results: any) => {
+          setDataRows(
+            results.data.slice(1).map((elem, idx) => {
+              return {
+                id: String(idx),
+                toAddress: elem[0],
+                destinationChain: elem[1],
+                destinationToken: elem[2],
+                amountOfSourceToken: elem[3],
+              };
+            })
+          );
+        }}
+      >
+        {({ getRootProps, acceptedFile }: any) => (
+          <>
+            <div className='mb-4 flex items-center justify-end gap-4'>
+              <div className='flex items-center gap-2 text-[#00FFA9]'>
+                {(() => {
+                  if (acceptedFile)
+                    return (
+                      <>
+                        <CheckIcon width='1.2rem' color='#00FFA9' />
+                        {acceptedFile?.name?.length > 10
+                          ? acceptedFile.name
+                              .slice(0, 10)
+                              .concat('....')
+                              .concat(acceptedFile.name.slice(-7))
+                          : acceptedFile.name}
+                      </>
                     );
-                }}
-            >
-                {({ getRootProps, acceptedFile }: any) => (
-                    <>
-                        <div className="mb-4 flex items-center justify-end gap-4">
-                            <div className="flex items-center gap-2 text-[#00FFA9]">
-                                {(() => {
-                                    if (acceptedFile)
-                                        return (
-                                            <>
-                                                <CheckIcon width={"1.2rem"} color="#00FFA9" />
-                                                {acceptedFile?.name?.length > 10
-                                                    ? acceptedFile.name
-                                                        .slice(0, 10)
-                                                        .concat("....")
-                                                        .concat(acceptedFile.name.slice(-7))
-                                                    : acceptedFile.name}
-                                            </>
-                                        );
-                                })()}
-                            </div>
-                            <Button
-                                type="button"
-                                {...getRootProps()}
-                                className="rounded-md bg-[#464646] font-normal"
-                                size="sm"
-                            >
-                                <span>.csv upload</span>
-                                <ArrowUpCircleIcon width={"1.2rem"} />
-                            </Button>
-                            {/* <button {...getRemoveFileProps()} style={styles.remove}>
+                })()}
+              </div>
+              <Button
+                type='button'
+                {...getRootProps()}
+                className='rounded-md bg-[#464646] font-normal'
+                size='sm'
+              >
+                <span>.csv upload</span>
+                <ArrowUpCircleIcon width='1.2rem' />
+              </Button>
+              {/* <button {...getRemoveFileProps()} style={styles.remove}>
                     Remove
                   </button> */}
-                        </div>
-                        {/* <ProgressBar style={styles.progressBarBackgroundColor} /> */}
-                    </>
-                )}
-            </CSVReader>
-            <DataTable
+            </div>
+            {/* <ProgressBar style={styles.progressBarBackgroundColor} /> */}
+          </>
+        )}
+      </CSVReader>
+      {/* <DataTable
                 rows={dataRows.slice(
                     (currentPage - 1) * pageSize,
                     (currentPage - 1) * pageSize + pageSize
@@ -365,9 +354,9 @@ const CsvReader = ({ dataRows, setDataRows, currentPage, setCurrentPage, pageSiz
                 pageSizes={[10, 20, 30, 40, 50]}
                 totalItems={dataRows.length}
             // className="w-full"
-            />
-        </div>
-    )
-}
+            /> */}
+    </div>
+  );
+};
 
-export default CsvReader
+export default CsvReader;

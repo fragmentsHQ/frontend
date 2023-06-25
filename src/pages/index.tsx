@@ -81,7 +81,10 @@ const Main = () => {
     }
   }, [dataRows, showThisSection]);
 
-  console.log('here: ', sourceToken);
+  useEffect(() => {
+    setSourceToken(null);
+    setSelectedCategory(null);
+  }, []);
   return (
     <Layout>
       <div className='m-auto max-w-[67rem] px-10 py-8'>

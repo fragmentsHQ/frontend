@@ -3,7 +3,6 @@ import { Button } from '@heathmont/moon-core-tw';
 import React, { useContext, useState } from 'react';
 
 import { AuthContext } from '@/components/AuthProvider';
-import TokenTable from '@/components/tables/TokenTable';
 
 import TimePanel from './TimePanel';
 import useAutoPayContract from '../../hooks/useAutopayContract';
@@ -12,7 +11,7 @@ import { AppModes, Category, GasModes } from '../../types/types';
 const categories: Array<Category> = ['One Time', 'Recurring'];
 const appModes: Array<AppModes> = ['Auto Pay', 'xStream'];
 const gasModes: Array<GasModes> = ['Forward', 'Gas Account'];
-
+import TokenTable from '@/components/tables/TokenTable';
 const intervalTypes = [
   { value: 'days', label: 'days' },
   { value: 'weeks', label: 'weeks' },
