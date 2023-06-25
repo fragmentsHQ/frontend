@@ -36,6 +36,7 @@
     "clsx": "^1.2.1",
     "graphql": "^16.7.1",
     "next": "^13.4.4",
+    "dayjs": "^1.11.8",
     "react": "^18.2.0",
     "react-csv-importer": "^0.8.1",
     "react-dom": "^18.2.0",

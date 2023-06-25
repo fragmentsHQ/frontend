@@ -2,12 +2,12 @@
 
 import { ethers } from "ethers";
 import { useState, useEffect, useContext } from "react";
-
+import { encodeFunctionData } from 'viem'
 import { parseEther } from 'viem'
 import {
-    fetchBalance, getNetwork, sendTransaction, readContract, writeContract, prepareWriteContract,
+    getAccount, getNetwork, prepareSendTransaction, sendTransaction, readContract, erc20ABI
 } from "@wagmi/core"
-import { useAccount, useNetwork, usePublicClient, erc20ABI } from "wagmi";
+
 import { parseUnits } from "ethers/lib/utils";
 import * as chainList from "wagmi/chains";
 
@@ -20,7 +20,8 @@ import {
     AUTOPAY_CONTRACT,
     TOKEN_ADDRESSES,
     ZERO_ADDRESS,
-    Web3FunctionHash
+    Web3FunctionHash,
+    ERC20_CONTRACT
 } from "../constants/constants";
 import { Category, Options, Tokens } from "../types/types";
 
@@ -35,34 +36,27 @@ const tokens = [{ name: "USDC" }, { name: "USDT" }, { name: "DAI" }];
 
 
 const useAutoPayContract = () => {
-    const { chain } = useNetwork();
-    const { address } = useAccount();
-    const provider = ethers.getDefaultProvider();
+    const { chain } = getNetwork();
+    const { address } = getAccount();
 
-    const { sourceChain, sourceToken, setSourceToken, appMode, setAppMode } = useContext(AuthContext);
+    const { sourceChain, sourceToken, isLoading, setIsLoading, dataRows, setDataRows } = useContext(AuthContext);
 
     const [startTime, setStartTime] = useState<string | null>("");
     const [cycles, setCycles] = useState<string | null>("");
-    const [isOpen, setIsOpen] = useState(false);
     const [intervalCount, setIntervalCount] = useState("1");
     const [intervalType, setIntervalType] = useState<Options | null>({
         value: "days",
         label: "days",
     });
-    const [callDataApproval, setCallDataApproval] =
-        useState<`0x${string}`>("0x");
-    const [callDataCreateTimeTxn, setCallDataCreateTimeTxn] =
-        useState<`0x${string}`>("0x");
+    const [isApproved, setIsApproved] = useState(false);
 
-    const closeModal = () => setIsOpen(false);
-    const openModal = () => setIsOpen(true);
-
-    startTime && console.log("startTime: ", startTime);
 
     const fetchAllowance = async () => {
         try {
 
-            const allowance = readContract({
+            setIsLoading({ loading: true, message: "Gas fees for all transactions will be forward paid in this token when their trigger conditions are met.", instructions: "click use default and confirm allowance to setup your automation" });
+
+            const allowance = await readContract({
                 address: chain && sourceToken
                     ? TOKEN_ADDRESSES[chain?.id][sourceToken].address
                     : ZERO_ADDRESS,
@@ -76,331 +70,211 @@ const useAutoPayContract = () => {
                         ][chain?.id]
                         : ZERO_ADDRESS,
                 ],
-            })
+            });
 
-            toast.promise(allowance, {
-                loading: 'Loading',
-                success: (data) => `Successfully saved ${data}`,
-                error: (err) => `This just happened: ${err.toString()}`,
-            },);
+            setIsApproved(true);
 
         } catch (error) {
+            setIsLoading({ loading: false, message: `ERROR  ${error}`, instructions: "Approve the token" });
             console.error(error);
+        } finally {
+            setIsLoading({ loading: false, message: `Allowance Fetched ${allowance}` });
         }
     }
 
     const handleApprove = async () => {
         try {
-            const config = await prepareWriteContract({
-                address: chain && sourceToken
-                    ? TOKEN_ADDRESSES[chain?.id][sourceToken].address
-                    : ZERO_ADDRESS,
+
+            setIsLoading({ loading: true, message: "Approving token", instructions: "click use default and confirm allowance to setup your automation" });
+            const callDataApproval = encodeFunctionData({
                 abi: erc20ABI,
-                functionName: 'claim',
-                args: [69],
+                functionName: 'approve',
+                args: [
+                    chain
+                        ? AUTOPAY_CONTRACT_ADDRESSES[
+                        chain?.testnet ? "testnets" : "mainnets"
+                        ][chain?.id]
+                        : ZERO_ADDRESS,
+                    ethers.constants.MaxUint256,
+                ]
+            });
+
+            console.log(callDataApproval);
+
+            const request = await prepareSendTransaction({
+                to:
+                    chain && sourceToken
+                        ? TOKEN_ADDRESSES[chain?.id][sourceToken].address
+                        : ZERO_ADDRESS,
+                data: callDataApproval,
+                account: address,
+                value: BigInt(0),
             })
+            const { hash } = await sendTransaction(request);
+            console.log(hash);
 
-
-            const { hash } = await writeContract(config)
+            await fetchAllowance();
 
         } catch (error) {
-            console.error(error)
+            setIsLoading({ loading: false, message: `ERROR  ${error}`, instructions: "Approve the token" });
+            console.error(error);
+        } finally {
+            setIsLoading({ loading: false, message: `Approved`, instructions: "click use default and confirm allowance to setup your automation" });
         }
     }
 
-    const {
-        // data,
-        // error,
-        // isLoading,
-        // isError,
-        sendTransactionAsync: sendApproveTokenAsyncTxn,
-    } = useSendTransaction({
-        to:
-            chain && sourceToken
-                ? TOKEN_ADDRESSES[chain?.id][sourceToken].address
-                : ZERO_ADDRESS,
-        data: callDataApproval,
-        account: address,
-        value: BigInt(0),
-    });
-
-    const {
-        // data,
-        // error,
-        // isLoading,
-        // isError,
-        sendTransactionAsync: sendCreateTimeAsyncTxn,
-    } = useSendTransaction({
-        to: chain
-            ? AUTOPAY_CONTRACT_ADDRESSES[chain?.testnet ? "testnets" : "mainnets"][
-            chain?.id
-            ]
-            : ZERO_ADDRESS,
-        data: callDataCreateTimeTxn,
-        account: address,
-        value: BigInt(0),
-    });
-
-    const updateCallDataApproval = () => {
-        const ERC20Contract = ERC20_CONTRACT(
-            chain && sourceToken
-                ? TOKEN_ADDRESSES[chain?.id][sourceToken].address
-                : ZERO_ADDRESS,
-            provider
-        );
-
-        setCallDataApproval(
-            ERC20Contract.interface.encodeFunctionData("approve", [
-                chain
-                    ? AUTOPAY_CONTRACT_ADDRESSES[
-                    chain?.testnet ? "testnets" : "mainnets"
-                    ][chain?.id]
-                    : ZERO_ADDRESS,
-                ethers.constants.MaxUint256,
-            ]) as `0x${string}`
-        );
-    };
-
-    const updateCallDataCreateTimeTxn = () => {
-        const AutoPayContract = AUTOPAY_CONTRACT(chain, provider);
-
-        console.log("settin calldata: ", [
-            [
-                ...dataRows
-                    .slice(0, -1)
-                    .map((e) => (e.toAddress ? e.toAddress : ZERO_ADDRESS)),
-            ],
-            [
-                ...dataRows
-                    .slice(0, -1)
-                    .map((e) =>
-                        e.amountOfSourceToken
-                            ? parseUnits(
-                                e.amountOfSourceToken,
-                                TOKEN_ADDRESSES[chain?.id][sourceToken].decimals
-                            )
-                            : "0"
-                    ),
-            ],
-            [
-                ...dataRows
-                    .slice(0, -1)
-                    .map((e) =>
-                        chain?.testnet && sourceToken
-                            ? TOKEN_ADDRESSES[chain?.id][sourceToken].address
-                            : ZERO_ADDRESS
-                    ),
-            ],
-            [
-                ...dataRows
-                    .slice(0, -1)
-                    .map((e) =>
-                        chain?.testnet && sourceToken && e.destinationChain
-                            ? TOKEN_ADDRESSES[e.destinationChain][sourceToken]
-                                .address
-                            : ZERO_ADDRESS
-                    ),
-            ],
-            [
-                ...dataRows
-                    .slice(0, -1)
-                    .map((e) =>
-                        e.destinationChain ? e.destinationChain : ZERO_ADDRESS
-                    ),
-            ],
-            [
-                ...dataRows
-                    .slice(0, -1)
-                    .map((e) =>
-                        e.destinationChain
-                            ? CONNEXT_DOMAINS[e.destinationChain]
-                            : ZERO_ADDRESS
-                    ),
-            ],
-            [
-                ...dataRows
-                    .slice(0, -1)
-                    .map((e) =>
-                        e.destinationChain
-                            ? AUTOPAY_CONTRACT_ADDRESSES[
-                            chain?.testnet ? "testnets" : "mainnets"
-                            ][e.destinationChain]
-                            : ZERO_ADDRESS
-                    ),
-            ],
-            [...dataRows.slice(0, -1).map((_) => (cycles ? cycles : 1))],
-            [
-                ...dataRows
-                    .slice(0, -1)
-                    .map((_) =>
-                        startTime ? startTime : Math.trunc(Date.now() / 1000) + 3600
-                    ),
-            ],
-            [
-                ...dataRows
-                    .slice(0, -1)
-                    .map(
-                        (_) =>
-                            Number(intervalCount) *
-                            (intervalType.value === "days"
-                                ? 86400
-                                : intervalType.value === "months"
-                                    ? 2629800
-                                    : intervalType.value === "weeks"
-                                        ? 604800
-                                        : intervalType.value === "years"
-                                            ? 31536000
-                                            : 1)
-                    ),
-            ],
-            "QmRdcGs5h8UP8ETFdS7Yj7iahDTjfQNHMsJp3dYRec5Gf2",
-        ]);
+    const createTimeAutomateTxn = async () => {
         try {
-            setCallDataCreateTimeTxn(
-                AutoPayContract.interface.encodeFunctionData(
-                    "_createMultipleTimeAutomate",
+            setIsLoading({ loading: true, message: "Creating Time Automate", instructions: "click use default and confirm allowance to setup your automation" });
+            const AutoPayContract = AUTOPAY_CONTRACT(chain);
+
+            const callDataCreateTimeTxn = encodeFunctionData({
+                abi: AutoPayContract.abi,
+                functionName: "_createMultipleTimeAutomate",
+                args: [
                     [
-                        [
-                            ...dataRows
-                                .slice(0, -1)
-                                .map((e) => (e.toAddress ? e.toAddress : ZERO_ADDRESS)),
-                        ],
-                        [
-                            ...dataRows
-                                .slice(0, -1)
-                                .map((e) =>
-                                    e.amountOfSourceToken
-                                        ? parseUnits(
-                                            e.amountOfSourceToken,
-                                            TOKEN_ADDRESSES[chain?.id][sourceToken]
-                                                .decimals
-                                        )
-                                        : "0"
-                                ),
-                        ],
-                        [
-                            ...dataRows
-                                .slice(0, -1)
-                                .map((e) =>
-                                    chain?.testnet && sourceToken
-                                        ? TOKEN_ADDRESSES[chain?.id][sourceToken]
-                                            .address
-                                        : ZERO_ADDRESS
-                                ),
-                        ],
-                        [
-                            ...dataRows
-                                .slice(0, -1)
-                                .map((e) =>
-                                    chain?.testnet &&
-                                        sourceToken &&
-                                        e.destinationChain
-                                        ? TOKEN_ADDRESSES[e.destinationChain][
-                                            sourceToken
-                                        ].address
-                                        : ZERO_ADDRESS
-                                ),
-                        ],
-                        [
-                            ...dataRows
-                                .slice(0, -1)
-                                .map((e) =>
-                                    e.destinationChain ? e.destinationChain : ZERO_ADDRESS
-                                ),
-                        ],
-                        [
-                            ...dataRows
-                                .slice(0, -1)
-                                .map((e) =>
+                        ...dataRows
+                            .slice(0, -1)
+                            .map((e) => (e.toAddress ? e.toAddress : ZERO_ADDRESS)),
+                    ],
+                    [
+                        ...dataRows
+                            .slice(0, -1)
+                            .map((e) =>
+                                e.amountOfSourceToken
+                                    ? parseUnits(
+                                        e.amountOfSourceToken,
+                                        TOKEN_ADDRESSES[chain?.id][sourceToken]
+                                            .decimals
+                                    )
+                                    : "0"
+                            ),
+                    ],
+                    [
+                        ...dataRows
+                            .slice(0, -1)
+                            .map((e) =>
+                                chain?.testnet && sourceToken
+                                    ? TOKEN_ADDRESSES[chain?.id][sourceToken]
+                                        .address
+                                    : ZERO_ADDRESS
+                            ),
+                    ],
+                    [
+                        ...dataRows
+                            .slice(0, -1)
+                            .map((e) =>
+                                chain?.testnet &&
+                                    sourceToken &&
                                     e.destinationChain
-                                        ? CONNEXT_DOMAINS[e.destinationChain]
-                                        : ZERO_ADDRESS
-                                ),
-                        ],
-                        [
-                            ...dataRows
-                                .slice(0, -1)
-                                .map((e) =>
-                                    e.destinationChain
-                                        ? AUTOPAY_CONTRACT_ADDRESSES[
-                                        chain?.testnet ? "testnets" : "mainnets"
-                                        ][e.destinationChain]
-                                        : ZERO_ADDRESS
-                                ),
-                        ],
-                        [...dataRows.slice(0, -1).map((_) => (cycles ? cycles : 1))],
-                        [
-                            ...dataRows
-                                .slice(0, -1)
-                                .map((_) =>
-                                    startTime ? startTime : Math.trunc(Date.now() / 1000) + 3600
-                                ),
-                        ],
-                        [
-                            ...dataRows
-                                .slice(0, -1)
-                                .map(
-                                    (_) =>
-                                        Number(intervalCount) *
-                                        (intervalType.value === "days"
-                                            ? 86400
-                                            : intervalType.value === "months"
-                                                ? 2629800
-                                                : intervalType.value === "weeks"
-                                                    ? 604800
-                                                    : intervalType.value === "years"
-                                                        ? 31536000
-                                                        : 1)
-                                ),
-                        ],
-                        "QmRdcGs5h8UP8ETFdS7Yj7iahDTjfQNHMsJp3dYRec5Gf2",
+                                    ? TOKEN_ADDRESSES[e.destinationChain][
+                                        sourceToken
+                                    ].address
+                                    : ZERO_ADDRESS
+                            ),
+                    ],
+                    [
+                        ...dataRows
+                            .slice(0, -1)
+                            .map((e) =>
+                                e.destinationChain ? e.destinationChain : ZERO_ADDRESS
+                            ),
+                    ],
+                    [
+                        ...dataRows
+                            .slice(0, -1)
+                            .map((e) =>
+                                e.destinationChain
+                                    ? CONNEXT_DOMAINS[e.destinationChain]
+                                    : ZERO_ADDRESS
+                            ),
+                    ],
+                    [
+                        ...dataRows
+                            .slice(0, -1)
+                            .map((e) =>
+                                e.destinationChain
+                                    ? AUTOPAY_CONTRACT_ADDRESSES[
+                                    chain?.testnet ? "testnets" : "mainnets"
+                                    ][e.destinationChain]
+                                    : ZERO_ADDRESS
+                            ),
+                    ],
+                    [...dataRows.slice(0, -1).map((_) => (cycles ? cycles : 1))],
+                    [
+                        ...dataRows
+                            .slice(0, -1)
+                            .map((_) =>
+                                startTime ? startTime : Math.trunc(Date.now() / 1000) + 3600
+                            ),
+                    ],
+                    [
+                        ...dataRows
+                            .slice(0, -1)
+                            .map(
+                                (_) =>
+                                    Number(intervalCount) *
+                                    (intervalType.value === "days"
+                                        ? 86400
+                                        : intervalType.value === "months"
+                                            ? 2629800
+                                            : intervalType.value === "weeks"
+                                                ? 604800
+                                                : intervalType.value === "years"
+                                                    ? 31536000
+                                                    : 1)
+                            ),
+                    ],
+                    "QmRdcGs5h8UP8ETFdS7Yj7iahDTjfQNHMsJp3dYRec5Gf2",
+                ]
+            }
+
+            )
+
+            console.log(callDataCreateTimeTxn);
+
+            const request = await prepareSendTransaction({
+                to: chain
+                    ? AUTOPAY_CONTRACT_ADDRESSES[chain?.testnet ? "testnets" : "mainnets"][
+                    chain?.id
                     ]
-                ) as `0x${string}`
-            );
-        } catch { }
-    };
+                    : ZERO_ADDRESS,
+                data: callDataCreateTimeTxn,
+                account: address,
+                value: BigInt(0),
+            })
+            const { hash } = await sendTransaction(request)
+            console.log(hash);
+            toast.success("Transaction created successfully")
 
-    useEffect(() => {
-        updateCallDataApproval();
-        updateCallDataCreateTimeTxn();
-    }, [
-        chain,
-        sourceToken,
-        dataRows,
-        cycles,
-        intervalCount,
-        intervalType,
-        startTime,
-    ]);
 
-    // useImperativeHandle(ref, () => ({
-    //     executeTxn() {
-    //         try {
-    //             if (
-    //                 BigNumber.from(allowance ? allowance : 0).eq(
-    //                     ethers.constants.MaxUint256
-    //                 )
-    //             )
-    //                 sendCreateTimeAsyncTxn?.();
-    //             else sendApproveTokenAsyncTxn?.();
-    //         } catch { }
-    //     },
+        } catch (error) {
+            setIsLoading({ loading: false, message: `ERROR  ${error}` });
+            console.error(error);
+        } finally {
+            setIsLoading({ loading: false, message: `Time Automate created`, instructions: "click use default and confirm allowance to setup your automation" });
+        }
+    }
 
-    //     hasEnoughAllowance() {
-    //         return BigNumber.from(allowance ? allowance : 0).eq(
-    //             ethers.constants.MaxUint256
-    //         );
-    //     },
-    // }));
+
+    const handleTimeExecution = async () => {
+        try {
+            const allowance = await fetchAllowance();
+            if (
+                BigNumber.from(allowance ? allowance : 0).eq(
+                    ethers.constants.MaxUint256
+                )
+            )
+                createTimeAutomateTxn?.();
+            else handleApprove?.();
+        } catch (e) {
+            console.error(e);
+        }
+
+    }
 
     return {
-        dataRows,
-        setDataRows,
         tokens,
-        balance,
-        sourceData,
-        setSourceData,
-        getBalance,
         intervalTypes,
         intervalCount,
         setIntervalCount,
@@ -410,7 +284,11 @@ const useAutoPayContract = () => {
         setCycles,
         startTime,
         setStartTime,
-        createTimeAutomate,
+        fetchAllowance,
+        handleApprove,
+        handleTimeExecution,
+        isApproved,
+        setIsApproved,
     };
 }
 
