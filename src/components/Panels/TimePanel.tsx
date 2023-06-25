@@ -123,81 +123,75 @@ const TimePanel = (
                                             Select Interval
                                         </Button>
 
-                                        <Dialog open={isOpen} onClose={closeModal}>
 
-                                            <div className="fixed inset-0 opacity-60 bg-black/30" aria-hidden="true" />
-                                            <Dialog.Panel className="bg-[#282828] p-3 max-w-sm">
-                                                <div className="border-beerus relative px-6 pb-4 pt-5">
-                                                    <h3 className="text-moon-18 text-bulma font-medium">
-                                                        Select Frequency
-                                                    </h3>
-                                                    <span
-                                                        className="absolute right-5 top-4 inline-block h-8 w-8 cursor-pointer"
-                                                        onClick={closeModal}
-                                                    >
-                                                        <ControlsCloseSmall className="block h-full w-full" />
-                                                    </span>
-                                                </div>
-                                                <div className="grid grid-cols-5 items-center gap-3 px-6 py-4">
-                                                    <span className="col-span-2 block text-[#AFAEAE]">
-                                                        Repeat Every
-                                                    </span>
-                                                    <Input
-                                                        type="text"
-                                                        placeholder="1"
-                                                        id="c-1"
-                                                        className="col-span-1 rounded bg-[#262229] text-white"
-                                                        value={autoPayHook.intervalCount}
-                                                        onChange={(e) => autoPayHook.setIntervalCount(e.target.value)}
-                                                    />
-                                                    <Dropdown
-                                                        value={autoPayHook.intervalType}
-                                                        onChange={autoPayHook.setIntervalType}
-                                                        size="xl"
-                                                        className="col-span-2"
-                                                    >
-                                                        {({ open }) => (
-                                                            <>
-                                                                <Dropdown.Select
-                                                                    open={open}
-                                                                    data-test="data-test"
-                                                                    className="bg-[#262229]"
-                                                                >
-                                                                    {autoPayHook.intervalType?.label}
-                                                                </Dropdown.Select>
+                                        <Modal open={isOpen} onClose={closeModal} title="">
 
-                                                                <Dropdown.Options className="z-[10] w-full min-w-full bg-[#262229]">
-                                                                    {autoPayHook.intervalTypes.map((size, index) => (
-                                                                        <Dropdown.Option value={size} key={index}>
-                                                                            {({ selected, active }) => (
-                                                                                <MenuItem
-                                                                                    isActive={active}
-                                                                                    isSelected={selected}
-                                                                                >
-                                                                                    {size.label}
-                                                                                </MenuItem>
-                                                                            )}
-                                                                        </Dropdown.Option>
-                                                                    ))}
-                                                                </Dropdown.Options>
-                                                            </>
-                                                        )}
-                                                    </Dropdown>
-                                                </div>
+                                            <div className="border-beerus relative px-6 pb-4 pt-5">
+                                                <h3 className="text-moon-18 text-bulma font-medium">
+                                                    Select Frequency
+                                                </h3>
+                                                <span
+                                                    className="absolute right-5 top-4 inline-block h-8 w-8 cursor-pointer"
+                                                    onClick={closeModal}
+                                                >
+                                                    <ControlsCloseSmall className="block h-full w-full" />
+                                                </span>
+                                            </div>
+                                            <div className="grid grid-cols-5 items-center gap-3 px-6 py-4">
+                                                <span className="col-span-2 block text-[#AFAEAE]">
+                                                    Repeat Every
+                                                </span>
+                                                <Input
+                                                    type="text"
+                                                    placeholder="1"
+                                                    id="c-1"
+                                                    className="col-span-1 rounded bg-[#262229] text-white"
+                                                    value={autoPayHook.intervalCount}
+                                                    onChange={(e) => autoPayHook.setIntervalCount(e.target.value)}
+                                                />
+                                                <Dropdown
+                                                    value={autoPayHook.intervalType}
+                                                    onChange={autoPayHook.setIntervalType}
+                                                    size="xl"
+                                                    className="col-span-2"
+                                                >
+                                                    {({ open }) => (
+                                                        <>
+                                                            <Dropdown.Select
+                                                                open={open}
+                                                                data-test="data-test"
+                                                                className="bg-[#262229]"
+                                                            >
+                                                                {autoPayHook.intervalType?.label}
+                                                            </Dropdown.Select>
 
-                                                <div className="flex justify-end gap-2 p-4 pt-2">
-                                                    <Button
-                                                        className="rounded-md bg-[#262229]"
-                                                        onClick={closeModal}
-                                                    >
-                                                        Ok
-                                                    </Button>
-                                                </div>
-                                            </Dialog.Panel>
-                                        </Dialog>
+                                                            <Dropdown.Options className="z-[10] w-full min-w-full bg-[#262229]">
+                                                                {autoPayHook.intervalTypes.map((size, index) => (
+                                                                    <Dropdown.Option value={size} key={index}>
+                                                                        {({ selected, active }) => (
+                                                                            <MenuItem
+                                                                                isActive={active}
+                                                                                isSelected={selected}
+                                                                            >
+                                                                                {size.label}
+                                                                            </MenuItem>
+                                                                        )}
+                                                                    </Dropdown.Option>
+                                                                ))}
+                                                            </Dropdown.Options>
+                                                        </>
+                                                    )}
+                                                </Dropdown>
+                                            </div>
 
-
-                                        <Modal>
+                                            <div className="flex justify-end gap-2 p-4 pt-2">
+                                                <Button
+                                                    className="rounded-md bg-[#262229]"
+                                                    onClick={closeModal}
+                                                >
+                                                    Ok
+                                                </Button>
+                                            </div>
 
                                         </Modal>
                                     </div>
