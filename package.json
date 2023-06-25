@@ -35,6 +35,8 @@
     "carbon-components-react": "^8.30.0",
     "clsx": "^1.2.1",
     "graphql": "^16.7.1",
+    "@mui/system": "^5.4.1",
+    "@mui/x-date-pickers": "5.0.18",
     "next": "^13.4.4",
     "dayjs": "^1.11.8",
     "react": "^18.2.0",

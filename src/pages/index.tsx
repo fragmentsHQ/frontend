@@ -1,17 +1,15 @@
 'use client'; // This is a client component 👈🏽
 
 // import Image from "next/image";
-
 import { Tab } from '@headlessui/react';
-import { Button, Dropdown, MenuItem } from '@heathmont/moon-core-tw';
+import { Dropdown, MenuItem } from '@heathmont/moon-core-tw';
 import { switchNetwork } from '@wagmi/core';
 import React, { useContext, useEffect, useState } from 'react';
 import { useNetwork } from 'wagmi';
 
-import CsvReader from '@/components/CsvReader';
+import { AuthContext } from '@/components/AuthProvider';
 import Layout from '@/components/layout/Layout';
 
-import { AuthContext } from '../components/AuthProvider';
 import Panels from '../components/Panels';
 import {
   ISPRODUCTION,
@@ -31,21 +29,20 @@ const gasModes: Array<GasModes> = ['Forward', 'Gas Account'];
 
 const Main = () => {
   const { chain } = useNetwork();
-  const [selectedCategory, setSelectedCategory] = useState<Category | null>();
   const [pageSize, setPageSize] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
-  const { sourceChain, sourceToken, setSourceToken, appMode, setAppMode } =
-    useContext(AuthContext);
+  const {
+    sourceChain,
+    sourceToken,
+    setSourceToken,
+    appMode,
+    setAppMode,
+    selectedCategory,
+    setSelectedCategory,
+    dataRows,
+    setDataRows,
+  } = useContext(AuthContext);
 
-  const [dataRows, setDataRows] = useState([
-    {
-      id: '0',
-      toAddress: '',
-      destinationToken: '',
-      destinationChain: '',
-      amountOfSourceToken: '',
-    },
-  ]);
   const [showThisSection, setShowThisSection] = useState<{
     0: boolean;
     1: boolean;
@@ -280,89 +277,11 @@ const Main = () => {
 
         {/* --------------------------------PANELS --------------------------------------------- */}
 
-        <div
-          className={classNames(
-            'w-11/12 rounded-md transition-opacity',
-            showThisSection[1] ? 'opacity-100' : ' opacity-0'
-          )}
-        >
-          <Panels
-            selectedCategory={selectedCategory}
-            showThisSection={showThisSection}
-            setShowThisSection={setShowThisSection}
-            dataRows={dataRows}
-          />
-        </div>
-
-        {/* ------------------------------------------CSV READER ------------------------------- */}
-        <div
-          className={classNames(
-            'w-11/12 rounded-md  py-5 transition-opacity',
-            showThisSection[2] ? 'opacity-100' : ' opacity-0'
-          )}
-        >
-          <CsvReader
-            dataRows={dataRows}
-            setDataRows={setDataRows}
-            currentPage={currentPage}
-            setCurrentPage={setCurrentPage}
-            pageSize={pageSize}
-            setPageSize={setPageSize}
-          />
-        </div>
-
-        {/* ------------------------------------ GAS MODES ------------------------------------- */}
-        <div
-          className={classNames(
-            'w-11/12  px-2 transition-opacity sm:px-0',
-            showThisSection[3] ? 'opacity-100' : ' opacity-0'
-          )}
-        >
-          <div className='rounded-md bg-[#282828] p-5'>
-            <div className='m-auto pt-3 text-center'>
-              Choose how the task should be paid for. The cost of each execution
-              equals the network fee.
-            </div>
-            <div className='grid grid-cols-1 gap-x-2 pt-8'>
-              <Tab.Group
-              // onChange={(idx) => {
-              //   setSourceData({ ...sourceData, gasMode: gasModes[idx] });
-              // }}
-              >
-                <Tab.List className='flex gap-[1px] space-x-1 rounded-xl bg-[#464646] p-[5px]'>
-                  {gasModes.map((mode) => (
-                    <Tab
-                      key={mode}
-                      className={({ selected }) =>
-                        classNames(
-                          'w-full rounded-xl py-2.5 text-sm font-bold leading-5',
-                          selected
-                            ? 'bg-[#00FFA9] text-black shadow'
-                            : 'bg-[#464646] text-[#6B6B6B]'
-                        )
-                      }
-                      // disabled={mode === "xStream"}
-                    >
-                      {mode === 'Forward'
-                        ? 'Forward Paying Gas'
-                        : 'Pay from Gas Account'}
-                    </Tab>
-                  ))}
-                </Tab.List>
-              </Tab.Group>
-            </div>
-            <Button
-              size='sm'
-              className='m-auto mt-16 h-12 w-[10rem] rounded-lg bg-[#2BFFB1] text-lg font-bold text-black'
-              onClick={() => {
-                // panelRef.current.executeTxn();
-              }}
-            >
-              {/* {panelRef?.current?.hasEnoughAllowance() ? "Confirm" : "Approve"} */}
-              Confirm
-            </Button>
-          </div>
-        </div>
+        <Panels
+          selectedCategory={selectedCategory}
+          showThisSection={showThisSection}
+          setShowThisSection={setShowThisSection}
+        />
       </div>
     </Layout>
   );
