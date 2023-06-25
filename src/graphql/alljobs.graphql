@@ -1,0 +1,24 @@
+query getAllJobs {
+  jobCreateds(
+    where: { _taskCreator: "0x6d4b5acFB1C08127e8553CC41A9aC8F06610eFc7" }
+  ) {
+    id
+    transactionHash
+    option
+    blockNumber
+    blockTimestamp
+    _toToken
+    _toChain
+    _to
+    _taskCreator
+    _startTime
+    _jobId
+    _interval
+    _gelatoTaskId
+    _destinationDomain
+    _fromToken
+    _destinationContract
+    _cycles
+    _amount
+  }
+}
