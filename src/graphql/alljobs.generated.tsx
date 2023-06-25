@@ -3043,15 +3043,31 @@ export enum _SubgraphErrorPolicy_ {
   Deny = 'deny'
 }
 
-export type GetAllJobsQueryVariables = Types.Exact<{ [key: string]: never; }>;
+export type GetAllJobsQueryVariables = Types.Exact<{
+  block?: Types.InputMaybe<Types.Block_Height>;
+  first?: Types.InputMaybe<Types.Scalars['Int']['input']>;
+  orderBy?: Types.InputMaybe<Types.JobCreated_OrderBy>;
+  orderDirection?: Types.InputMaybe<Types.OrderDirection>;
+  skip?: Types.InputMaybe<Types.Scalars['Int']['input']>;
+  subgraphError?: Types._SubgraphErrorPolicy_;
+  where?: Types.InputMaybe<Types.JobCreated_Filter>;
+}>;
 
 
 export type GetAllJobsQuery = { __typename?: 'Query', jobCreateds: Array<{ __typename?: 'JobCreated', id: string, transactionHash: any, option: number, blockNumber: any, blockTimestamp: any, _toToken: any, _toChain: any, _to: any, _taskCreator: any, _startTime: any, _jobId: any, _interval: any, _gelatoTaskId: any, _destinationDomain: any, _fromToken: any, _destinationContract: any, _cycles: any, _amount: any }> };
 
 
 export const GetAllJobsDocument = gql`
-    query getAllJobs {
-  jobCreateds(where: {_taskCreator: "0x6d4b5acFB1C08127e8553CC41A9aC8F06610eFc7"}) {
+    query getAllJobs($block: Block_height, $first: Int = 100, $orderBy: JobCreated_orderBy, $orderDirection: OrderDirection, $skip: Int = 0, $subgraphError: _SubgraphErrorPolicy_! = deny, $where: JobCreated_filter) {
+  jobCreateds(
+    block: $block
+    first: $first
+    orderBy: $orderBy
+    orderDirection: $orderDirection
+    skip: $skip
+    subgraphError: $subgraphError
+    where: $where
+  ) {
     id
     transactionHash
     option
@@ -3086,6 +3102,13 @@ export const GetAllJobsDocument = gql`
  * @example
  * const { data, loading, error } = useGetAllJobsQuery({
  *   variables: {
+ *      block: // value for 'block'
+ *      first: // value for 'first'
+ *      orderBy: // value for 'orderBy'
+ *      orderDirection: // value for 'orderDirection'
+ *      skip: // value for 'skip'
+ *      subgraphError: // value for 'subgraphError'
+ *      where: // value for 'where'
  *   },
  * });
  */

@@ -9,19 +9,24 @@ import TableRow from '@mui/material/TableRow';
 import { useRouter } from 'next/router';
 import * as React from 'react';
 
+import clsxm from '@/lib/clsxm';
+
+import UnstyledLink from '@/components/links/UnstyledLink';
+import { LinkIcon } from '@/components/tables/AllJobsTable';
+
 interface Column {
-  id: 'job_id' | 'owner' | 'total_fee_execution' | 'status';
+  id: 'transaction_hash' | 'transaction' | 'destination_transaction' | 'status';
   label: string;
   minWidth?: number;
   align?: 'right';
 }
 
 const columns: readonly Column[] = [
-  { id: 'job_id', label: 'Job Id', minWidth: 170 },
-  { id: 'owner', label: 'Owner', minWidth: 100 },
+  { id: 'transaction_hash', label: 'Source Transaction Hash', minWidth: 170 },
+  { id: 'transaction', label: 'Source Transaction', minWidth: 100 },
   {
-    id: 'total_fee_execution',
-    label: 'Total Fee & Executions',
+    id: 'destination_transaction',
+    label: 'Destination Transaction',
     minWidth: 170,
     align: 'right',
   },
@@ -35,25 +40,31 @@ const columns: readonly Column[] = [
 
 interface Data {
   id: string;
-  job_id: { address: string; date: string };
-  owner: string;
-  total_fee_execution: { total_fee: string; execution: string };
-  status: 'ongoing' | 'completed' | 'failed';
+  transaction_hash: {
+    address: string;
+    date: string;
+  };
+  transaction: { token: string; chain: string };
+  destination_transaction: { token: string; chain: string };
+  status: 'ongoing' | 'success' | 'failed';
 }
 
 const rows: Data[] = [
   {
     id: '1',
-    job_id: {
-      address: 'cscsc',
-      date: 'scc',
+    transaction_hash: {
+      address: '0xf8c929db...04f21d9b',
+      date: 'May 27, 2023, 24:12',
     },
-    owner: 'cscso',
-    total_fee_execution: {
-      total_fee: 'scsc',
-      execution: 'sscs',
+    transaction: {
+      token: '0.245 ETH',
+      chain: 'Goerli',
     },
-    status: 'ongoing',
+    destination_transaction: {
+      token: '0.245 ETH',
+      chain: 'Optimism',
+    },
+    status: 'success',
   },
 ];
 
@@ -127,28 +138,48 @@ export default function TransactionTable() {
                             borderColor: '#393939',
                           }}
                         >
-                          {column.id === 'owner' && (value as string)}
-                          {column.id === 'job_id' && (
+                          {column.id === 'transaction_hash' && (
                             <div>
-                              <span className='block'>
-                                {(value as Data['job_id']).address}
+                              <span className='block text-[#AFAEAE]'>
+                                <span className='text-white'>
+                                  {(value as Data['transaction_hash']).address}
+                                </span>
                               </span>
                               <span
-                                className='block
-                              text-[#AFAEAE]'
+                                className='mt-1 block
+                             text-[#AFAEAE]'
                               >
-                                {(value as Data['job_id']).date}
+                                {(value as Data['transaction_hash']).date}
                               </span>
                             </div>
                           )}
-                          {column.id === 'total_fee_execution' && (
+                          {column.id === 'transaction' && (
                             <div>
                               <span className='block text-[#AFAEAE]'>
-                                Total Fee :{' '}
+                                Token :{' '}
+                                <span className='text-white'>
+                                  {(value as Data['transaction']).token}
+                                </span>
+                              </span>
+                              <span
+                                className='mt-1 block
+                             text-[#AFAEAE]'
+                              >
+                                Chain :{' '}
+                                <span className='text-white'>
+                                  {(value as Data['transaction']).chain}
+                                </span>
+                              </span>
+                            </div>
+                          )}
+                          {column.id === 'destination_transaction' && (
+                            <div>
+                              <span className='block text-[#AFAEAE]'>
+                                Token :{' '}
                                 <span className='text-white'>
                                   {
-                                    (value as Data['total_fee_execution'])
-                                      .total_fee
+                                    (value as Data['destination_transaction'])
+                                      .token
                                   }
                                 </span>
                               </span>
@@ -156,18 +187,32 @@ export default function TransactionTable() {
                                 className='mt-1 block
                               text-[#AFAEAE]'
                               >
-                                Execution :{' '}
+                                Chain :{' '}
                                 <span className='text-white'>
                                   {
-                                    (value as Data['total_fee_execution'])
-                                      .execution
+                                    (value as Data['destination_transaction'])
+                                      .chain
                                   }
                                 </span>
                               </span>
                             </div>
                           )}
                           {column.id === 'status' && (
-                            <span>{value as string}</span>
+                            <UnstyledLink
+                              href='https://etherscan.io'
+                              onClick={(e) => {
+                                e.stopPropagation();
+                              }}
+                              className={clsxm(
+                                'block flex items-center justify-end',
+                                'capitalize',
+                                value === 'ongoing' && 'text-[#1867FD]',
+                                value === 'success' && 'text-[#00C1A3]'
+                              )}
+                            >
+                              {value as string}
+                              <LinkIcon />
+                            </UnstyledLink>
                           )}
                         </TableCell>
                       );

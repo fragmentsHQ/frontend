@@ -1,6 +1,20 @@
-query getAllJobs {
+query getAllJobs(
+  $block: Block_height
+  $first: Int = 100
+  $orderBy: JobCreated_orderBy
+  $orderDirection: OrderDirection
+  $skip: Int = 0
+  $subgraphError: _SubgraphErrorPolicy_! = deny
+  $where: JobCreated_filter
+) {
   jobCreateds(
-    where: { _taskCreator: "0x6d4b5acFB1C08127e8553CC41A9aC8F06610eFc7" }
+    block: $block
+    first: $first
+    orderBy: $orderBy
+    orderDirection: $orderDirection
+    skip: $skip
+    subgraphError: $subgraphError
+    where: $where
   ) {
     id
     transactionHash

@@ -8,6 +8,11 @@ import TablePagination from '@mui/material/TablePagination';
 import TableRow from '@mui/material/TableRow';
 import { useRouter } from 'next/router';
 import * as React from 'react';
+import { ImSpinner2 } from 'react-icons/im';
+
+import clsxm from '@/lib/clsxm';
+
+import UnstyledLink from '@/components/links/UnstyledLink';
 
 import { useGetAllJobsQuery } from '@/graphql/alljobs.generated';
 
@@ -44,24 +49,14 @@ interface Data {
   status: 'ongoing' | 'completed' | 'failed';
 }
 
-const rows: Data[] = [
-  {
-    id: '1',
-    job_id: {
-      address: 'cscsc',
-      date: 'scc',
-    },
-    owner: 'cscso',
-    total_fee_execution: {
-      total_fee: 'scsc',
-      execution: 'sscs',
-    },
-    status: 'ongoing',
-  },
-];
-
 export default function AllJobsTable() {
-  const { data, loading, error } = useGetAllJobsQuery();
+  const { data, loading } = useGetAllJobsQuery({
+    variables: {
+      where: {
+        _taskCreator: '0x6d4b5acFB1C08127e8553CC41A9aC8F06610eFc7',
+      },
+    },
+  });
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
   const handleChangePage = (event: unknown, newPage: number) => {
@@ -83,7 +78,7 @@ export default function AllJobsTable() {
     }
     const sortedData: Data[] = data.jobCreateds.map((job) => {
       return {
-        id: job._jobId,
+        id: job.id,
         job_id: { address: job._jobId, date: job._startTime },
         owner: job._taskCreator,
         status: 'ongoing',
@@ -126,7 +121,16 @@ export default function AllJobsTable() {
             </TableRow>
           </TableHead>
           <TableBody>
-            {loading && <TableRow>Loading...</TableRow>}
+            {loading && (
+              <TableRow>
+                <TableCell colSpan={12}>
+                  <div className='flex h-[300px] w-full w-full flex-col items-center justify-center'>
+                    <ImSpinner2 className='animate-spin' size={20} />
+                    <p className='mt-2'>Fetching Jobs.....</p>
+                  </div>
+                </TableCell>
+              </TableRow>
+            )}
             {filteredData &&
               filteredData
                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
@@ -194,7 +198,21 @@ export default function AllJobsTable() {
                               </div>
                             )}
                             {column.id === 'status' && (
-                              <span>{value as string}</span>
+                              <UnstyledLink
+                                href='https://etherscan.io'
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                }}
+                                className={clsxm(
+                                  'block flex items-center justify-end',
+                                  'capitalize',
+                                  value === 'ongoing' && 'text-[#1867FD]',
+                                  value === 'completed' && 'text-[#00C1A3]'
+                                )}
+                              >
+                                {value as string}
+                                <LinkIcon />
+                              </UnstyledLink>
                             )}
                           </TableCell>
                         );
@@ -221,3 +239,30 @@ export default function AllJobsTable() {
     </Paper>
   );
 }
+
+export const LinkIcon = () => {
+  return (
+    <svg
+      width='18'
+      height='18'
+      viewBox='0 0 18 18'
+      fill='none'
+      xmlns='http://www.w3.org/2000/svg'
+    >
+      <path
+        d='M5.25 12.75L12.75 5.25'
+        stroke='#AFAEAE'
+        stroke-width='2'
+        stroke-linecap='round'
+        stroke-linejoin='round'
+      />
+      <path
+        d='M5.25 5.25H12.75V12.75'
+        stroke='#AFAEAE'
+        stroke-width='2'
+        stroke-linecap='round'
+        stroke-linejoin='round'
+      />
+    </svg>
+  );
+};

@@ -2,14 +2,30 @@ import Button from '@mui/material/Button';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import * as React from 'react';
+import { useNetwork } from 'wagmi';
 
-export default function ChainMenu({ title }: { title: string }) {
+import {
+  Chain,
+  ISPRODUCTION,
+  NETWORKS,
+  TEST_NETWORKS,
+  TOKEN_ADDRESSES,
+} from '@/constants/constants';
+
+export default function ChainMenu({
+  onChainChange,
+}: {
+  onChainChange: (chain: Chain) => void;
+}) {
+  const [selectedChain, setSelectedChain] = React.useState<Chain | null>(null);
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
   };
-  const handleClose = () => {
+  const handleClose = (chain: Chain) => {
+    onChainChange(chain);
+    setSelectedChain(chain);
     setAnchorEl(null);
   };
 
@@ -25,7 +41,11 @@ export default function ChainMenu({ title }: { title: string }) {
           color: '#fff',
         }}
       >
-        {title}
+        {selectedChain ? (
+          selectedChain.chainName
+        ) : (
+          <span className='text-white text-opacity-20'>Select a chain</span>
+        )}
         <svg
           xmlns='http://www.w3.org/2000/svg'
           fill='none'
@@ -56,22 +76,45 @@ export default function ChainMenu({ title }: { title: string }) {
           horizontal: 'left',
         }}
       >
-        <MenuItem onClick={handleClose}>Profile</MenuItem>
-        <MenuItem onClick={handleClose}>My account</MenuItem>
-        <MenuItem onClick={handleClose}>Logout</MenuItem>
+        {Object.values(ISPRODUCTION ? NETWORKS : TEST_NETWORKS).map(
+          (chain, index) => (
+            <MenuItem onClick={() => handleClose(chain)} key={index}>
+              {chain.chainName}
+            </MenuItem>
+          )
+        )}
       </Menu>
     </div>
   );
 }
-export function TokenMenu({ title }: { title: string }) {
+
+export type Token = {
+  name: string;
+  address: string;
+  decimals: number;
+  logo: string;
+};
+export function TokenMenu({
+  onTokenChange,
+}: {
+  onTokenChange: (token: Token) => void;
+}) {
+  const { chain } = useNetwork();
+  const [selectedToken, setSelectedToken] = React.useState<Token | null>(null);
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
   };
-  const handleClose = () => {
+  const handleClose = (token: Token) => {
+    onTokenChange(token);
+    setSelectedToken(token);
     setAnchorEl(null);
   };
+
+  if (!chain?.id) {
+    return null;
+  }
 
   return (
     <div>
@@ -85,7 +128,11 @@ export function TokenMenu({ title }: { title: string }) {
           color: '#fff',
         }}
       >
-        {title}
+        {selectedToken ? (
+          selectedToken.name
+        ) : (
+          <span className='text-white text-opacity-20'>Select a token</span>
+        )}
         <svg
           xmlns='http://www.w3.org/2000/svg'
           fill='none'
@@ -116,9 +163,11 @@ export function TokenMenu({ title }: { title: string }) {
           horizontal: 'left',
         }}
       >
-        <MenuItem onClick={handleClose}>Profile</MenuItem>
-        <MenuItem onClick={handleClose}>My account</MenuItem>
-        <MenuItem onClick={handleClose}>Logout</MenuItem>
+        {Object.values(TOKEN_ADDRESSES[chain?.id]).map((token, index) => (
+          <MenuItem onClick={() => handleClose(token)} key={index}>
+            {token.name}
+          </MenuItem>
+        ))}
       </Menu>
     </div>
   );

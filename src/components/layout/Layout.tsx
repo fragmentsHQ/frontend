@@ -1,7 +1,6 @@
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import * as React from 'react';
 
-import AuthProvider from '@/components/AuthProvider';
 import BgImages from '@/components/BgImages';
 import Navbar from '@/components/Navbar';
 import { Providers } from '@/components/Providers';
@@ -28,12 +27,10 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     <ApolloProvider client={apolloClient}>
       <ThemeProvider theme={darkTheme}>
         <Providers>
-          <AuthProvider>
-            <Navbar />
-            <Seo />
-            <BgImages />
-            {children}
-          </AuthProvider>
+          <Navbar />
+          <Seo />
+          <BgImages />
+          {children}
         </Providers>
       </ThemeProvider>
     </ApolloProvider>

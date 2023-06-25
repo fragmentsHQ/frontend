@@ -25,6 +25,7 @@ interface AuthData {
   sourceToken: token | null;
   appMode: 'Auto Pay' | 'xStream';
   setSourceToken: (token: token) => void;
+  handleSourceToken: (token: token) => void;
   setAppMode: (mode: 'Auto Pay' | 'xStream') => void;
   selectedCategory: Category | null;
   setSelectedCategory: React.Dispatch<React.SetStateAction<Category | null>>;
@@ -99,6 +100,11 @@ const AuthProvider = ({ children }: Props) => {
     instructions: '',
   });
 
+  const handleSourceToken = (_token: token) => {
+    console.log(_token, 'Sscomcosm');
+    setSourceToken(_token);
+  };
+
   console.log('AuthProvider', {
     address,
     isConnected,
@@ -122,6 +128,7 @@ const AuthProvider = ({ children }: Props) => {
         appMode: appMode,
         setSourceToken: setSourceToken,
         setAppMode: setAppMode,
+        handleSourceToken: handleSourceToken,
         selectedCategory: selectedCategory,
         setSelectedCategory: setSelectedCategory,
         dataRows: dataRows,

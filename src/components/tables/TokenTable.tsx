@@ -51,17 +51,10 @@ interface Data {
 const rows: Data[] = [
   {
     id: '1',
-    to_address: '0x0F5D2........68908cC942',
-    destination_token: 'USDC',
-    amount_of_source_token: '303',
-    destination_chain: 'Polygon',
-  },
-  {
-    id: '2',
-    to_address: '0x0F5D2........68908cC942',
-    destination_token: 'USDC',
-    amount_of_source_token: '303',
-    destination_chain: 'Polygon',
+    to_address: '',
+    destination_token: '',
+    amount_of_source_token: '',
+    destination_chain: '',
   },
 ];
 
@@ -130,14 +123,40 @@ export default function TokenTable() {
                           }}
                         >
                           {column.id === 'destination_chain' && (
-                            <ChainMenu title={value as string} />
+                            <ChainMenu
+                              onChainChange={(chain) => {
+                                const newdata = enteredRows.map((er) => {
+                                  return er.id === row.id
+                                    ? {
+                                        ...er,
+                                        destination_chain: chain.chainName,
+                                      }
+                                    : er;
+                                });
+                                setEnteredRows(newdata);
+                              }}
+                            />
                           )}
                           {column.id === 'destination_token' && (
-                            <TokenMenu title={value as string} />
+                            <TokenMenu
+                              onTokenChange={(token) => {
+                                const newdata = enteredRows.map((er) => {
+                                  return er.id === row.id
+                                    ? {
+                                        ...er,
+                                        destination_token: token.name,
+                                      }
+                                    : er;
+                                });
+                                setEnteredRows(newdata);
+                              }}
+                            />
                           )}
                           {column.id === 'to_address' && (
                             <TokenInput
                               value={value as string}
+                              placeholder='Enter Address'
+                              className='text-start placeholder:text-white placeholder:text-opacity-20'
                               onChange={(e) => {
                                 const newdata = enteredRows.map((er) => {
                                   return er.id === row.id
@@ -154,6 +173,8 @@ export default function TokenTable() {
                           {column.id === 'amount_of_source_token' && (
                             <TokenInput
                               value={value as string}
+                              placeholder='Enter amount'
+                              className='placeholder:text-white placeholder:text-opacity-20'
                               onChange={(e) => {
                                 const newdata = enteredRows.map((er) => {
                                   return er.id === row.id

@@ -4,6 +4,7 @@
 import { Tab } from '@headlessui/react';
 import { Dropdown, MenuItem } from '@heathmont/moon-core-tw';
 import { switchNetwork } from '@wagmi/core';
+import Image from 'next/image';
 import React, { useContext, useEffect, useState } from 'react';
 import { useNetwork } from 'wagmi';
 
@@ -37,6 +38,7 @@ const Main = () => {
     setSourceToken,
     appMode,
     setAppMode,
+    handleSourceToken,
     selectedCategory,
     setSelectedCategory,
     dataRows,
@@ -79,7 +81,7 @@ const Main = () => {
     }
   }, [dataRows, showThisSection]);
 
-  console.log('here: ', chain);
+  console.log('here: ', sourceToken);
   return (
     <Layout>
       <div className='m-auto max-w-[67rem] px-10 py-8'>
@@ -103,13 +105,13 @@ const Main = () => {
                       open={open}
                       label='Source Chain'
                       placeholder='Choose a Chain'
-                      className='bg-[#262229]'
+                      className='bg-[#262229] py-2'
                     >
                       {chain?.name && (
                         <div className='flex items-center gap-2'>
                           {chain?.id && (
-                            <img
-                              className='h-[1.2rem] w-[1.2rem] rounded-full'
+                            <Image
+                              className='h-[1.5rem] w-[1.5rem] rounded-full'
                               src={TEST_NETWORKS[chain?.id]?.logo}
                               alt='chain logo'
                             />
@@ -130,14 +132,16 @@ const Main = () => {
                                     isActive={active}
                                     isSelected={selected}
                                   >
-                                    <img
-                                      className='h-[1.2rem] w-[1.2rem]'
-                                      src={network?.logo}
-                                      alt='token logo'
-                                    />
-                                    <MenuItem.Title>
-                                      {network?.chainName}
-                                    </MenuItem.Title>
+                                    <div className='flex items-center justify-start space-x-2'>
+                                      <Image
+                                        className='h-[1.5rem] w-[1.5rem] rounded-full'
+                                        src={network?.logo}
+                                        alt='token logo'
+                                      />
+                                      <MenuItem.Title>
+                                        {network?.chainName}
+                                      </MenuItem.Title>
+                                    </div>
                                   </MenuItem>
                                 );
                               }}
@@ -150,12 +154,17 @@ const Main = () => {
               </Dropdown>
               <Dropdown
                 value={sourceToken}
-                onChange={(e: any) => {
+                onChange={(e) => {
                   setShowThisSection({
                     ...showThisSection,
                     0: true,
                   });
-                  setSourceToken(e);
+                  setSourceToken({
+                    name: e.name,
+                    address: e.address,
+                    decimals: e.decimals,
+                    logo: e.logo,
+                  });
                 }}
               >
                 {({ open }) => (
@@ -163,23 +172,27 @@ const Main = () => {
                     <Dropdown.Select
                       open={open}
                       label='From Token'
-                      placeholder='Choose a token'
-                      className=' bg-[#262229]'
+                      placeholder='Choose a Token'
+                      className='bg-[#262229] py-2'
                     >
                       {sourceToken && (
                         <div className='flex items-center gap-2'>
-                          <img
-                            className='h-[1.2rem] w-[1.2rem] rounded-full'
-                            src={sourceToken?.logo}
-                            alt='token logo'
-                          />
-                          {sourceToken.address}
+                          {sourceToken?.logo && (
+                            <div className='relative h-[1.5rem] w-[1.5rem] rounded-full'>
+                              <Image
+                                src={sourceToken?.logo}
+                                alt='token logo'
+                                fill
+                              />
+                            </div>
+                          )}
+                          {sourceToken?.name}
                         </div>
                       )}
                     </Dropdown.Select>
                     <Dropdown.Options className='z-[10] rounded-lg bg-[#262229]'>
                       {chain?.id
-                        ? Object?.keys(TOKEN_ADDRESSES[chain?.id]).map(
+                        ? Object?.values(TOKEN_ADDRESSES[chain.id]).map(
                             (token, index) => (
                               <Dropdown.Option value={token} key={index}>
                                 {({ selected, active }) => {
@@ -188,13 +201,19 @@ const Main = () => {
                                       isActive={active}
                                       isSelected={selected}
                                     >
-                                      <img
-                                        className='h-[1.2rem] w-[1.2rem]'
-                                        // @ts-ignore
-                                        src={token?.logo}
-                                        alt='token logo'
-                                      />
-                                      <MenuItem.Title>{token}</MenuItem.Title>
+                                      <div className='flex items-center justify-start space-x-2'>
+                                        <div className='relative h-[1.5rem] w-[1.5rem] rounded-full'>
+                                          <Image
+                                            src={token?.logo}
+                                            alt='token logo'
+                                            fill
+                                          />
+                                        </div>
+
+                                        <MenuItem.Title>
+                                          {token.name}
+                                        </MenuItem.Title>
+                                      </div>
                                     </MenuItem>
                                   );
                                 }}
