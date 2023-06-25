@@ -27,8 +27,8 @@ const AUTOPAY_CONTRACT_ADDRESSES: ContractAddresses = {
     bsc: "0x",
   },
   testnets: {
-    maticmum: "0x7f464d4f3D46552F936cb68c21a0A2dB3E32919F",
-    goerli: "0xa8e3315ce15caddb4616aefd073e4cbf002c5d73",
+    80001: "0x7f464d4f3D46552F936cb68c21a0A2dB3E32919F",
+    5: "0xa8e3315ce15caddb4616aefd073e4cbf002c5d73",
   },
 };
 
@@ -41,8 +41,8 @@ const CONDITIONAL_CONTRACT_ADDRESSES: ContractAddresses = {
     bsc: "0x",
   },
   testnets: {
-    maticmum: "0x927CFeBA7c83f2626ca09A815Bce899190Cb5800",
-    goerli: "0xDc7EcF12CFf43ea2d40Ad475b6BB0C5Fe6dD368A",
+    800001: "0x927CFeBA7c83f2626ca09A815Bce899190Cb5800",
+    5: "0xDc7EcF12CFf43ea2d40Ad475b6BB0C5Fe6dD368A",
   },
 };
 
@@ -55,8 +55,8 @@ const TREASURY_CONTRACT_ADDRESSES: ContractAddresses = {
     bsc: "0x",
   },
   testnets: {
-    polygonMumbai: "0x1Ff5C1D4713772C5AA17d551039d9599Bc65C31C",
-    goerli: "0x6e2b6959c81183dCe1EB5819E573092bee28511b",
+    800001: "0x1Ff5C1D4713772C5AA17d551039d9599Bc65C31C",
+    5: "0x6e2b6959c81183dCe1EB5819E573092bee28511b",
   },
 };
 

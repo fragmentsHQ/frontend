@@ -87,7 +87,7 @@ const AuthProvider = ({ children }: Props) => {
         },
     ]);
 
-    console.log("AuthProvider", { address, isConnected, chain, viewChain, sourceToken, appMode });
+    console.log("AuthProvider", { address, isConnected, chain, viewChain, sourceToken, appMode , dataRows, });
 
     return (
         <AuthContext.Provider

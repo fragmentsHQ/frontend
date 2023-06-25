@@ -43,7 +43,6 @@ const useAutoPayContract = () => {
 
     const [startTime, setStartTime] = useState<string | null>("");
     const [cycles, setCycles] = useState<string | null>("");
-    const [isOpen, setIsOpen] = useState(false);
     const [intervalCount, setIntervalCount] = useState("1");
     const [intervalType, setIntervalType] = useState<Options | null>({
         value: "days",

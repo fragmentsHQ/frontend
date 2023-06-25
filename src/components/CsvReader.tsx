@@ -14,6 +14,8 @@ import {
 import { Button, Dropdown, MenuItem } from "@heathmont/moon-core-tw";
 import { ArrowUpCircleIcon, CheckIcon } from "@heroicons/react/20/solid";
 
+import { getNetwork } from '@wagmi/core'
+
 import {
     AUTOPAY_CONTRACT_ADDRESSES,
     TOKEN_ADDRESSES,
@@ -56,7 +58,7 @@ const headers = [
 
 const CsvReader = ({ dataRows, setDataRows, currentPage, setCurrentPage, pageSize, setPageSize }: Props) => {
     const { CSVReader } = useCSVReader();
-    const { chain } = useNetwork();
+    const { chain, chains } = getNetwork()
     return (
         <div className="rounded-xl bg-[#282828] p-5">
             <CSVReader
@@ -306,7 +308,7 @@ const CsvReader = ({ dataRows, setDataRows, currentPage, setCurrentPage, pageSiz
                                                                                                     src={`/logo/chains/${chain}.png`}
                                                                                                 />
                                                                                                 <MenuItem.Title>
-                                                                                                    {chain}
+                                                                                                    {chain?.name}
                                                                                                 </MenuItem.Title>
                                                                                             </MenuItem>
                                                                                         );
