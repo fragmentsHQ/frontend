@@ -20,7 +20,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   // Put Header or Footer Here
 
   const apolloClient = new ApolloClient({
-    uri: process.env.NEXT_PUBLIC_GRAPH_URI,
+    uri: 'https://api.studio.thegraph.com/proxy/18071/fragments/version/latest',
     cache: new InMemoryCache(),
   });
 

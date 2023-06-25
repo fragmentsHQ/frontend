@@ -24,6 +24,8 @@ import {
   useSendTransaction,
 } from 'wagmi';
 
+import Layout from '@/components/layout/Layout';
+
 import {
   ETH,
   TREASURY_CONTRACT,
@@ -253,169 +255,171 @@ const Profile = () => {
   };
 
   return (
-    <div className='m-auto max-w-[67rem] px-10 py-8'>
-      <button
-        onClick={() => router.push('/')}
-        className='flex items-center gap-2 text-sm text-[#AFAEAE]'
-      >
-        <ArrowLeftIcon className='w-4' />
-        Back
-      </button>
-      <div className='mt-8 flex items-center justify-between'>
-        <div className='flex flex-col gap-2'>
-          <div className='flex items-end gap-6'>
-            <span className='text-3xl font-bold'>$ {balanceDollar}</span>
-            <span className='text-lg font-medium'>{balanceEth} ETH</span>
-          </div>
-          <div>
-            <div className='text-[#AFAEAE]'>Your account balance</div>
-            <div className='text-[#AFAEAE]'>
-              Set low balance alerts (coming soon)
+    <Layout>
+      <div className='m-auto max-w-[67rem] px-10 py-8'>
+        <button
+          onClick={() => router.push('/')}
+          className='flex items-center gap-2 text-sm text-[#AFAEAE]'
+        >
+          <ArrowLeftIcon className='w-4' />
+          Back
+        </button>
+        <div className='mt-8 flex items-center justify-between'>
+          <div className='flex flex-col gap-2'>
+            <div className='flex items-end gap-6'>
+              <span className='text-3xl font-bold'>$ {balanceDollar}</span>
+              <span className='text-lg font-medium'>{balanceEth} ETH</span>
+            </div>
+            <div>
+              <div className='text-[#AFAEAE]'>Your account balance</div>
+              <div className='text-[#AFAEAE]'>
+                Set low balance alerts (coming soon)
+              </div>
             </div>
           </div>
+          <div className='inline-flex items-center justify-center gap-2 rounded-xl border border-solid border-[#464646] px-4 py-2 font-medium'>
+            <img
+              className='w-5 rounded-full'
+              src={`/logo/chains/${chain?.network}.png`}
+            />
+            Ethereum
+          </div>
         </div>
-        <div className='inline-flex items-center justify-center gap-2 rounded-xl border border-solid border-[#464646] px-4 py-2 font-medium'>
-          <img
-            className='w-5 rounded-full'
-            src={`/logo/chains/${chain?.network}.png`}
-          />
-          Ethereum
-        </div>
-      </div>
-      <div className='mt-9'>
-        <Tab.Group>
-          <Tab.List className='flex w-[13rem] gap-[1px] space-x-1 rounded-xl bg-[#464646] p-[5px]'>
-            {Object.keys(panels).map((category) => (
-              <Tab
-                key={category}
-                className={({ selected }) =>
-                  classNames(
-                    'w-full rounded-xl py-2.5 text-sm font-medium leading-5 text-white',
-                    selectedCategory === category
-                      ? 'bg-[#2E2E2E] shadow'
-                      : ' hover:bg-white/[0.12] hover:text-white'
-                  )
-                }
-                onClick={() => {
-                  setSelectedCategory(category);
-                }}
-              >
-                {category}
-              </Tab>
-            ))}
-          </Tab.List>
-          <Tab.Panels className='mt-6 '>
-            {Object.values(panels).map((panel, idx) => (
-              <Tab.Panel
-                key={idx}
-                // className={classNames("rounded-xl  bg-[#282828] p-5")}
-              >
-                {panel}
-              </Tab.Panel>
-            ))}
-          </Tab.Panels>
-        </Tab.Group>
-      </div>
-      <div className='mt-[7rem]'>
-        <div className='flex items-center justify-between'>
-          <div className='text-3xl font-bold'>History</div>
+        <div className='mt-9'>
           <Tab.Group>
-            <Tab.List className='flex w-[17rem] gap-[1px] space-x-1 rounded-xl bg-[#464646] p-[5px]'>
-              {['All', 'Deposits', 'Withdrawals'].map((category) => (
+            <Tab.List className='flex w-[13rem] gap-[1px] space-x-1 rounded-xl bg-[#464646] p-[5px]'>
+              {Object.keys(panels).map((category) => (
                 <Tab
                   key={category}
                   className={({ selected }) =>
                     classNames(
-                      'w-full rounded-xl px-4 py-2.5 text-sm font-medium leading-5 text-white',
-                      selectedTableCategory === category
+                      'w-full rounded-xl py-2.5 text-sm font-medium leading-5 text-white',
+                      selectedCategory === category
                         ? 'bg-[#2E2E2E] shadow'
                         : ' hover:bg-white/[0.12] hover:text-white'
                     )
                   }
                   onClick={() => {
-                    setSelectedTableCategory(category);
+                    setSelectedCategory(category);
                   }}
                 >
                   {category}
                 </Tab>
               ))}
             </Tab.List>
+            <Tab.Panels className='mt-6 '>
+              {Object.values(panels).map((panel, idx) => (
+                <Tab.Panel
+                  key={idx}
+                  // className={classNames("rounded-xl  bg-[#282828] p-5")}
+                >
+                  {panel}
+                </Tab.Panel>
+              ))}
+            </Tab.Panels>
           </Tab.Group>
         </div>
-        <div className='mt-4 bg-[#282828] p-5'>
-          <DataTable
-            rows={dataRows.slice(
-              (currentPage - 1) * pageSize,
-              (currentPage - 1) * pageSize + pageSize
-            )}
-            headers={headers}
-          >
-            {({
-              rows,
-              headers,
-              getTableProps,
-              getHeaderProps,
-              getRowProps,
-            }) => (
-              <Table className='overflow-visible' {...getTableProps()}>
-                <TableHead align='center'>
-                  <TableRow>
-                    {headers.map((header) => (
-                      <TableHeader {...getHeaderProps({ header })}>
-                        {header.header}
-                      </TableHeader>
-                    ))}
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {rows.map((row, rowIdx) => (
-                    <TableRow {...getRowProps({ row })} key={rowIdx}>
-                      {(() => {
-                        return row.cells.map((cell) => {
-                          return (
-                            <TableCell>
-                              {cell.id.includes('date') ? (
-                                <div className='text-[#AFAEAE]'>
-                                  {getEclipsedText(cell.value)}
-                                </div>
-                              ) : cell.id.includes('txnHash') ? (
-                                <div>{getEclipsedText(cell.value)}</div>
-                              ) : cell.id.includes('status') ? (
-                                <div className='text-[#00FFA9]'>
-                                  {cell.value}
-                                </div>
-                              ) : cell.id.includes('txnAmount') ? (
-                                <div>{cell.value}</div>
-                              ) : cell.id.includes('gasPaid') ? (
-                                <div>{cell.value}</div>
-                              ) : null}
-                            </TableCell>
-                          );
-                        });
-                      })()}
+        <div className='mt-[7rem]'>
+          <div className='flex items-center justify-between'>
+            <div className='text-3xl font-bold'>History</div>
+            <Tab.Group>
+              <Tab.List className='flex w-[17rem] gap-[1px] space-x-1 rounded-xl bg-[#464646] p-[5px]'>
+                {['All', 'Deposits', 'Withdrawals'].map((category) => (
+                  <Tab
+                    key={category}
+                    className={({ selected }) =>
+                      classNames(
+                        'w-full rounded-xl px-4 py-2.5 text-sm font-medium leading-5 text-white',
+                        selectedTableCategory === category
+                          ? 'bg-[#2E2E2E] shadow'
+                          : ' hover:bg-white/[0.12] hover:text-white'
+                      )
+                    }
+                    onClick={() => {
+                      setSelectedTableCategory(category);
+                    }}
+                  >
+                    {category}
+                  </Tab>
+                ))}
+              </Tab.List>
+            </Tab.Group>
+          </div>
+          <div className='mt-4 bg-[#282828] p-5'>
+            <DataTable
+              rows={dataRows.slice(
+                (currentPage - 1) * pageSize,
+                (currentPage - 1) * pageSize + pageSize
+              )}
+              headers={headers}
+            >
+              {({
+                rows,
+                headers,
+                getTableProps,
+                getHeaderProps,
+                getRowProps,
+              }) => (
+                <Table className='overflow-visible' {...getTableProps()}>
+                  <TableHead align='center'>
+                    <TableRow>
+                      {headers.map((header) => (
+                        <TableHeader {...getHeaderProps({ header })}>
+                          {header.header}
+                        </TableHeader>
+                      ))}
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            )}
-          </DataTable>
-          <Pagination
-            backwardText='Previous page'
-            forwardText='Next page'
-            itemsPerPageText='Items per page:'
-            onChange={(e) => {
-              setPageSize(e.pageSize);
-              setCurrentPage(e.page);
-            }}
-            page={currentPage}
-            pageSize={pageSize}
-            pageSizes={[10, 20, 30, 40, 50]}
-            totalItems={dataRows.length}
-            // className="w-full"
-          />
+                  </TableHead>
+                  <TableBody>
+                    {rows.map((row, rowIdx) => (
+                      <TableRow {...getRowProps({ row })} key={rowIdx}>
+                        {(() => {
+                          return row.cells.map((cell) => {
+                            return (
+                              <TableCell>
+                                {cell.id.includes('date') ? (
+                                  <div className='text-[#AFAEAE]'>
+                                    {getEclipsedText(cell.value)}
+                                  </div>
+                                ) : cell.id.includes('txnHash') ? (
+                                  <div>{getEclipsedText(cell.value)}</div>
+                                ) : cell.id.includes('status') ? (
+                                  <div className='text-[#00FFA9]'>
+                                    {cell.value}
+                                  </div>
+                                ) : cell.id.includes('txnAmount') ? (
+                                  <div>{cell.value}</div>
+                                ) : cell.id.includes('gasPaid') ? (
+                                  <div>{cell.value}</div>
+                                ) : null}
+                              </TableCell>
+                            );
+                          });
+                        })()}
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
+            </DataTable>
+            <Pagination
+              backwardText='Previous page'
+              forwardText='Next page'
+              itemsPerPageText='Items per page:'
+              onChange={(e) => {
+                setPageSize(e.pageSize);
+                setCurrentPage(e.page);
+              }}
+              page={currentPage}
+              pageSize={pageSize}
+              pageSizes={[10, 20, 30, 40, 50]}
+              totalItems={dataRows.length}
+              // className="w-full"
+            />
+          </div>
         </div>
       </div>
-    </div>
+    </Layout>
   );
 };
 

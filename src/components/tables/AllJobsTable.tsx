@@ -15,6 +15,7 @@ interface Column {
   id: 'job_id' | 'owner' | 'total_fee_execution' | 'status';
   label: string;
   minWidth?: number;
+  maxWidth?: number;
   align?: 'right';
 }
 
@@ -62,7 +63,7 @@ const rows: Data[] = [
 export default function AllJobsTable() {
   const { data, loading, error } = useGetAllJobsQuery();
   const [page, setPage] = React.useState(0);
-  const [rowsPerPage, setRowsPerPage] = React.useState(10);
+  const [rowsPerPage, setRowsPerPage] = React.useState(5);
   const handleChangePage = (event: unknown, newPage: number) => {
     setPage(newPage);
   };
@@ -75,10 +76,22 @@ export default function AllJobsTable() {
   };
 
   const router = useRouter();
-  console.log(data);
-  console.log('====================================');
-  console.log('ss', data, error);
-  console.log('====================================');
+
+  const filteredData: Data[] = React.useMemo(() => {
+    if (loading || !data) {
+      return [];
+    }
+    const sortedData: Data[] = data.jobCreateds.map((job) => {
+      return {
+        id: job._jobId,
+        job_id: { address: job._jobId, date: job._startTime },
+        owner: job._taskCreator,
+        status: 'ongoing',
+        total_fee_execution: { execution: job._amount, total_fee: job._amount },
+      };
+    });
+    return sortedData;
+  }, [loading, data]);
   return (
     <Paper
       sx={{
@@ -100,6 +113,8 @@ export default function AllJobsTable() {
                   align={column.align}
                   style={{
                     minWidth: column.minWidth,
+                    maxWidth: 240,
+                    overflow: 'hidden',
                     color: '#ffff',
                     borderColor: '#393939',
                     backgroundColor: '#464646',
@@ -111,87 +126,93 @@ export default function AllJobsTable() {
             </TableRow>
           </TableHead>
           <TableBody>
-            {rows
-              .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-              .map((row, index) => {
-                return (
-                  <TableRow hover role='checkbox' tabIndex={-1} key={index}>
-                    {columns.map((column) => {
-                      const value = row[column.id];
-                      return (
-                        <TableCell
-                          key={column.id}
-                          align={column.align}
-                          onClick={() => {
-                            const path = '/job/' + row.id;
-                            router.push(path);
-                          }}
-                          style={{
-                            cursor: 'pointer',
-                            color: '#fff',
-                            backgroundColor: '#282828',
-                            borderColor: '#393939',
-                          }}
-                        >
-                          {column.id === 'owner' && (value as string)}
-                          {column.id === 'job_id' && (
-                            <div>
-                              <span className='block'>
-                                {(value as Data['job_id']).address}
-                              </span>
-                              <span
-                                className='block
-                              text-[#AFAEAE]'
-                              >
-                                {(value as Data['job_id']).date}
-                              </span>
-                            </div>
-                          )}
-                          {column.id === 'total_fee_execution' && (
-                            <div>
-                              <span className='block text-[#AFAEAE]'>
-                                Total Fee :{' '}
-                                <span className='text-white'>
-                                  {
-                                    (value as Data['total_fee_execution'])
-                                      .total_fee
-                                  }
+            {loading && <TableRow>Loading...</TableRow>}
+            {filteredData &&
+              filteredData
+                .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                .map((row, index) => {
+                  return (
+                    <TableRow hover role='checkbox' tabIndex={-1} key={index}>
+                      {columns.map((column) => {
+                        const value = row[column.id];
+                        return (
+                          <TableCell
+                            key={column.id}
+                            align={column.align}
+                            onClick={() => {
+                              const path = '/job/' + row.id;
+                              router.push(path);
+                            }}
+                            style={{
+                              cursor: 'pointer',
+                              color: '#fff',
+                              backgroundColor: '#282828',
+                              borderColor: '#393939',
+                            }}
+                          >
+                            {column.id === 'owner' && (
+                              <div className='w-[200px] truncate'>
+                                {value as string}
+                              </div>
+                            )}
+                            {column.id === 'job_id' && (
+                              <div className=''>
+                                <span className='block w-[200px] truncate'>
+                                  {(value as Data['job_id']).address}
                                 </span>
-                              </span>
-                              <span
-                                className='mt-1 block
+                                <span
+                                  className='block
                               text-[#AFAEAE]'
-                              >
-                                Execution :{' '}
-                                <span className='text-white'>
-                                  {
-                                    (value as Data['total_fee_execution'])
-                                      .execution
-                                  }
+                                >
+                                  {(value as Data['job_id']).date}
                                 </span>
-                              </span>
-                            </div>
-                          )}
-                          {column.id === 'status' && (
-                            <span>{value as string}</span>
-                          )}
-                        </TableCell>
-                      );
-                    })}
-                  </TableRow>
-                );
-              })}
+                              </div>
+                            )}
+                            {column.id === 'total_fee_execution' && (
+                              <div>
+                                <span className='block text-[#AFAEAE]'>
+                                  Total Fee :{' '}
+                                  <span className='text-white'>
+                                    {
+                                      (value as Data['total_fee_execution'])
+                                        .total_fee
+                                    }
+                                  </span>
+                                </span>
+                                <span
+                                  className='mt-1 block
+                              text-[#AFAEAE]'
+                                >
+                                  Execution :{' '}
+                                  <span className='text-white'>
+                                    {
+                                      (value as Data['total_fee_execution'])
+                                        .execution
+                                    }
+                                  </span>
+                                </span>
+                              </div>
+                            )}
+                            {column.id === 'status' && (
+                              <span>{value as string}</span>
+                            )}
+                          </TableCell>
+                        );
+                      })}
+                    </TableRow>
+                  );
+                })}
           </TableBody>
         </Table>
       </TableContainer>
       <TablePagination
-        rowsPerPageOptions={[2, 5, 10]}
+        rowsPerPageOptions={[2, 5]}
         component='div'
         style={{
           backgroundColor: '#282828',
         }}
         className='text-white'
-        count={rows.length}
+        count={data?.jobCreateds.length || 30}
         rowsPerPage={rowsPerPage}
         page={page}
         onPageChange={handleChangePage}

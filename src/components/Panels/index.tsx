@@ -3,9 +3,9 @@ import { Button } from '@heathmont/moon-core-tw';
 import React, { useContext, useState } from 'react';
 
 import { AuthContext } from '@/components/AuthProvider';
+import TokenTable from '@/components/tables/TokenTable';
 
 import TimePanel from './TimePanel';
-import CsvReader from '../CsvReader';
 import useAutoPayContract from '../../hooks/useAutopayContract';
 import { AppModes, Category, GasModes } from '../../types/types';
 
@@ -127,14 +127,15 @@ const Panels = ({
           showThisSection[2] ? 'opacity-100' : ' opacity-0'
         )}
       >
-        <CsvReader
+        {/* <CsvReader
           dataRows={dataRows}
           setDataRows={setDataRows}
           currentPage={currentPage}
           setCurrentPage={setCurrentPage}
           pageSize={pageSize}
           setPageSize={setPageSize}
-        />
+        /> */}
+        <TokenTable />
       </div>
 
       {/* ------------------------------------ GAS MODES ------------------------------------- */}
