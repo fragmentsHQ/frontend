@@ -9,12 +9,18 @@ import TableRow from '@mui/material/TableRow';
 import { useRouter } from 'next/router';
 import * as React from 'react';
 import { ImSpinner2 } from 'react-icons/im';
+import { useAccount } from 'wagmi';
 
 import clsxm from '@/lib/clsxm';
 
 import UnstyledLink from '@/components/links/UnstyledLink';
 
 import { useGetAllJobsQuery } from '@/graphql/alljobs.generated';
+
+import {
+  JobCreated_OrderBy,
+  OrderDirection,
+} from '../../graphql/alljobs.generated';
 
 interface Column {
   id: 'job_id' | 'owner' | 'total_fee_execution' | 'status';
@@ -50,11 +56,14 @@ interface Data {
 }
 
 export default function AllJobsTable() {
+  const { address } = useAccount();
   const { data, loading } = useGetAllJobsQuery({
     variables: {
       where: {
-        _taskCreator: '0x6d4b5acFB1C08127e8553CC41A9aC8F06610eFc7',
+        _taskCreator: address,
       },
+      orderBy: JobCreated_OrderBy.BlockTimestamp,
+      orderDirection: OrderDirection.Desc,
     },
   });
   const [page, setPage] = React.useState(0);
