@@ -97,15 +97,22 @@ const NETWORKS: {
 };
 
 const TEST_NETWORKS: {
-  [key: number]: { chainId: number; chainName: string; logo: string };
+  [key: number]: {
+    chainId: number;
+    chainName: string;
+    slug: string;
+    logo: string;
+  };
 } = {
   5: {
     chainId: 5,
     chainName: 'Goerli',
+    slug: 'goerli',
     logo: require('../../public/logo/chains/Goerli.png'),
   },
   80001: {
     chainId: 80001,
+    slug: 'polygonMumbai',
     chainName: 'Mumbai Testnet',
     logo: require('../../public/logo/chains/polygonMumbai.png'),
   },
@@ -162,9 +169,15 @@ const TOKEN_ADDRESSES: {
     },
   },
   5: {
-    TEST: {
-      name: 'TEST',
-      address: '0x7ea6eA49B0b0Ae9c5db7907d139D9Cd3439862a1',
+    USDC: {
+      name: 'USDC',
+      address: '0x07865c6E87B9F70255377e024ace6630C1Eaa37F',
+      decimals: 18,
+      logo: 'https://testnet.connextscan.io/logos/logo.png',
+    },
+    WETH: {
+      name: 'WETH',
+      address: '0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6',
       decimals: 18,
       logo: 'https://testnet.connextscan.io/logos/logo.png',
     },
@@ -178,10 +191,15 @@ const TOKEN_ADDRESSES: {
     },
   },
   80001: {
-    TEST: {
-      name: 'TEST',
-
-      address: '0xeDb95D8037f769B72AAab41deeC92903A98C9E16',
+    USDC: {
+      name: 'USDC',
+      address: '0x0FA8781a83E46826621b3BC094Ea2A0212e71B23',
+      decimals: 18,
+      logo: 'https://testnet.connextscan.io/logos/logo.png',
+    },
+    WETH: {
+      name: 'WETH',
+      address: '0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619',
       decimals: 18,
       logo: 'https://testnet.connextscan.io/logos/logo.png',
     },

@@ -1,28 +1,31 @@
-import React, { useContext } from 'react'
-import { Loader } from '@heathmont/moon-core-tw';
-import { AuthContext } from '../app/providers/AuthProvider'
-import Modal from "./Modal";
-type Props = {}
+import Backdrop from '@mui/material/Backdrop';
+import CircularProgress from '@mui/material/CircularProgress';
+import * as React from 'react';
 
-const AppLoader = (props: Props) => {
-    const { isLoading, setIsLoading } = useContext(AuthContext);
-    return (
-        <Modal
-            open={!isLoading.loading}
-            onClose={() => setIsLoading(false)}
-        >
-            <div>
-                <Loader />
-                {isLoading.instructions && <p className="text-white text-center">{isLoading.instructions}</p>}
-                {
-                    isLoading.message && <p className="text-white text-center">{isLoading.message}</p>
-                }
+import useGlobalStore, { initialTransactionState } from '@/store';
 
+export default function Loader() {
+  const { transactionState, setTransactionState } = useGlobalStore();
+  const handleClose = () => {
+    setTransactionState(initialTransactionState);
+  };
 
-            </div>
+  return (
+    <div>
+      <Backdrop
+        sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
+        open={transactionState.isOpen}
+        onClick={handleClose}
+      >
+        <CircularProgress color='inherit' />
+        {transactionState.isApproved && (
+          <h1>
+            click ‘use default’ and confirm allowance to setup your automation
+          </h1>
+        )}
 
-        </Modal>
-    )
+        {transactionState.isSuccess && <h1>Successful</h1>}
+      </Backdrop>
+    </div>
+  );
 }
-
-export default AppLoader

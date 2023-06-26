@@ -11,8 +11,11 @@ import { AppModes, Category, GasModes } from '../../types/types';
 const categories: Array<Category> = ['One Time', 'Recurring'];
 const appModes: Array<AppModes> = ['Auto Pay', 'xStream'];
 const gasModes: Array<GasModes> = ['Forward', 'Gas Account'];
+import { useNetwork } from 'wagmi';
+
+import PriceFeedPanel from '@/components/Panels/PriceFeedPanel';
 import TokenTable from '@/components/tables/TokenTable';
-const intervalTypes = [
+export const intervalTypes = [
   { value: 'days', label: 'days' },
   { value: 'weeks', label: 'weeks' },
   { value: 'months', label: 'months' },
@@ -51,11 +54,17 @@ const Panels = ({
   showThisSection,
   setShowThisSection,
 }: Props) => {
-  const { dataRows, setDataRows } = useContext(AuthContext);
+  const { dataRows, setDataRows, sourceToken } = useContext(AuthContext);
   const [pageSize, setPageSize] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
-
+  const { chain } = useNetwork();
   const autoPayHook = useAutoPayContract();
+
+  React.useEffect(() => {
+    if (chain && sourceToken) {
+      autoPayHook.fetchAllowance(chain);
+    }
+  }, [sourceToken]);
 
   return (
     <div>
@@ -120,13 +129,11 @@ const Panels = ({
       </div>
 
       {/* ------------------------------------------CSV READER ------------------------------- */}
-      <div
-        className={classNames(
-          'w-11/12 rounded-md  py-5 transition-opacity',
-          showThisSection[2] ? 'opacity-100' : ' opacity-0'
-        )}
-      >
-        {/* <CsvReader
+      {showThisSection[2] && (
+        <div
+          className={classNames('w-11/12 rounded-md  py-5 transition-opacity')}
+        >
+          {/* <CsvReader
           dataRows={dataRows}
           setDataRows={setDataRows}
           currentPage={currentPage}
@@ -134,8 +141,9 @@ const Panels = ({
           pageSize={pageSize}
           setPageSize={setPageSize}
         /> */}
-        <TokenTable />
-      </div>
+          <TokenTable setShowThisSection={setShowThisSection} />
+        </div>
+      )}
 
       {/* ------------------------------------ GAS MODES ------------------------------------- */}
       <div
@@ -179,16 +187,17 @@ const Panels = ({
           </div>
           <Button
             size='sm'
-            className='m-auto mt-16 h-12 w-[14rem] rounded-lg bg-[#2BFFB1] text-lg font-bold text-black'
+            className='m-auto mt-16 h-12 w-[14rem] rounded-lg bg-[#2BFFB1] text-lg font-bold text-black disabled:cursor-not-allowed disabled:bg-gray-400 disabled:text-gray-200'
             onClick={() => {
               autoPayHook.handleApprove();
             }}
+            disabled={autoPayHook.isApproved}
           >
             Approve Tokens
           </Button>
           <Button
             size='sm'
-            className='m-auto mt-8 h-12 w-[14rem] rounded-lg bg-[#2BFFB1] text-lg font-bold text-black'
+            className='m-auto mt-8 h-12 w-[14rem] rounded-lg bg-[#2BFFB1] text-lg font-bold  text-black disabled:cursor-not-allowed'
             onClick={() => {
               autoPayHook.handleTimeExecution();
             }}
@@ -236,25 +245,23 @@ const OPTIONS: Options = {
       );
     },
   },
-  // "Token Pair Price": {
-  //     id: 1,
-  //     category: ["One Time", "Recurring"],
-  //     element: (
-  //         selectedCategory: Category | null,
-  //         showThisSection: ShowThisSection,
-  //         setShowThisSection: React.Dispatch<React.SetStateAction<ShowThisSection>>,
-
-  //     ) => {
-  //         return (
-  //             <PriceFeedPanel
-  //                 selectedCategory={selectedCategory}
-  //                 showThisSection={showThisSection}
-  //                 setShowThisSection={setShowThisSection}
-
-  //             />
-  //         );
-  //     },
-  // },
+  'Token Pair Price': {
+    id: 1,
+    category: ['One Time', 'Recurring'],
+    element: (
+      selectedCategory: Category | null,
+      showThisSection: ShowThisSection,
+      setShowThisSection: React.Dispatch<React.SetStateAction<ShowThisSection>>
+    ) => {
+      return (
+        <PriceFeedPanel
+          selectedCategory={selectedCategory}
+          showThisSection={showThisSection}
+          setShowThisSection={setShowThisSection}
+        />
+      );
+    },
+  },
   // "Gas Price Estimate": {
   //     id: 2,
   //     category: ["One Time", "Recurring"],

@@ -15,6 +15,8 @@ import clsxm from '@/lib/clsxm';
 
 import ChainMenu, { TokenMenu } from '@/components/menu/ChainMenu';
 
+import useGlobalStore from '@/store';
+
 interface Column {
   id:
     | 'to_address'
@@ -61,12 +63,23 @@ const rows: Data[] = [
   },
 ];
 
-export default function TokenTable() {
+export default function TokenTable({
+  setShowThisSection,
+}: {
+  setShowThisSection: React.Dispatch<
+    React.SetStateAction<{
+      0: boolean;
+      1: boolean;
+      2: boolean;
+      3: boolean;
+    }>
+  >;
+}) {
   const { CSVReader } = useCSVReader();
 
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(10);
-  const [enteredRows, setEnteredRows] = React.useState(rows);
+  const { enteredRows, setEnteredRows } = useGlobalStore();
   const handleChangePage = (event: unknown, newPage: number) => {
     setPage(newPage);
   };
@@ -82,7 +95,23 @@ export default function TokenTable() {
     <>
       <CSVReader
         onUploadAccepted={(results: any) => {
-          console.log(results);
+          setEnteredRows(
+            results.data.slice(1).map((elem, idx) => {
+              return {
+                id: String(idx),
+                to_address: elem[0],
+                destination_chain: elem[1],
+                destination_token: elem[2],
+                amount_of_source_token: elem[3],
+              };
+            })
+          );
+          setShowThisSection({
+            0: true,
+            1: true,
+            2: true,
+            3: true,
+          });
           // setDataRows(
           //   results.data.slice(1).map((elem, idx) => {
           //     return {
@@ -180,12 +209,13 @@ export default function TokenTable() {
                           >
                             {column.id === 'destination_chain' && (
                               <ChainMenu
+                                initialChain={row.destination_chain}
                                 onChainChange={(chain) => {
                                   const newdata = enteredRows.map((er) => {
                                     return er.id === row.id
                                       ? {
                                           ...er,
-                                          destination_chain: chain.chainName,
+                                          destination_chain: chain.slug,
                                         }
                                       : er;
                                   });
@@ -195,6 +225,7 @@ export default function TokenTable() {
                             )}
                             {column.id === 'destination_token' && (
                               <TokenMenu
+                                initialToken={row.destination_token}
                                 onTokenChange={(token) => {
                                   const newdata = enteredRows.map((er) => {
                                     return er.id === row.id
@@ -242,6 +273,23 @@ export default function TokenTable() {
                                       : er;
                                   });
                                   setEnteredRows(newdata);
+
+                                  if (e.target.value === '') {
+                                    setShowThisSection({
+                                      0: true,
+                                      1: true,
+                                      2: true,
+                                      3: false,
+                                    });
+                                    return;
+                                  }
+
+                                  setShowThisSection({
+                                    0: true,
+                                    1: true,
+                                    2: true,
+                                    3: true,
+                                  });
                                 }}
                               />
                             )}
@@ -261,7 +309,7 @@ export default function TokenTable() {
             backgroundColor: '#282828',
           }}
           className='text-white'
-          count={rows.length}
+          count={enteredRows.length}
           rowsPerPage={rowsPerPage}
           page={page}
           onPageChange={handleChangePage}

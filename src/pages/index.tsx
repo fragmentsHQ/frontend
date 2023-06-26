@@ -8,6 +8,8 @@ import Image from 'next/image';
 import React, { useContext, useEffect, useState } from 'react';
 import { useNetwork } from 'wagmi';
 
+import useAutoPayContract from '@/hooks/useAutopayContract';
+
 import { AuthContext } from '@/components/AuthProvider';
 import Layout from '@/components/layout/Layout';
 
@@ -30,19 +32,14 @@ const gasModes: Array<GasModes> = ['Forward', 'Gas Account'];
 
 const Main = () => {
   const { chain } = useNetwork();
-  const [pageSize, setPageSize] = useState(10);
-  const [currentPage, setCurrentPage] = useState(1);
+  const { handleApprove } = useAutoPayContract();
   const {
     sourceChain,
     sourceToken,
     setSourceToken,
-    appMode,
     setAppMode,
-    handleSourceToken,
     selectedCategory,
     setSelectedCategory,
-    dataRows,
-    setDataRows,
   } = useContext(AuthContext);
 
   const [showThisSection, setShowThisSection] = useState<{
@@ -57,29 +54,29 @@ const Main = () => {
     3: false,
   });
 
-  useEffect(() => {
-    if (
-      dataRows[dataRows.length - 1]?.toAddress &&
-      dataRows[dataRows.length - 1]?.destinationChain &&
-      dataRows[dataRows.length - 1]?.destinationToken &&
-      dataRows[dataRows.length - 1]?.amountOfSourceToken
-    ) {
-      setDataRows([
-        ...dataRows,
-        {
-          id: String(dataRows.length),
-          toAddress: '',
-          destinationChain: '',
-          destinationToken: '',
-          amountOfSourceToken: '',
-        },
-      ]);
-      setShowThisSection({
-        ...showThisSection,
-        3: true,
-      });
-    }
-  }, [dataRows, showThisSection]);
+  // useEffect(() => {
+  //   if (
+  //     dataRows[dataRows.length - 1]?.toAddress &&
+  //     dataRows[dataRows.length - 1]?.destinationChain &&
+  //     dataRows[dataRows.length - 1]?.destinationToken &&
+  //     dataRows[dataRows.length - 1]?.amountOfSourceToken
+  //   ) {
+  //     setDataRows([
+  //       ...dataRows,
+  //       {
+  //         id: String(dataRows.length),
+  //         toAddress: '',
+  //         destinationChain: '',
+  //         destinationToken: '',
+  //         amountOfSourceToken: '',
+  //       },
+  //     ]);
+  //     setShowThisSection({
+  //       ...showThisSection,
+  //       3: true,
+  //     });
+  //   }
+  // }, [dataRows, showThisSection]);
 
   useEffect(() => {
     setSourceToken(null);
