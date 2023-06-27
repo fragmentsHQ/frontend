@@ -139,7 +139,7 @@ const Task = ({ jobId }: { jobId: string }) => {
           <span>
             Created by:{' '}
             <UnstyledLink href='https://etherscan.io'>
-              {data?.jobCreateds[0]._taskCreator}
+              {data?.jobCreateds[0]?._taskCreator}
             </UnstyledLink>
           </span>
           <ArrowUpRightIcon className='w-4' />

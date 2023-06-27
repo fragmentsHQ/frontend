@@ -19,7 +19,6 @@ import { AuthContext } from '@/components/AuthProvider';
 import useGlobalStore from '@/store';
 
 import {
-  AUTOPAY_CONTRACT,
   AUTOPAY_CONTRACT_ADDRESSES,
   CONNEXT_DOMAINS,
   TOKEN_ADDRESSES,
@@ -37,7 +36,7 @@ const intervalTypes = [
 
 const tokens = [{ name: 'USDC' }, { name: 'USDT' }, { name: 'DAI' }];
 
-const useAutoPayContract = () => {
+const usePriceFeed = () => {
   const { chain } = getNetwork();
   const { address } = getAccount();
   const { enteredRows, setEnteredRows } = useGlobalStore();
@@ -58,6 +57,8 @@ const useAutoPayContract = () => {
     label: 'days',
   });
   const [isApproved, setIsApproved] = useState(false);
+  const [token1Price, setToken1Price] = useState('');
+  const [token2Price, setToken2Price] = useState('');
 
   const fetchAllowance = async (chain: Chain) => {
     try {
@@ -149,9 +150,10 @@ const useAutoPayContract = () => {
       const data = await waitForTransaction({
         hash,
       })
-      console.log(hash);
 
-      await fetchAllowance(data);
+      console.log(data);
+
+      await fetchAllowance(chain);
     } catch (error) {
       setIsLoading({
         loading: false,
@@ -169,7 +171,7 @@ const useAutoPayContract = () => {
     }
   };
 
-  const createTimeAutomateTxn = async () => {
+  const CreateConditionalAutomateTxn = async () => {
     try {
       setIsLoading({
         loading: true,
@@ -177,7 +179,7 @@ const useAutoPayContract = () => {
         instructions:
           'click use default and confirm allowance to setup your automation',
       });
-      const AutoPayContract = AUTOPAY_CONTRACT(chain);
+
       debugger;
       console.log(TOKEN_ADDRESSES);
       console.log([
@@ -206,6 +208,9 @@ const useAutoPayContract = () => {
           ),
         ],
         [
+          /// todo each price feed ratio
+        ],
+        [
           ...enteredRows.map((e) =>
             chain?.testnet && sourceToken
               ? TOKEN_ADDRESSES[chain?.id][sourceToken.name].address
@@ -220,6 +225,12 @@ const useAutoPayContract = () => {
               ].address
               : ZERO_ADDRESS
           ),
+        ],
+        [
+          /// TODO map token1 price feed
+        ],
+        [
+          /// TODO map token2 price feed
         ],
         [
           ...enteredRows.map((e) =>
@@ -267,23 +278,23 @@ const useAutoPayContract = () => {
                       : 1)
           ),
         ],
-        'QmRFfaM6ve9u1zTDCWaL6mQgguiVNVnjFmKUR96pSRnwdy',
+        'QmTUmSKwiGgALG3eAeXzicgNZaDbqmYT5rRykqk4gVd5dF',
       ];
       debugger;
-      const callDataCreateTimeTxn = encodeFunctionData({
+      const callDataCreateConditionalTxn = encodeFunctionData({
         abi: AutoPayAbi.abi,
-        functionName: '_createMultipleTimeAutomate',
+        functionName: '_createMultipleConditionalAutomate',
         args: args,
       });
 
-      console.log(callDataCreateTimeTxn);
+      console.log(callDataCreateConditionalTxn);
       const request = await prepareSendTransaction({
         to: chain
           ? AUTOPAY_CONTRACT_ADDRESSES[
           chain?.testnet ? 'testnets' : 'mainnets'
           ][chain?.id]
           : ZERO_ADDRESS,
-        data: callDataCreateTimeTxn,
+        data: callDataCreateConditionalTxn,
         account: address,
         value: BigInt(0),
       });
@@ -304,7 +315,7 @@ const useAutoPayContract = () => {
     }
   };
 
-  const handleTimeExecution = async () => {
+  const handleConditionalExecution = async () => {
     try {
       const allowance = await fetchAllowance(chain);
       debugger;
@@ -318,7 +329,7 @@ const useAutoPayContract = () => {
       //     ethers.constants.MaxUint256
       //   )
       // )
-      createTimeAutomateTxn?.();
+      CreateConditionalAutomateTxn?.();
       // else throw new Error('Please approve the token');
     } catch (e) {
       toast.error('Please approve the token');
@@ -338,10 +349,10 @@ const useAutoPayContract = () => {
     setStartTime,
     fetchAllowance,
     handleApprove,
-    handleTimeExecution,
+    handleConditionalExecution,
     isApproved,
     setIsApproved,
   };
 };
 
-export default useAutoPayContract;
+export default usePriceFeed;

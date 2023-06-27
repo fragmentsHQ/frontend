@@ -1,22 +1,33 @@
-import { useEffect } from 'react';
-import { useConnect } from 'wagmi';
+"use client";
 
-const AUTOCONNECTED_CONNECTOR_IDS = ['safe'];
+
+import { SafeConnector } from '@wagmi/connectors/safe'
+import { connect, getAccount, getNetwork } from '@wagmi/core'
+import { useEffect } from 'react';
+
+
 
 function useAutoConnect() {
-  const { connect, connectors } = useConnect();
+  const { chains } = getNetwork()
+  const { address, connector: connectedConnector } = getAccount();
+
+  const safeConnector = new SafeConnector({
+    chains,
+    options: {
+      allowedDomains: [/gnosis-safe.io$/, /app.safe.global$/],
+      debug: false,
+    },
+  })
 
   useEffect(() => {
-    console.log('cononecting');
-    AUTOCONNECTED_CONNECTOR_IDS.forEach((connector) => {
-      const connectorInstance = connectors.find(
-        (c) => c.id === connector && c.ready
-      );
-      if (connectorInstance) {
-        connect({ connector: connectorInstance });
-      }
-    });
-  }, [connect, connectors]);
+    async function handleConnect() {
+      if (connectedConnector?.id == safeConnector?.id) return;
+      await connect({
+        connector: safeConnector,
+      })
+    }
+    handleConnect()
+  }, [connect, chains, address]);
 }
 
 export { useAutoConnect };

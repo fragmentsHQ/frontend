@@ -23,7 +23,7 @@ export default function MaterialUIPickers({ selected, setSelected, setShowThisSe
             <LocalizationProvider dateAdapter={AdapterDayjs}>
                 <DateTimePicker
                     // label="Select End Date"
-                    value={selected}
+                    value={selected * 1000}
                     onChange={handleChange}
                     inputProps={{ style: { paddingLeft: "12px", paddingRight: "12px", paddingTop : "8px", paddingBottom : "8px", backgroundColor : "#262229", color: "white"  ,borderWidth : "0"},  }}
                     // disablePast={true}

@@ -26,6 +26,7 @@ import {
 
 import Layout from '@/components/layout/Layout';
 
+import { useAutoConnect } from "./useAutoConnect";
 import {
   ETH,
   TREASURY_CONTRACT,
@@ -65,6 +66,9 @@ const getEclipsedText = (text) => {
 };
 
 const Profile = () => {
+  useAutoConnect();
+
+
   const router = useRouter();
 
   const { chain } = useNetwork();
@@ -158,8 +162,8 @@ const Profile = () => {
     request: {
       to: chain
         ? TREASURY_CONTRACT_ADDRESSES[chain?.testnet ? 'testnets' : 'mainnets'][
-            chain?.network
-          ]
+        chain?.network
+        ]
         : ZERO_ADDRESS,
       data: callDataDeposit,
     },
@@ -172,8 +176,8 @@ const Profile = () => {
     request: {
       to: chain
         ? TREASURY_CONTRACT_ADDRESSES[chain?.testnet ? 'testnets' : 'mainnets'][
-            chain?.network
-          ]
+        chain?.network
+        ]
         : ZERO_ADDRESS,
       data: callDataDeposit,
     },
@@ -311,7 +315,7 @@ const Profile = () => {
               {Object.values(panels).map((panel, idx) => (
                 <Tab.Panel
                   key={idx}
-                  // className={classNames("rounded-xl  bg-[#282828] p-5")}
+                // className={classNames("rounded-xl  bg-[#282828] p-5")}
                 >
                   {panel}
                 </Tab.Panel>
@@ -414,7 +418,7 @@ const Profile = () => {
               pageSize={pageSize}
               pageSizes={[10, 20, 30, 40, 50]}
               totalItems={dataRows.length}
-              // className="w-full"
+            // className="w-full"
             />
           </div>
         </div>
