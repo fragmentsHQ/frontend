@@ -89,7 +89,6 @@ const Navbar = () => {
                         >
                           <img
                             className='h-[1.2rem] w-[1.2rem] rounded-full'
-                            // @ts-ignore
                             src={chain?.iconUrl}
                             alt='chain logo'
                             width={19.2}

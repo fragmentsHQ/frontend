@@ -1,8 +1,7 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-@import "@rainbow-me/rainbowkit/styles.css";
+@import '@rainbow-me/rainbowkit/styles.css';
 
 :root {
   /* #region  /**=========== Primary Color =========== */
@@ -30,36 +29,35 @@
   /* #endregion  /**======== Primary Color =========== */
 }
 
-body
-   { background-color: #262229}
+body {
+  background-color: #262229;
+}
 
-p,div
-   { color: white}
+p,
+div {
+  color: white;
+}
 
-   
 ::-webkit-scrollbar {
-   width: 10px; /* Set the width of the scrollbar */
- }
- 
- 
- ::-webkit-scrollbar-track {
-   background: #f1f1f1; /* Set the background color of the track */
- }
- 
- 
- ::-webkit-scrollbar-thumb {
-   background: #888; /* Set the color of the scrollbar handle */
- }
- 
- 
- ::-webkit-scrollbar-thumb:hover {
-   background: #555; /* Set the color of the scrollbar handle on hover */
- }
+  width: 10px; /* Set the width of the scrollbar */
+}
 
- .cds--data-table-content{
+::-webkit-scrollbar-track {
+  background: #f1f1f1; /* Set the background color of the track */
+}
+
+::-webkit-scrollbar-thumb {
+  background: #888; /* Set the color of the scrollbar handle */
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #555; /* Set the color of the scrollbar handle on hover */
+}
+
+.cds--data-table-content {
   overflow: initial;
- }
- 
+}
+
 @layer base {
   /* inter var - latin */
   @font-face {

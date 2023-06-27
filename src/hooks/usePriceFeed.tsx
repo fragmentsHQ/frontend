@@ -6,7 +6,7 @@ import {
   prepareSendTransaction,
   readContract,
   sendTransaction,
-  waitForTransaction
+  waitForTransaction,
 } from '@wagmi/core';
 import { BigNumber, ethers } from 'ethers';
 import { parseUnits } from 'ethers/lib/utils';
@@ -81,8 +81,8 @@ const usePriceFeed = () => {
           address ? address : ZERO_ADDRESS,
           chain
             ? AUTOPAY_CONTRACT_ADDRESSES[
-            chain?.testnet ? 'testnets' : 'mainnets'
-            ][chain?.id]
+                chain?.testnet ? 'testnets' : 'mainnets'
+              ][chain?.id]
             : ZERO_ADDRESS,
         ],
       });
@@ -91,6 +91,7 @@ const usePriceFeed = () => {
       } else {
         setIsApproved(true);
       }
+
       return allowance;
     } catch (error) {
       toast.error(`ERROR ${error}`);
@@ -120,20 +121,20 @@ const usePriceFeed = () => {
         return;
       }
       console.log(enteredRows);
-      debugger;
+
       const callDataApproval = encodeFunctionData({
         abi: erc20ABI,
         functionName: 'approve',
         args: [
           chain
             ? AUTOPAY_CONTRACT_ADDRESSES[
-            chain?.testnet ? 'testnets' : 'mainnets'
-            ][chain?.id]
+                chain?.testnet ? 'testnets' : 'mainnets'
+              ][chain?.id]
             : ZERO_ADDRESS,
           ethers.constants.MaxUint256,
         ],
       });
-      debugger;
+
       console.log(callDataApproval);
 
       const request = await prepareSendTransaction({
@@ -149,7 +150,7 @@ const usePriceFeed = () => {
 
       const data = await waitForTransaction({
         hash,
-      })
+      });
 
       console.log(data);
 
@@ -171,7 +172,15 @@ const usePriceFeed = () => {
     }
   };
 
-  const CreateConditionalAutomateTxn = async () => {
+  const CreateConditionalAutomateTxn = async ({
+    ratio,
+    token1,
+    token2,
+  }: {
+    ratio: string;
+    token1: string;
+    token2: string;
+  }) => {
     try {
       setIsLoading({
         loading: true,
@@ -180,14 +189,13 @@ const usePriceFeed = () => {
           'click use default and confirm allowance to setup your automation',
       });
 
-      debugger;
       console.log(TOKEN_ADDRESSES);
       console.log([
         ...enteredRows.map((e) =>
           chain?.testnet && sourceToken && e.destination_chain
             ? TOKEN_ADDRESSES[e.destination_chain === 'goerli' ? 5 : 80001][
-            sourceToken.name
-            ]
+                sourceToken.name
+              ]
             : ZERO_ADDRESS
         ),
       ]);
@@ -201,15 +209,13 @@ const usePriceFeed = () => {
           ...enteredRows.map((e) =>
             e.amount_of_source_token
               ? parseUnits(
-                e.amount_of_source_token,
-                TOKEN_ADDRESSES[chain?.id][sourceToken?.name].decimals
-              )
+                  e.amount_of_source_token,
+                  TOKEN_ADDRESSES[chain?.id][sourceToken?.name].decimals
+                )
               : '0'
           ),
         ],
-        [
-          /// todo each price feed ratio
-        ],
+        [ratio],
         [
           ...enteredRows.map((e) =>
             chain?.testnet && sourceToken
@@ -221,17 +227,13 @@ const usePriceFeed = () => {
           ...enteredRows.map((e) =>
             chain?.testnet && sourceToken && e.destination_chain
               ? TOKEN_ADDRESSES[e.destination_chain === 'goerli' ? 5 : 80001][
-                sourceToken.name
-              ].address
+                  sourceToken.name
+                ].address
               : ZERO_ADDRESS
           ),
         ],
-        [
-          /// TODO map token1 price feed
-        ],
-        [
-          /// TODO map token2 price feed
-        ],
+        [token1],
+        [token2],
         [
           ...enteredRows.map((e) =>
             e.destination_chain
@@ -252,8 +254,8 @@ const usePriceFeed = () => {
           ...enteredRows.map((e) =>
             e.destination_chain
               ? AUTOPAY_CONTRACT_ADDRESSES[
-              chain?.testnet ? 'testnets' : 'mainnets'
-              ][e.destination_chain === 'goerli' ? 5 : 80001]
+                  chain?.testnet ? 'testnets' : 'mainnets'
+                ][e.destination_chain === 'goerli' ? 5 : 80001]
               : ZERO_ADDRESS
           ),
         ],
@@ -270,17 +272,17 @@ const usePriceFeed = () => {
               (intervalType.value === 'days'
                 ? 86400
                 : intervalType.value === 'months'
-                  ? 2629800
-                  : intervalType.value === 'weeks'
-                    ? 604800
-                    : intervalType.value === 'years'
-                      ? 31536000
-                      : 1)
+                ? 2629800
+                : intervalType.value === 'weeks'
+                ? 604800
+                : intervalType.value === 'years'
+                ? 31536000
+                : 1)
           ),
         ],
         'QmTUmSKwiGgALG3eAeXzicgNZaDbqmYT5rRykqk4gVd5dF',
       ];
-      debugger;
+
       const callDataCreateConditionalTxn = encodeFunctionData({
         abi: AutoPayAbi.abi,
         functionName: '_createMultipleConditionalAutomate',
@@ -291,8 +293,8 @@ const usePriceFeed = () => {
       const request = await prepareSendTransaction({
         to: chain
           ? AUTOPAY_CONTRACT_ADDRESSES[
-          chain?.testnet ? 'testnets' : 'mainnets'
-          ][chain?.id]
+              chain?.testnet ? 'testnets' : 'mainnets'
+            ][chain?.id]
           : ZERO_ADDRESS,
         data: callDataCreateConditionalTxn,
         account: address,
@@ -300,7 +302,7 @@ const usePriceFeed = () => {
       });
       const { hash } = await sendTransaction(request);
       console.log(hash);
-      debugger;
+
       toast.success('Transaction created successfully');
     } catch (error) {
       setIsLoading({ loading: false, message: `ERROR  ${error}` });
@@ -315,10 +317,18 @@ const usePriceFeed = () => {
     }
   };
 
-  const handleConditionalExecution = async () => {
+  const handleConditionalExecution = async ({
+    ratio,
+    token1,
+    token2,
+  }: {
+    ratio: string;
+    token1: string;
+    token2: string;
+  }) => {
     try {
       const allowance = await fetchAllowance(chain);
-      debugger;
+
       // console.log(
       //   BigNumber.from(allowance ? allowance : 0).eq(
       //     ethers.constants.MaxUint256
@@ -329,7 +339,11 @@ const usePriceFeed = () => {
       //     ethers.constants.MaxUint256
       //   )
       // )
-      CreateConditionalAutomateTxn?.();
+      CreateConditionalAutomateTxn?.({
+        ratio: parseInt(ratio),
+        token1: token1,
+        token2: token2,
+      });
       // else throw new Error('Please approve the token');
     } catch (e) {
       toast.error('Please approve the token');

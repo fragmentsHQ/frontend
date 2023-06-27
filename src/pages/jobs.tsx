@@ -4,7 +4,7 @@ import React from 'react';
 import Layout from '@/components/layout/Layout';
 import Tabs from '@/components/tabs';
 
-import { useAutoConnect } from "./useAutoConnect";
+import { useAutoConnect } from '../components/useAutoConnect';
 
 const Jobs = () => {
   return (
@@ -25,7 +25,6 @@ export default Jobs;
 export const GoBackLink = () => {
   const router = useRouter();
   useAutoConnect();
-
 
   return (
     <button

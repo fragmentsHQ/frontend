@@ -11,7 +11,7 @@ export default function Document() {
           type='font/woff2'
           crossOrigin='anonymous'
         />
-        <link rel="manifest" href="/manifest.json" />
+        <link rel='manifest' href='/manifest.json' />
       </Head>
       <body>
         <Main />

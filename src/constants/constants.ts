@@ -207,7 +207,6 @@ const TOKEN_ADDRESSES: {
   421613: {
     TEST: {
       name: 'TEST',
-
       address: '0xDC805eAaaBd6F68904cA706C221c72F8a8a68F9f',
       decimals: 18,
       logo: 'https://testnet.connextscan.io/logos/logo.png',

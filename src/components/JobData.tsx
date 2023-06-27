@@ -17,16 +17,16 @@ function classNames(...classes: string[]) {
 }
 
 const Task = ({ jobId }: { jobId: string }) => {
+  const { address } = useAccount();
   const { data, loading } = useGetAllJobsQuery({
     variables: {
       where: {
-        _taskCreator: '0x6d4b5acFB1C08127e8553CC41A9aC8F06610eFc7',
+        _taskCreator: address,
         id: jobId,
       },
     },
   });
   const { chain } = useNetwork();
-  const { address } = useAccount();
   const provider = ethers.getDefaultProvider();
   const [selectedTableCategory, setSelectedTableCategory] =
     useState('Executions');

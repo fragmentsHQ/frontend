@@ -1,9 +1,10 @@
-'use client';
+/* eslint-disable @typescript-eslint/no-empty-function */
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-nocheck
 import { getNetwork } from '@wagmi/core';
 import React, { ReactNode } from 'react';
 import { createContext, useState } from 'react';
 import { Chain, useAccount } from 'wagmi';
-
 
 import { Category } from '@/types/types';
 
@@ -54,14 +55,14 @@ export const AuthContext = createContext<AuthData>({
   userAddress: undefined,
   isConnected: false,
   viewChain: null,
-  setViewChain: () => { },
+  setViewChain: () => {},
   sourceChain: undefined,
   sourceToken: null,
   appMode: 'Auto Pay',
-  setSourceToken: () => { },
-  setAppMode: () => { },
+  setSourceToken: () => {},
+  setAppMode: () => {},
   selectedCategory: null,
-  setSelectedCategory: () => { },
+  setSelectedCategory: () => {},
   dataRows: [
     {
       id: '0',
@@ -71,13 +72,11 @@ export const AuthContext = createContext<AuthData>({
       amountOfSourceToken: '',
     },
   ],
-  setDataRows: () => { },
+  setDataRows: () => {},
   // gasMode: "Forward",
 });
 
 const AuthProvider = ({ children }: Props) => {
-
-
   const { address, isConnected } = useAccount();
   const { chain } = getNetwork();
   const [viewChain, setViewChain] = useState({

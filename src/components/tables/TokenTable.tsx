@@ -30,13 +30,13 @@ interface Column {
 
 const columns: readonly Column[] = [
   { id: 'to_address', label: 'To Address', minWidth: 170 },
-  { id: 'destination_token', label: 'Destination Token', minWidth: 100 },
   {
     id: 'destination_chain',
     label: 'Destination chain',
     minWidth: 170,
-    align: 'right',
   },
+  { id: 'destination_token', label: 'Destination Token', minWidth: 100 },
+
   {
     id: 'amount_of_source_token',
     label: 'Amount of source token',

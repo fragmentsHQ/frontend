@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { devtools } from 'zustand/middleware';
+import { persist } from 'zustand/middleware';
 
 interface Data {
   id: string;
@@ -41,7 +41,7 @@ export const initialTransactionState: LoadingStates = {
 };
 
 const useGlobalStore = create<GlobalState>()(
-  devtools(
+  persist(
     (set) => ({
       enteredRows: rows,
       transactionState: initialTransactionState,

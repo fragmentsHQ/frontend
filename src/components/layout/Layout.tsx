@@ -55,7 +55,6 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                 // Default options for specific types
                 success: {
                   duration: 3000,
-                  // @ts-ignore
                   theme: {
                     primary: 'green',
                     secondary: 'black',

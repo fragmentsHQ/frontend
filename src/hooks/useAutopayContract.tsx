@@ -6,7 +6,7 @@ import {
   prepareSendTransaction,
   readContract,
   sendTransaction,
-  waitForTransaction
+  waitForTransaction,
 } from '@wagmi/core';
 import { BigNumber, ethers } from 'ethers';
 import { parseUnits } from 'ethers/lib/utils';
@@ -80,8 +80,8 @@ const useAutoPayContract = () => {
           address ? address : ZERO_ADDRESS,
           chain
             ? AUTOPAY_CONTRACT_ADDRESSES[
-            chain?.testnet ? 'testnets' : 'mainnets'
-            ][chain?.id]
+                chain?.testnet ? 'testnets' : 'mainnets'
+              ][chain?.id]
             : ZERO_ADDRESS,
         ],
       });
@@ -90,6 +90,7 @@ const useAutoPayContract = () => {
       } else {
         setIsApproved(true);
       }
+
       return allowance;
     } catch (error) {
       toast.error(`ERROR ${error}`);
@@ -119,20 +120,20 @@ const useAutoPayContract = () => {
         return;
       }
       console.log(enteredRows);
-      debugger;
+
       const callDataApproval = encodeFunctionData({
         abi: erc20ABI,
         functionName: 'approve',
         args: [
           chain
             ? AUTOPAY_CONTRACT_ADDRESSES[
-            chain?.testnet ? 'testnets' : 'mainnets'
-            ][chain?.id]
+                chain?.testnet ? 'testnets' : 'mainnets'
+              ][chain?.id]
             : ZERO_ADDRESS,
           ethers.constants.MaxUint256,
         ],
       });
-      debugger;
+
       console.log(callDataApproval);
 
       const request = await prepareSendTransaction({
@@ -148,10 +149,9 @@ const useAutoPayContract = () => {
 
       const data = await waitForTransaction({
         hash,
-      })
+      });
       console.log(hash);
-
-      await fetchAllowance(data);
+      await fetchAllowance(chain);
     } catch (error) {
       setIsLoading({
         loading: false,
@@ -171,6 +171,7 @@ const useAutoPayContract = () => {
 
   const createTimeAutomateTxn = async () => {
     try {
+      setIsApproved(true);
       setIsLoading({
         loading: true,
         message: 'Creating Time Automate',
@@ -178,14 +179,14 @@ const useAutoPayContract = () => {
           'click use default and confirm allowance to setup your automation',
       });
       const AutoPayContract = AUTOPAY_CONTRACT(chain);
-      debugger;
+
       console.log(TOKEN_ADDRESSES);
       console.log([
         ...enteredRows.map((e) =>
           chain?.testnet && sourceToken && e.destination_chain
             ? TOKEN_ADDRESSES[e.destination_chain === 'goerli' ? 5 : 80001][
-            sourceToken.name
-            ]
+                sourceToken.name
+              ]
             : ZERO_ADDRESS
         ),
       ]);
@@ -199,9 +200,9 @@ const useAutoPayContract = () => {
           ...enteredRows.map((e) =>
             e.amount_of_source_token
               ? parseUnits(
-                e.amount_of_source_token,
-                TOKEN_ADDRESSES[chain?.id][sourceToken?.name].decimals
-              )
+                  e.amount_of_source_token,
+                  TOKEN_ADDRESSES[chain?.id][sourceToken?.name].decimals
+                )
               : '0'
           ),
         ],
@@ -216,8 +217,8 @@ const useAutoPayContract = () => {
           ...enteredRows.map((e) =>
             chain?.testnet && sourceToken && e.destination_chain
               ? TOKEN_ADDRESSES[e.destination_chain === 'goerli' ? 5 : 80001][
-                sourceToken.name
-              ].address
+                  sourceToken.name
+                ].address
               : ZERO_ADDRESS
           ),
         ],
@@ -241,8 +242,8 @@ const useAutoPayContract = () => {
           ...enteredRows.map((e) =>
             e.destination_chain
               ? AUTOPAY_CONTRACT_ADDRESSES[
-              chain?.testnet ? 'testnets' : 'mainnets'
-              ][e.destination_chain === 'goerli' ? 5 : 80001]
+                  chain?.testnet ? 'testnets' : 'mainnets'
+                ][e.destination_chain === 'goerli' ? 5 : 80001]
               : ZERO_ADDRESS
           ),
         ],
@@ -259,17 +260,17 @@ const useAutoPayContract = () => {
               (intervalType.value === 'days'
                 ? 86400
                 : intervalType.value === 'months'
-                  ? 2629800
-                  : intervalType.value === 'weeks'
-                    ? 604800
-                    : intervalType.value === 'years'
-                      ? 31536000
-                      : 1)
+                ? 2629800
+                : intervalType.value === 'weeks'
+                ? 604800
+                : intervalType.value === 'years'
+                ? 31536000
+                : 1)
           ),
         ],
         'QmRFfaM6ve9u1zTDCWaL6mQgguiVNVnjFmKUR96pSRnwdy',
       ];
-      debugger;
+
       const callDataCreateTimeTxn = encodeFunctionData({
         abi: AutoPayAbi.abi,
         functionName: '_createMultipleTimeAutomate',
@@ -280,8 +281,8 @@ const useAutoPayContract = () => {
       const request = await prepareSendTransaction({
         to: chain
           ? AUTOPAY_CONTRACT_ADDRESSES[
-          chain?.testnet ? 'testnets' : 'mainnets'
-          ][chain?.id]
+              chain?.testnet ? 'testnets' : 'mainnets'
+            ][chain?.id]
           : ZERO_ADDRESS,
         data: callDataCreateTimeTxn,
         account: address,
@@ -289,7 +290,7 @@ const useAutoPayContract = () => {
       });
       const { hash } = await sendTransaction(request);
       console.log(hash);
-      debugger;
+
       toast.success('Transaction created successfully');
     } catch (error) {
       setIsLoading({ loading: false, message: `ERROR  ${error}` });
@@ -307,7 +308,7 @@ const useAutoPayContract = () => {
   const handleTimeExecution = async () => {
     try {
       const allowance = await fetchAllowance(chain);
-      debugger;
+
       // console.log(
       //   BigNumber.from(allowance ? allowance : 0).eq(
       //     ethers.constants.MaxUint256

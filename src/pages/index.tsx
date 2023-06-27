@@ -13,7 +13,7 @@ import useAutoPayContract from '@/hooks/useAutopayContract';
 import { AuthContext } from '@/components/AuthProvider';
 import Layout from '@/components/layout/Layout';
 
-import { useAutoConnect } from "./useAutoConnect";
+import { useAutoConnect } from '../components/useAutoConnect';
 import Panels from '../components/Panels';
 import {
   ISPRODUCTION,
@@ -32,7 +32,6 @@ const appModes: Array<AppModes> = ['Auto Pay', 'xStream'];
 const gasModes: Array<GasModes> = ['Forward', 'Gas Account'];
 
 const Main = () => {
-
   useAutoConnect();
 
   const { chain } = useNetwork();
@@ -127,30 +126,30 @@ const Main = () => {
                     <Dropdown.Options className='z-[10] rounded-lg bg-[#262229]'>
                       {chain?.id
                         ? Object?.values(
-                          ISPRODUCTION ? NETWORKS : TEST_NETWORKS
-                        ).map((network, index) => (
-                          <Dropdown.Option value={network} key={index}>
-                            {({ selected, active }) => {
-                              return (
-                                <MenuItem
-                                  isActive={active}
-                                  isSelected={selected}
-                                >
-                                  <div className='flex items-center justify-start space-x-2'>
-                                    <Image
-                                      className='h-[1.5rem] w-[1.5rem] rounded-full'
-                                      src={network?.logo}
-                                      alt='token logo'
-                                    />
-                                    <MenuItem.Title>
-                                      {network?.chainName}
-                                    </MenuItem.Title>
-                                  </div>
-                                </MenuItem>
-                              );
-                            }}
-                          </Dropdown.Option>
-                        ))
+                            ISPRODUCTION ? NETWORKS : TEST_NETWORKS
+                          ).map((network, index) => (
+                            <Dropdown.Option value={network} key={index}>
+                              {({ selected, active }) => {
+                                return (
+                                  <MenuItem
+                                    isActive={active}
+                                    isSelected={selected}
+                                  >
+                                    <div className='flex items-center justify-start space-x-2'>
+                                      <Image
+                                        className='h-[1.5rem] w-[1.5rem] rounded-full'
+                                        src={network?.logo}
+                                        alt='token logo'
+                                      />
+                                      <MenuItem.Title>
+                                        {network?.chainName}
+                                      </MenuItem.Title>
+                                    </div>
+                                  </MenuItem>
+                                );
+                              }}
+                            </Dropdown.Option>
+                          ))
                         : null}
                     </Dropdown.Options>
                   </>
@@ -197,33 +196,33 @@ const Main = () => {
                     <Dropdown.Options className='z-[10] rounded-lg bg-[#262229]'>
                       {chain?.id
                         ? Object?.values(TOKEN_ADDRESSES[chain.id]).map(
-                          (token, index) => (
-                            <Dropdown.Option value={token} key={index}>
-                              {({ selected, active }) => {
-                                return (
-                                  <MenuItem
-                                    isActive={active}
-                                    isSelected={selected}
-                                  >
-                                    <div className='flex items-center justify-start space-x-2'>
-                                      <div className='relative h-[1.5rem] w-[1.5rem] rounded-full'>
-                                        <Image
-                                          src={token?.logo}
-                                          alt='token logo'
-                                          fill
-                                        />
-                                      </div>
+                            (token, index) => (
+                              <Dropdown.Option value={token} key={index}>
+                                {({ selected, active }) => {
+                                  return (
+                                    <MenuItem
+                                      isActive={active}
+                                      isSelected={selected}
+                                    >
+                                      <div className='flex items-center justify-start space-x-2'>
+                                        <div className='relative h-[1.5rem] w-[1.5rem] rounded-full'>
+                                          <Image
+                                            src={token?.logo}
+                                            alt='token logo'
+                                            fill
+                                          />
+                                        </div>
 
-                                      <MenuItem.Title>
-                                        {token.name}
-                                      </MenuItem.Title>
-                                    </div>
-                                  </MenuItem>
-                                );
-                              }}
-                            </Dropdown.Option>
+                                        <MenuItem.Title>
+                                          {token.name}
+                                        </MenuItem.Title>
+                                      </div>
+                                    </MenuItem>
+                                  );
+                                }}
+                              </Dropdown.Option>
+                            )
                           )
-                        )
                         : null}
                     </Dropdown.Options>
                   </>

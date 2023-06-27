@@ -1,37 +1,25 @@
-import {
-  Button,
-  Dropdown,
-  Input,
-  Label,
-  MenuItem,
-  Modal,
-} from '@heathmont/moon-core-tw';
-import { ControlsCloseSmall } from '@heathmont/moon-icons-tw';
+import { Tab } from '@headlessui/react';
+import { Dropdown, Input, Label, MenuItem } from '@heathmont/moon-core-tw';
+import { Button } from '@heathmont/moon-core-tw';
 import { ethers } from 'ethers';
-import { parseUnits } from 'ethers/lib/utils.js';
 import React, { useContext, useEffect, useRef, useState } from 'react';
-import {
-  erc20ABI,
-  useAccount,
-  useContractRead,
-  useNetwork,
-  useSendTransaction,
-} from 'wagmi';
-import * as chainList from 'wagmi/chains';
+import { useAccount, useNetwork } from 'wagmi';
+
+import usePriceFeed from '@/hooks/usePriceFeed';
+
+import { classNames, gasModes } from '@/components/Panels';
+import TokenTable from '@/components/tables/TokenTable';
+
+import useGlobalStore from '@/store';
 
 import {
-  CONDITIONAL_CONTRACT,
   CONDITIONAL_CONTRACT_ADDRESSES,
-  CONNEXT_DOMAINS,
   ERC20_CONTRACT,
   TOKEN_ADDRESSES,
-  TOKEN_ADDRESSES_PRICE_FEEDS,
   ZERO_ADDRESS,
 } from '../../constants/constants';
 import { SourceContext } from '../../hooks/context';
 import { Options } from '../../types/types';
-
-type Props = {};
 
 const PriceFeedPanel = ({
   selectedCategory,
@@ -39,18 +27,24 @@ const PriceFeedPanel = ({
   setShowThisSection,
   dataRows,
 }) => {
+  const [showTransaction, setShowTransaction] = useState(false);
+  const [showTable, setShowTable] = useState(false);
   const { chain } = useNetwork();
   const { address } = useAccount();
   const provider = ethers.getDefaultProvider();
-
+  const priceFeed = usePriceFeed();
   const { sourceData, setSourceData } = useContext(SourceContext);
   const [isOpen, setIsOpen] = useState(false);
   const [intervalType, setIntervalType] = useState<Options | null>({
     value: 'days',
     label: 'days',
   });
-  const [token1, setToken1] = useState('MATIC');
-  const [token2, setToken2] = useState('USDC');
+  const [token1, setToken1] = useState(
+    Object.values(TOKEN_ADDRESSES[chain.id])[0]
+  );
+  const [token2, setToken2] = useState(
+    Object.values(TOKEN_ADDRESSES[chain.id])[1]
+  );
   const [token1Price, setToken1Price] = useState('');
   const [token2Price, setToken2Price] = useState('');
   const [ratio, setRatio] = useState(0);
@@ -65,60 +59,60 @@ const PriceFeedPanel = ({
   const closeModal = () => setIsOpen(false);
   const openModal = () => setIsOpen(true);
 
-  const {
-    data: allowance,
-    isError,
-    isLoading,
-  } = useContractRead({
-    address:
-      chain && sourceData.sourceToken
-        ? TOKEN_ADDRESSES[chain?.id][sourceData.sourceToken].address
-        : ZERO_ADDRESS,
-    abi: erc20ABI,
-    functionName: 'allowance',
-    args: [
-      address ? address : ZERO_ADDRESS,
-      chain
-        ? CONDITIONAL_CONTRACT_ADDRESSES[
-            chain?.testnet ? 'testnets' : 'mainnets'
-          ][chain?.id]
-        : ZERO_ADDRESS,
-    ],
-    watch: true,
-  });
+  // const {
+  //   data: allowance,
+  //   isError,
+  //   isLoading,
+  // } = useContractRead({
+  //   address:
+  //     chain && sourceData.sourceToken
+  //       ? TOKEN_ADDRESSES[chain?.id][sourceData.sourceToken].address
+  //       : ZERO_ADDRESS,
+  //   abi: erc20ABI,
+  //   functionName: 'allowance',
+  //   args: [
+  //     address ? address : ZERO_ADDRESS,
+  //     chain
+  //       ? CONDITIONAL_CONTRACT_ADDRESSES[
+  //           chain?.testnet ? 'testnets' : 'mainnets'
+  //         ][chain?.id]
+  //       : ZERO_ADDRESS,
+  //   ],
+  //   watch: true,
+  // });
 
-  const {
-    // data,
-    // error,
-    // isLoading,
-    // isError,
-    sendTransactionAsync: sendApproveTokenAsyncTxn,
-  } = useSendTransaction({
-    to:
-      chain && sourceData.sourceToken
-        ? TOKEN_ADDRESSES[chain?.id][sourceData.sourceToken].address
-        : ZERO_ADDRESS,
-    data: callDataApproval,
-    account: address,
-    value: BigInt(0),
-  });
+  // const {
+  //   // data,
+  //   // error,
+  //   // isLoading,
+  //   // isError,
+  //   sendTransactionAsync: sendApproveTokenAsyncTxn,
+  // } = useSendTransaction({
+  //   to:
+  //     chain && sourceData.sourceToken
+  //       ? TOKEN_ADDRESSES[chain?.id][sourceData.sourceToken].address
+  //       : ZERO_ADDRESS,
+  //   data: callDataApproval,
+  //   account: address,
+  //   value: BigInt(0),
+  // });
 
-  const {
-    // data,
-    // error,
-    // isLoading,
-    // isError,
-    sendTransactionAsync: sendCreatePriceFeedAsyncTxn,
-  } = useSendTransaction({
-    to: chain
-      ? CONDITIONAL_CONTRACT_ADDRESSES[
-          chain?.testnet ? 'testnets' : 'mainnets'
-        ][chain?.id]
-      : ZERO_ADDRESS,
-    data: callDataPriceFeedTxn,
-    account: address,
-    value: BigInt(0),
-  });
+  // const {
+  //   // data,
+  //   // error,
+  //   // isLoading,
+  //   // isError,
+  //   sendTransactionAsync: sendCreatePriceFeedAsyncTxn,
+  // } = useSendTransaction({
+  //   to: chain
+  //     ? CONDITIONAL_CONTRACT_ADDRESSES[
+  //         chain?.testnet ? 'testnets' : 'mainnets'
+  //       ][chain?.id]
+  //     : ZERO_ADDRESS,
+  //   data: callDataPriceFeedTxn,
+  //   account: address,
+  //   value: BigInt(0),
+  // });
 
   const updateCallDataApproval = () => {
     const ERC20Contract = ERC20_CONTRACT(
@@ -140,184 +134,184 @@ const PriceFeedPanel = ({
     );
   };
 
-  const updateCallDataPriceFeedTxn = () => {
-    const ConditionalContract = CONDITIONAL_CONTRACT(chain, provider);
+  // const updateCallDataPriceFeedTxn = () => {
+  //   const ConditionalContract = CONDITIONAL_CONTRACT(chain, provider);
 
-    try {
-      // console.log("here boi: ", [
-      //   [
-      //     ...dataRows
-      //       .slice(0, -1)
-      //       .map((e) => (e.toAddress ? e.toAddress : ZERO_ADDRESS)),
-      //   ],
-      //   [
-      //     ...dataRows
-      //       .slice(0, -1)
-      //       .map((e) =>
-      //         e.amountOfSourceToken
-      //           ? parseUnits(
-      //               e.amountOfSourceToken,
-      //               TOKEN_ADDRESSES[chain?.id][sourceData.sourceToken]
-      //                 .decimals
-      //             )
-      //           : "0"
-      //       ),
-      //   ],
-      //   ratio ? parseUnits(ratio, 18) : 0,
-      //   [
-      //     ...dataRows.slice(0, -1).map((e) => ({
-      //       _fromToken:
-      //         chain?.testnet && sourceData.sourceToken
-      //           ? TOKEN_ADDRESSES[chain?.id][sourceData.sourceToken]
-      //               .address
-      //           : ZERO_ADDRESS,
-      //       _toToken:
-      //         chain?.testnet && sourceData.sourceToken && e.destinationChain
-      //           ? TOKEN_ADDRESSES[e.destinationChain][sourceData.sourceToken]
-      //               .address
-      //           : ZERO_ADDRESS,
-      //       _tokenA: token1
-      //         ? TOKEN_ADDRESSES_PRICE_FEEDS[token1]
-      //         : ZERO_ADDRESS,
-      //       _tokenB: token2
-      //         ? TOKEN_ADDRESSES_PRICE_FEEDS[token2]
-      //         : ZERO_ADDRESS,
-      //     })),
-      //   ],
-      //   [
-      //     ...dataRows.slice(0, -1).map((e) => ({
-      //       _toChain: e.destinationChain
-      //         ? chainList[e.destinationChain].id
-      //         : ZERO_ADDRESS,
-      //       _destinationDomain: e.destinationChain
-      //         ? CONNEXT_DOMAINS[e.destinationChain]
-      //         : ZERO_ADDRESS,
-      //       _destinationContract: e.destinationChain
-      //         ? CONDITIONAL_CONTRACT_ADDRESSES[
-      //             chain?.testnet ? "testnets" : "mainnets"
-      //           ][e.destinationChain]
-      //         : ZERO_ADDRESS,
-      //     })),
-      //   ],
-      //   {
-      //     _cycles: cycles ? cycles : 1,
-      //     _startTime: startTime
-      //       ? startTime
-      //       : Math.trunc(Date.now() / 1000) + 3600,
-      //     _interval:
-      //       Number(intervalCount) *
-      //       (intervalType.value === "days"
-      //         ? 86400
-      //         : intervalType.value === "months"
-      //         ? 2629800
-      //         : intervalType.value === "weeks"
-      //         ? 604800
-      //         : intervalType.value === "years"
-      //         ? 31536000
-      //         : 1),
-      //     _web3FunctionHash: "QmSfTUv1XZmsVVRTNWtZqVC78mMPzi5hjSJTHbFHvzrc9p",
-      //   },
-      // ]);
-      setCallDataPriceFeedTxn(
-        ConditionalContract.interface.encodeFunctionData(
-          '_createMultiplePriceFeedAutomate',
-          [
-            [
-              ...dataRows
-                .slice(0, -1)
-                .map((e) => (e.toAddress ? e.toAddress : ZERO_ADDRESS)),
-            ],
-            [
-              ...dataRows
-                .slice(0, -1)
-                .map((e) =>
-                  e.amountOfSourceToken
-                    ? parseUnits(
-                        e.amountOfSourceToken,
-                        TOKEN_ADDRESSES[chain?.id][sourceData.sourceToken]
-                          .decimals
-                      )
-                    : '0'
-                ),
-            ],
-            ratio ? ratio : 0,
-            [
-              ...dataRows.slice(0, -1).map((e) => ({
-                _fromToken:
-                  chain?.testnet && sourceData.sourceToken
-                    ? TOKEN_ADDRESSES[chain?.id][sourceData.sourceToken].address
-                    : ZERO_ADDRESS,
-                _toToken:
-                  chain?.testnet && sourceData.sourceToken && e.destinationChain
-                    ? TOKEN_ADDRESSES[e.destinationChain][
-                        sourceData.sourceToken
-                      ].address
-                    : ZERO_ADDRESS,
-                _tokenA: token1
-                  ? TOKEN_ADDRESSES_PRICE_FEEDS[token1]
-                  : ZERO_ADDRESS,
-                _tokenB: token2
-                  ? TOKEN_ADDRESSES_PRICE_FEEDS[token2]
-                  : ZERO_ADDRESS,
-              })),
-            ],
-            [
-              ...dataRows.slice(0, -1).map((e) => ({
-                _toChain: e.destinationChain
-                  ? chainList[e.destinationChain].id
-                  : ZERO_ADDRESS,
-                _destinationDomain: e.destinationChain
-                  ? CONNEXT_DOMAINS[e.destinationChain]
-                  : ZERO_ADDRESS,
-                _destinationContract: e.destinationChain
-                  ? CONDITIONAL_CONTRACT_ADDRESSES[
-                      chain?.testnet ? 'testnets' : 'mainnets'
-                    ][e.destinationChain]
-                  : ZERO_ADDRESS,
-              })),
-            ],
-            {
-              _cycles: cycles ? cycles : 1,
-              _startTime: startTime
-                ? startTime
-                : Math.trunc(Date.now() / 1000) + 3600,
-              _interval:
-                Number(intervalCount) *
-                (intervalType.value === 'days'
-                  ? 86400
-                  : intervalType.value === 'months'
-                  ? 2629800
-                  : intervalType.value === 'weeks'
-                  ? 604800
-                  : intervalType.value === 'years'
-                  ? 31536000
-                  : 1),
-              _web3FunctionHash:
-                'QmaYK9kW85VsZUusYHGqzJQizu3Kifs73Np217LfLLhQDH',
-            },
-          ]
-        ) as `0x${string}`
-      );
-    } catch {}
-  };
+  //   try {
+  //     // console.log("here boi: ", [
+  //     //   [
+  //     //     ...dataRows
+  //     //       .slice(0, -1)
+  //     //       .map((e) => (e.toAddress ? e.toAddress : ZERO_ADDRESS)),
+  //     //   ],
+  //     //   [
+  //     //     ...dataRows
+  //     //       .slice(0, -1)
+  //     //       .map((e) =>
+  //     //         e.amountOfSourceToken
+  //     //           ? parseUnits(
+  //     //               e.amountOfSourceToken,
+  //     //               TOKEN_ADDRESSES[chain?.id][sourceData.sourceToken]
+  //     //                 .decimals
+  //     //             )
+  //     //           : "0"
+  //     //       ),
+  //     //   ],
+  //     //   ratio ? parseUnits(ratio, 18) : 0,
+  //     //   [
+  //     //     ...dataRows.slice(0, -1).map((e) => ({
+  //     //       _fromToken:
+  //     //         chain?.testnet && sourceData.sourceToken
+  //     //           ? TOKEN_ADDRESSES[chain?.id][sourceData.sourceToken]
+  //     //               .address
+  //     //           : ZERO_ADDRESS,
+  //     //       _toToken:
+  //     //         chain?.testnet && sourceData.sourceToken && e.destinationChain
+  //     //           ? TOKEN_ADDRESSES[e.destinationChain][sourceData.sourceToken]
+  //     //               .address
+  //     //           : ZERO_ADDRESS,
+  //     //       _tokenA: token1
+  //     //         ? TOKEN_ADDRESSES_PRICE_FEEDS[token1]
+  //     //         : ZERO_ADDRESS,
+  //     //       _tokenB: token2
+  //     //         ? TOKEN_ADDRESSES_PRICE_FEEDS[token2]
+  //     //         : ZERO_ADDRESS,
+  //     //     })),
+  //     //   ],
+  //     //   [
+  //     //     ...dataRows.slice(0, -1).map((e) => ({
+  //     //       _toChain: e.destinationChain
+  //     //         ? chainList[e.destinationChain].id
+  //     //         : ZERO_ADDRESS,
+  //     //       _destinationDomain: e.destinationChain
+  //     //         ? CONNEXT_DOMAINS[e.destinationChain]
+  //     //         : ZERO_ADDRESS,
+  //     //       _destinationContract: e.destinationChain
+  //     //         ? CONDITIONAL_CONTRACT_ADDRESSES[
+  //     //             chain?.testnet ? "testnets" : "mainnets"
+  //     //           ][e.destinationChain]
+  //     //         : ZERO_ADDRESS,
+  //     //     })),
+  //     //   ],
+  //     //   {
+  //     //     _cycles: cycles ? cycles : 1,
+  //     //     _startTime: startTime
+  //     //       ? startTime
+  //     //       : Math.trunc(Date.now() / 1000) + 3600,
+  //     //     _interval:
+  //     //       Number(intervalCount) *
+  //     //       (intervalType.value === "days"
+  //     //         ? 86400
+  //     //         : intervalType.value === "months"
+  //     //         ? 2629800
+  //     //         : intervalType.value === "weeks"
+  //     //         ? 604800
+  //     //         : intervalType.value === "years"
+  //     //         ? 31536000
+  //     //         : 1),
+  //     //     _web3FunctionHash: "QmSfTUv1XZmsVVRTNWtZqVC78mMPzi5hjSJTHbFHvzrc9p",
+  //     //   },
+  //     // ]);
+  //     setCallDataPriceFeedTxn(
+  //       ConditionalContract.interface.encodeFunctionData(
+  //         '_createMultiplePriceFeedAutomate',
+  //         [
+  //           [
+  //             ...dataRows
+  //               .slice(0, -1)
+  //               .map((e) => (e.toAddress ? e.toAddress : ZERO_ADDRESS)),
+  //           ],
+  //           [
+  //             ...dataRows
+  //               .slice(0, -1)
+  //               .map((e) =>
+  //                 e.amountOfSourceToken
+  //                   ? parseUnits(
+  //                       e.amountOfSourceToken,
+  //                       TOKEN_ADDRESSES[chain?.id][sourceData.sourceToken]
+  //                         .decimals
+  //                     )
+  //                   : '0'
+  //               ),
+  //           ],
+  //           ratio ? ratio : 0,
+  //           [
+  //             ...dataRows.slice(0, -1).map((e) => ({
+  //               _fromToken:
+  //                 chain?.testnet && sourceData.sourceToken
+  //                   ? TOKEN_ADDRESSES[chain?.id][sourceData.sourceToken].address
+  //                   : ZERO_ADDRESS,
+  //               _toToken:
+  //                 chain?.testnet && sourceData.sourceToken && e.destinationChain
+  //                   ? TOKEN_ADDRESSES[e.destinationChain][
+  //                       sourceData.sourceToken
+  //                     ].address
+  //                   : ZERO_ADDRESS,
+  //               _tokenA: token1
+  //                 ? TOKEN_ADDRESSES_PRICE_FEEDS[token1]
+  //                 : ZERO_ADDRESS,
+  //               _tokenB: token2
+  //                 ? TOKEN_ADDRESSES_PRICE_FEEDS[token2]
+  //                 : ZERO_ADDRESS,
+  //             })),
+  //           ],
+  //           [
+  //             ...dataRows.slice(0, -1).map((e) => ({
+  //               _toChain: e.destinationChain
+  //                 ? chainList[e.destinationChain].id
+  //                 : ZERO_ADDRESS,
+  //               _destinationDomain: e.destinationChain
+  //                 ? CONNEXT_DOMAINS[e.destinationChain]
+  //                 : ZERO_ADDRESS,
+  //               _destinationContract: e.destinationChain
+  //                 ? CONDITIONAL_CONTRACT_ADDRESSES[
+  //                     chain?.testnet ? 'testnets' : 'mainnets'
+  //                   ][e.destinationChain]
+  //                 : ZERO_ADDRESS,
+  //             })),
+  //           ],
+  //           {
+  //             _cycles: cycles ? cycles : 1,
+  //             _startTime: startTime
+  //               ? startTime
+  //               : Math.trunc(Date.now() / 1000) + 3600,
+  //             _interval:
+  //               Number(intervalCount) *
+  //               (intervalType.value === 'days'
+  //                 ? 86400
+  //                 : intervalType.value === 'months'
+  //                 ? 2629800
+  //                 : intervalType.value === 'weeks'
+  //                 ? 604800
+  //                 : intervalType.value === 'years'
+  //                 ? 31536000
+  //                 : 1),
+  //             _web3FunctionHash:
+  //               'QmaYK9kW85VsZUusYHGqzJQizu3Kifs73Np217LfLLhQDH',
+  //           },
+  //         ]
+  //       ) as `0x${string}`
+  //     );
+  //   } catch {}
+  // };
 
-  useEffect(() => {
-    updateCallDataApproval();
-    updateCallDataPriceFeedTxn();
-  }, [
-    chain,
-    sourceData.sourceToken,
-    dataRows,
-    cycles,
-    intervalCount,
-    intervalType,
-    token1Price,
-    token2Price,
-    startTime,
-    token1,
-    token2,
-    ratio,
-  ]);
+  // useEffect(() => {
+  //   updateCallDataApproval();
+  //   updateCallDataPriceFeedTxn();
+  // }, [
+  //   chain,
+  //   sourceData.sourceToken,
+  //   dataRows,
+  //   cycles,
+  //   intervalCount,
+  //   intervalType,
+  //   token1Price,
+  //   token2Price,
+  //   startTime,
+  //   token1,
+  //   token2,
+  //   ratio,
+  // ]);
 
   useEffect(() => {
     setRatio(Number(token1Price) / Number(token2Price));
@@ -342,7 +336,24 @@ const PriceFeedPanel = ({
   //         );
   //     },
   // }));
+  React.useEffect(() => {
+    if (chain) {
+      priceFeed.fetchAllowance(chain);
+    }
+  }, []);
 
+  const { enteredRows } = useGlobalStore();
+  const isValid = enteredRows.every(
+    (item) =>
+      item.amount_of_source_token !== '' &&
+      item.destination_chain !== '' &&
+      item.destination_token !== '' &&
+      item.to_address
+  );
+
+  console.log('====================================');
+  console.log(token1, Object.values(TOKEN_ADDRESSES[chain.id])[1]);
+  console.log('====================================');
   return (
     <>
       <div className='w-full flex-col'>
@@ -360,10 +371,6 @@ const PriceFeedPanel = ({
                 className='rounded bg-[#262229] text-white'
                 onChange={(e) => {
                   setToken1Price(e.target.value);
-                  setShowThisSection({
-                    ...showThisSection,
-                    2: true,
-                  });
                 }}
               />
               <Dropdown
@@ -379,16 +386,16 @@ const PriceFeedPanel = ({
                       data-test='data-test'
                       className=' h-[1.8rem]  rounded-[10px] bg-[#464646]'
                     >
-                      {token1}
+                      {token1.name}
                     </Dropdown.Select>
 
                     <Dropdown.Options className='z-[10] w-full min-w-full rounded-md bg-[#464646]'>
-                      {Object.keys(TOKEN_ADDRESSES_PRICE_FEEDS).map(
+                      {Object.values(TOKEN_ADDRESSES[chain?.id]).map(
                         (token, index) => (
                           <Dropdown.Option value={token} key={index}>
                             {({ selected, active }) => (
                               <MenuItem isActive={active} isSelected={selected}>
-                                {token}
+                                {token.name}
                               </MenuItem>
                             )}
                           </Dropdown.Option>
@@ -411,7 +418,10 @@ const PriceFeedPanel = ({
                 value={token2Price}
                 id='c-1'
                 className='rounded bg-[#262229] text-white'
-                onChange={(e) => setToken2Price(e.target.value)}
+                onChange={(e) => {
+                  setToken2Price(e.target.value);
+                  setShowTable(true);
+                }}
               />
               <Dropdown
                 value={token2}
@@ -426,16 +436,16 @@ const PriceFeedPanel = ({
                       data-test='data-test'
                       className=' h-[1.8rem] rounded-[10px] bg-[#464646]'
                     >
-                      {token2}
+                      {token2.name}
                     </Dropdown.Select>
 
                     <Dropdown.Options className='z-[10] w-full min-w-full rounded-md bg-[#464646]'>
-                      {Object.keys(TOKEN_ADDRESSES_PRICE_FEEDS).map(
+                      {Object.values(TOKEN_ADDRESSES[chain?.id]).map(
                         (token, index) => (
                           <Dropdown.Option value={token} key={index}>
                             {({ selected, active }) => (
                               <MenuItem isActive={active} isSelected={selected}>
-                                {token}
+                                {token.name}
                               </MenuItem>
                             )}
                           </Dropdown.Option>
@@ -458,128 +468,83 @@ const PriceFeedPanel = ({
               disabled
               id='c-1'
               className='rounded bg-[#262229] text-white'
-              onChange={(e) => setRatio(Number(e.target.value))}
-            />
-          </div>
-          <div>
-            <Label htmlFor='c-1' className='text-piccolo'>
-              Start Time
-            </Label>
-            <Input
-              type='number'
-              placeholder='E.g. 9234324712'
-              id='c-1'
-              className='rounded bg-[#262229] text-white'
-              value={startTime}
               onChange={(e) => {
-                setStartTime(e.target.value);
-                setShowThisSection({
-                  ...showThisSection,
-                  2: true,
-                });
+                setRatio(Number(e.target.value));
               }}
             />
           </div>
-          {selectedCategory === 'Recurring' && (
-            <div className='col-span-2 grid grid-cols-2 gap-x-2'>
-              <div>
-                <Label htmlFor='c-1' className='text-piccolo'>
-                  No. of Cycles
-                </Label>
-                <Input
-                  type='number'
-                  placeholder='1'
-                  id='c-1'
-                  className='rounded bg-[#262229] text-white'
-                  onChange={(e) => setCycles(e.target.value)}
-                />
-              </div>
-              <div>
-                <Label htmlFor='c-1' className='text-piccolo'>
-                  Interval
-                </Label>
-                <Button
-                  onClick={openModal}
-                  className='rounded-md bg-[#262229] font-normal'
-                >
-                  Select Interval
-                </Button>
-                <Modal open={isOpen} onClose={closeModal}>
-                  <Modal.Backdrop className='bg-black opacity-60' />
-                  <Modal.Panel className='bg-[#282828] p-3'>
-                    <div className='border-beerus relative px-6 pb-4 pt-5'>
-                      <h3 className='text-moon-18 text-bulma font-medium'>
-                        Select Frequency
-                      </h3>
-                      <span
-                        className='absolute right-5 top-4 inline-block h-8 w-8 cursor-pointer'
-                        onClick={closeModal}
-                      >
-                        <ControlsCloseSmall className='block h-full w-full' />
-                      </span>
-                    </div>
-                    <div className='grid grid-cols-5 items-center gap-3 px-6 py-4'>
-                      <span className='col-span-2 block text-[#AFAEAE]'>
-                        Repeat Every
-                      </span>
-                      <Input
-                        type='text'
-                        placeholder='1'
-                        id='c-1'
-                        className='col-span-1 rounded bg-[#262229] text-white'
-                        value={intervalCount}
-                        onChange={(e) => setIntervalCount(e.target.value)}
-                      />
-                      <Dropdown
-                        value={intervalType}
-                        onChange={setIntervalType}
-                        size='xl'
-                        className='col-span-2'
-                      >
-                        {({ open }) => (
-                          <>
-                            <Dropdown.Select
-                              open={open}
-                              data-test='data-test'
-                              className='bg-[#262229]'
-                            >
-                              {intervalType?.label}
-                            </Dropdown.Select>
-
-                            <Dropdown.Options className='z-[10] w-full min-w-full bg-[#262229]'>
-                              {intervalTypes.map((size, index) => (
-                                <Dropdown.Option value={size} key={index}>
-                                  {({ selected, active }) => (
-                                    <MenuItem
-                                      isActive={active}
-                                      isSelected={selected}
-                                    >
-                                      {size.label}
-                                    </MenuItem>
-                                  )}
-                                </Dropdown.Option>
-                              ))}
-                            </Dropdown.Options>
-                          </>
-                        )}
-                      </Dropdown>
-                    </div>
-
-                    <div className='flex justify-end gap-2 p-4 pt-2'>
-                      <Button
-                        className='rounded-md bg-[#262229]'
-                        onClick={closeModal}
-                      >
-                        Ok
-                      </Button>
-                    </div>
-                  </Modal.Panel>
-                </Modal>
-              </div>
-            </div>
-          )}
         </div>
       </div>
+      {showTable && (
+        <TokenTable
+          setShowThisSection={() => {
+            setShowTransaction(true);
+          }}
+        />
+      )}
+      {showTable && isValid && (
+        <div className={classNames('w-11/12  px-2 transition-opacity sm:px-0')}>
+          <div className='rounded-md bg-[#282828] p-5'>
+            <div className='m-auto pt-3 text-center'>
+              Choose how the task should be paid for. The cost of each execution
+              equals the network fee.
+            </div>
+            <div className='grid grid-cols-1 gap-x-2 pt-8'>
+              <Tab.Group
+              // onChange={(idx) => {
+              //   setSourceData({ ...sourceData, gasMode: gasModes[idx] });
+              // }}
+              >
+                <Tab.List className='flex gap-[1px] space-x-1 rounded-xl bg-[#464646] p-[5px]'>
+                  {gasModes.map((mode) => (
+                    <Tab
+                      key={mode}
+                      className={({ selected }) =>
+                        classNames(
+                          'w-full rounded-xl py-2.5 text-sm font-bold leading-5',
+                          selected
+                            ? 'bg-[#00FFA9] text-black shadow'
+                            : 'bg-[#464646] text-[#6B6B6B]'
+                        )
+                      }
+                      disabled={mode === 'Forward'}
+                    >
+                      {mode === 'Forward'
+                        ? 'Forward Paying Gas'
+                        : 'Pay from Gas Account'}
+                    </Tab>
+                  ))}
+                </Tab.List>
+              </Tab.Group>
+            </div>
+            <Button
+              size='sm'
+              className='m-auto mt-16 h-12 w-[14rem] rounded-lg bg-[#2BFFB1] text-lg font-bold text-black disabled:cursor-not-allowed disabled:bg-gray-400 disabled:text-gray-200'
+              onClick={() => {
+                priceFeed.handleApprove();
+              }}
+              disabled={priceFeed.isApproved}
+            >
+              Approve Tokens
+            </Button>
+            <Button
+              size='sm'
+              className='m-auto mt-8 h-12 w-[14rem] rounded-lg bg-[#2BFFB1] text-lg font-bold  text-black disabled:cursor-not-allowed'
+              onClick={() => {
+                priceFeed.handleConditionalExecution({
+                  ratio: ratio,
+                  token1: token1.address,
+                  token2: token2.address,
+                });
+              }}
+              disabled={!priceFeed.isApproved}
+            >
+              Confirm
+            </Button>
+          </div>
+        </div>
+      )}
+
       {/* <Button
           size="md"
           className="mt-7 min-w-[93px] rounded-lg bg-[#1ae77a] text-black"
