@@ -4,7 +4,7 @@ import { Chain, erc20ABI } from 'wagmi';
 import Autopay from './autoPay_abi.json';
 import Conditional from './conditional_abi.json';
 
-const ISPRODUCTION = process.env.NODE_ENV === 'production';
+const ISPRODUCTION = false;
 
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
 
