@@ -193,13 +193,13 @@ const TOKEN_ADDRESSES: {
   80001: {
     USDC: {
       name: 'USDC',
-      address: '0x0FA8781a83E46826621b3BC094Ea2A0212e71B23',
+      address: '0x2058A9D7613eEE744279e3856Ef0eAda5FCbaA7e',
       decimals: 18,
       logo: require('../../public/usdc.png'),
     },
     WETH: {
       name: 'WETH',
-      address: '0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619',
+      address: '0xA6FA4fB5f76172d178d61B04b0ecd319C5d1C0aa',
       decimals: 18,
       logo: require('../../public/weth.png'),
     },
