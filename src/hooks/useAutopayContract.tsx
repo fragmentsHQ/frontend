@@ -19,7 +19,6 @@ import { AuthContext } from '@/components/AuthProvider';
 import useGlobalStore from '@/store';
 
 import {
-  AUTOPAY_CONTRACT,
   AUTOPAY_CONTRACT_ADDRESSES,
   CONNEXT_DOMAINS,
   TOKEN_ADDRESSES,
@@ -173,7 +172,6 @@ const useAutoPayContract = () => {
   }: {
     passedInterval: number;
   }) => {
-    debugger;
     try {
       setIsApproved(true);
       setIsLoading({
@@ -182,18 +180,8 @@ const useAutoPayContract = () => {
         instructions:
           'click use default and confirm allowance to setup your automation',
       });
-      const AutoPayContract = AUTOPAY_CONTRACT(chain);
+      // const AutoPayContract = AUTOPAY_CONTRACT(chain);
 
-      console.log(TOKEN_ADDRESSES);
-      console.log([
-        ...enteredRows.map((e) =>
-          chain?.testnet && sourceToken && e.destination_chain
-            ? TOKEN_ADDRESSES[e.destination_chain === 'goerli' ? 5 : 80001][
-                sourceToken.name
-              ]
-            : ZERO_ADDRESS
-        ),
-      ]);
       const args = [
         [
           ...enteredRows.map((e) =>
