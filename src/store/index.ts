@@ -1,3 +1,4 @@
+import dayjs from 'dayjs';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
@@ -19,10 +20,12 @@ type LoadingStates = {
 interface GlobalState {
   enteredRows: Data[];
   isApproved: boolean;
+  start_time: number;
   transactionState: LoadingStates;
   setEnteredRows: (newrows: Data[]) => void;
   setTransactionState: (newState: LoadingStates) => void;
   setIsApproved: (isApproved: boolean) => void;
+  setStartTime: (start_time: number) => void;
 }
 
 const rows: Data[] = [
@@ -47,11 +50,16 @@ const useGlobalStore = create<GlobalState>()(
     (set) => ({
       enteredRows: rows,
       isApproved: false,
+      start_time: dayjs().unix(),
+
       transactionState: initialTransactionState,
       setTransactionState(newState) {
         set(() => ({ transactionState: newState }));
       },
       setEnteredRows: (newrows) => set(() => ({ enteredRows: newrows })),
+      setStartTime: (time: number) => {
+        set(() => ({ start_time: time }));
+      },
       setIsApproved: (_isApproved) => set(() => ({ isApproved: _isApproved })),
     }),
     {

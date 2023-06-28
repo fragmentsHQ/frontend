@@ -56,6 +56,8 @@ import dayjs, { Dayjs } from 'dayjs';
 import * as React from 'react';
 import toast from 'react-hot-toast';
 
+import useGlobalStore from '@/store';
+
 export default function MaterialUIPickers({
   selected,
   setSelected,
@@ -65,19 +67,20 @@ export default function MaterialUIPickers({
   const [value, setValue] = React.useState<Dayjs | null>(
     dayjs().add(1, 'hour')
   );
+  const { start_time, setStartTime } = useGlobalStore();
 
   const [isError, setError] = React.useState(false);
 
   const handleChange = (newValue) => {
-    const d = dayjs(newValue).toDate().getTime();
+    const d = dayjs(newValue).unix();
+    console.log(d);
     if (isError) {
       setShowThisSection({
         ...showThisSection,
         2: false,
       });
     }
-    console.log(d);
-    setSelected(d);
+    setStartTime(d);
     setShowThisSection({
       ...showThisSection,
       2: true,

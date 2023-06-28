@@ -39,7 +39,7 @@ const tokens = [{ name: 'USDC' }, { name: 'USDT' }, { name: 'DAI' }];
 const useAutoPayContract = () => {
   const { chain } = getNetwork();
   const { address } = getAccount();
-  const { enteredRows, setEnteredRows } = useGlobalStore();
+  const { enteredRows, start_time } = useGlobalStore();
   const {
     sourceChain,
     sourceToken,
@@ -240,11 +240,7 @@ const useAutoPayContract = () => {
           ),
         ],
         [...enteredRows.map((_) => (cycles ? cycles : 1))],
-        [
-          ...enteredRows.map((_) =>
-            startTime ? startTime : Math.trunc(Date.now() / 1000) + 3600
-          ),
-        ],
+        [...enteredRows.map((_) => start_time)],
         [
           ...enteredRows.map((_) =>
             passedInterval === 0
