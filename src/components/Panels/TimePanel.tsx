@@ -44,6 +44,8 @@ const TimePanel = ({
   setIntervalType,
 }: Props) => {
   const [isOpen, setIsOpen] = useState(false);
+  const { isApproved, setIsApproved } = useGlobalStore();
+
   const { enteredRows } = useGlobalStore();
   const closeModal = () => {
     setShowThisSection({
@@ -67,7 +69,7 @@ const TimePanel = ({
       <div
         className={classNames(
           'w-11/12 rounded-md transition-opacity',
-          showThisSection[1] ? 'opacity-100' : ' opacity-0'
+          showThisSection[1] ? 'block' : ' hidden'
         )}
       >
         <div className='w-full flex-col'>
@@ -247,9 +249,9 @@ const TimePanel = ({
               onClick={() => {
                 autoPayHook.handleApprove();
               }}
-              disabled={autoPayHook.isApproved}
+              disabled={isApproved}
             >
-              Approve Tokens{JSON.stringify(autoPayHook.isApproved)}
+              Approve Tokens {JSON.stringify(autoPayHook.isApproved)}
             </Button>
             <Button
               size='sm'
@@ -257,7 +259,7 @@ const TimePanel = ({
               onClick={() => {
                 autoPayHook.handleTimeExecution();
               }}
-              disabled={!autoPayHook.isApproved}
+              disabled={!isApproved}
             >
               Confirm
             </Button>

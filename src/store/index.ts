@@ -18,9 +18,11 @@ type LoadingStates = {
 };
 interface GlobalState {
   enteredRows: Data[];
+  isApproved: boolean;
   transactionState: LoadingStates;
   setEnteredRows: (newrows: Data[]) => void;
   setTransactionState: (newState: LoadingStates) => void;
+  setIsApproved: (isApproved: boolean) => void;
 }
 
 const rows: Data[] = [
@@ -44,11 +46,13 @@ const useGlobalStore = create<GlobalState>()(
   persist(
     (set) => ({
       enteredRows: rows,
+      isApproved: false,
       transactionState: initialTransactionState,
       setTransactionState(newState) {
         set(() => ({ transactionState: newState }));
       },
       setEnteredRows: (newrows) => set(() => ({ enteredRows: newrows })),
+      setIsApproved: (_isApproved) => set(() => ({ isApproved: _isApproved })),
     }),
     {
       name: 'autoay_frontend',

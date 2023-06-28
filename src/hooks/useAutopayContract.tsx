@@ -57,7 +57,7 @@ const useAutoPayContract = () => {
     value: 'days',
     label: 'days',
   });
-  const [isApproved, setIsApproved] = useState(false);
+  const { isApproved, setIsApproved } = useGlobalStore();
 
   const fetchAllowance = async (chain: Chain) => {
     try {
@@ -90,7 +90,7 @@ const useAutoPayContract = () => {
       } else {
         setIsApproved(true);
       }
-
+      toast.success(JSON.stringify(BigNumber.from(allowance).isZero()));
       return allowance;
     } catch (error) {
       toast.error(`ERROR ${error}`);

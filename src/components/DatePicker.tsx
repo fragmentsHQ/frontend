@@ -69,19 +69,25 @@ export default function MaterialUIPickers({
   const [isError, setError] = React.useState(false);
 
   const handleChange = (newValue) => {
-    const endD = new Date(newValue);
+    const d = dayjs(newValue).toDate().getTime();
     if (isError) {
       setShowThisSection({
         ...showThisSection,
         2: false,
       });
     }
-    setSelected(endD.getTime() / 1000);
+    setSelected(d);
     setShowThisSection({
       ...showThisSection,
       2: true,
     });
   };
+  React.useEffect(() => {
+    setShowThisSection({
+      ...showThisSection,
+      2: true,
+    });
+  }, []);
 
   return (
     <div className='flex items-center justify-start'>
