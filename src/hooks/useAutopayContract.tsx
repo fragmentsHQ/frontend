@@ -90,7 +90,6 @@ const useAutoPayContract = () => {
       } else {
         setIsApproved(true);
       }
-      toast.success(JSON.stringify(BigNumber.from(allowance).isZero()));
       return allowance;
     } catch (error) {
       toast.error(`ERROR ${error}`);
