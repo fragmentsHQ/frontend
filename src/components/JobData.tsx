@@ -184,7 +184,9 @@ const Task = ({ jobId }: { jobId: string }) => {
             Destination Contract
           </span>
           <div className='flex'>
-            <span className='mr-2'>0x0F5D2........68908cC942</span>
+            <span className='mr-2'>
+              {data?.jobCreateds[0]?._destinationContract}
+            </span>
             <ArrowUpRightIcon className='w-5' />
           </div>
         </div>

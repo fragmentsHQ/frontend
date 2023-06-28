@@ -76,6 +76,7 @@ export default function MaterialUIPickers({
         2: false,
       });
     }
+    console.log(d);
     setSelected(d);
     setShowThisSection({
       ...showThisSection,

@@ -6,6 +6,7 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TablePagination from '@mui/material/TablePagination';
 import TableRow from '@mui/material/TableRow';
+import dayjs from 'dayjs';
 import { useRouter } from 'next/router';
 import * as React from 'react';
 import { ImSpinner2 } from 'react-icons/im';
@@ -177,7 +178,9 @@ export default function AllJobsTable() {
                                   className='block
                               text-[#AFAEAE]'
                                 >
-                                  {(value as Data['job_id']).date}
+                                  {dayjs(parseInt(value as Data['job_id']).date)
+                                    .toDate()
+                                    .toLocaleString()}
                                 </span>
                               </div>
                             )}
@@ -208,7 +211,7 @@ export default function AllJobsTable() {
                             )}
                             {column.id === 'status' && (
                               <UnstyledLink
-                                href='https://etherscan.io'
+                                href={'/job/' + row.id}
                                 onClick={(e) => {
                                   e.stopPropagation();
                                 }}
@@ -220,6 +223,7 @@ export default function AllJobsTable() {
                                 )}
                               >
                                 {value as string}
+
                                 <LinkIcon />
                               </UnstyledLink>
                             )}

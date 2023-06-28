@@ -168,7 +168,12 @@ const useAutoPayContract = () => {
     }
   };
 
-  const createTimeAutomateTxn = async () => {
+  const createTimeAutomateTxn = async ({
+    passedInterval,
+  }: {
+    passedInterval: number;
+  }) => {
+    debugger;
     try {
       setIsApproved(true);
       setIsLoading({
@@ -253,18 +258,19 @@ const useAutoPayContract = () => {
           ),
         ],
         [
-          ...enteredRows.map(
-            (_) =>
-              Number(intervalCount) *
-              (intervalType.value === 'days'
-                ? 86400
-                : intervalType.value === 'months'
-                ? 2629800
-                : intervalType.value === 'weeks'
-                ? 604800
-                : intervalType.value === 'years'
-                ? 31536000
-                : 1)
+          ...enteredRows.map((_) =>
+            passedInterval === 0
+              ? passedInterval
+              : Number(intervalCount) *
+                (intervalType.value === 'days'
+                  ? 86400
+                  : intervalType.value === 'months'
+                  ? 2629800
+                  : intervalType.value === 'weeks'
+                  ? 604800
+                  : intervalType.value === 'years'
+                  ? 31536000
+                  : 1)
           ),
         ],
         'QmRFfaM6ve9u1zTDCWaL6mQgguiVNVnjFmKUR96pSRnwdy',
@@ -304,7 +310,11 @@ const useAutoPayContract = () => {
     }
   };
 
-  const handleTimeExecution = async () => {
+  const handleTimeExecution = async ({
+    passedInterval,
+  }: {
+    passedInterval?: number;
+  }) => {
     try {
       const allowance = await fetchAllowance(chain);
 
@@ -318,7 +328,9 @@ const useAutoPayContract = () => {
       //     ethers.constants.MaxUint256
       //   )
       // )
-      createTimeAutomateTxn?.();
+      createTimeAutomateTxn?.({
+        passedInterval: passedInterval,
+      });
       // else throw new Error('Please approve the token');
     } catch (e) {
       toast.error('Please approve the token');

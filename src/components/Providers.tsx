@@ -77,7 +77,7 @@ const safeConnector = new SafeConnector({
 });
 
 const wagmiConfig = createConfig({
-  autoConnect: false,
+  autoConnect: true,
   connectors,
   publicClient,
   webSocketPublicClient,

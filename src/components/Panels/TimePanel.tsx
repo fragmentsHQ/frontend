@@ -251,13 +251,15 @@ const TimePanel = ({
               }}
               disabled={isApproved}
             >
-              Approve Tokens {JSON.stringify(autoPayHook.isApproved)}
+              Approve Tokens
             </Button>
             <Button
               size='sm'
               className='m-auto mt-8 h-12 w-[14rem] rounded-lg bg-[#2BFFB1] text-lg font-bold  text-black disabled:cursor-not-allowed disabled:bg-gray-400'
               onClick={() => {
-                autoPayHook.handleTimeExecution();
+                autoPayHook.handleTimeExecution({
+                  passedInterval: 0,
+                });
               }}
               disabled={!isApproved}
             >
