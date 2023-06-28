@@ -173,13 +173,13 @@ const TOKEN_ADDRESSES: {
       name: 'USDC',
       address: '0x07865c6E87B9F70255377e024ace6630C1Eaa37F',
       decimals: 18,
-      logo: 'https://s3.coinmarketcap.com/static-gravity/image/5a8229787b5e4c809b5914eef709b59a.png',
+      logo: require('../../public/usdc.png'),
     },
     WETH: {
       name: 'WETH',
       address: '0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6',
       decimals: 18,
-      logo: 'https://s2.coinmarketcap.com/static/img/coins/64x64/1027.png',
+      logo: require('../../public/weth.png'),
     },
   },
   420: {
@@ -195,13 +195,13 @@ const TOKEN_ADDRESSES: {
       name: 'USDC',
       address: '0x0FA8781a83E46826621b3BC094Ea2A0212e71B23',
       decimals: 18,
-      logo: 'https://s3.coinmarketcap.com/static-gravity/image/5a8229787b5e4c809b5914eef709b59a.png',
+      logo: require('../../public/usdc.png'),
     },
     WETH: {
       name: 'WETH',
       address: '0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619',
       decimals: 18,
-      logo: 'https://s2.coinmarketcap.com/static/img/coins/64x64/1027.png',
+      logo: require('../../public/weth.png'),
     },
   },
   421613: {

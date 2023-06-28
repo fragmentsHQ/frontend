@@ -4,17 +4,12 @@ const nextConfig = {
     dirs: ['src'],
   },
 
-  reactStrictMode: true,
+  reactStrictMode: false,
   swcMinify: true,
 
   // Uncoment to add domain whitelist
   images: {
-    domains: [
-      'res.cloudinary.com',
-      'testnet.connextscan.io',
-      's3.coinmarketcap.com',
-      's2.coinmarketcap.com',
-    ],
+    domains: ['res.cloudinary.com', 'testnet.connextscan.io'],
   },
   typescript: {
     ignoreBuildErrors: true,
